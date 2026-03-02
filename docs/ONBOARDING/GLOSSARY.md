@@ -241,10 +241,9 @@ A fast Python package manager and environment manager. A faster, more reliable
 alternative to `pip` and `venv`. Reads from `pyproject.toml` to manage
 dependencies.
 
-*In this project:* Used for all Python operations. `uv sync --extra capstone`
-installs dependencies. `uv run python app.py` runs the app using the managed
-virtual environment. The virtual environment is at `.venv/` in the repo root
-(not inside `capstone/`).
+*In this project:* Used for all Python operations. `uv sync` installs
+dependencies. `uv run python app.py` runs the app using the managed virtual
+environment at `.venv/` in the project root.
 
 ---
 

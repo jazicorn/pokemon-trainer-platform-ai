@@ -7,81 +7,74 @@ previous files. After reading this, you can navigate to any file with purpose.
 
 ## Repository Layout
 
-The capstone lives inside a larger repo (`katas-exercises`). Here is what matters:
-
 ```text
-katas-exercises/
-├── capstone/                 ← The application lives here
-│   ├── app.py                ← Entry point — run this
-│   ├── Makefile              ← Shortcuts for common commands
-│   ├── pyproject.toml        ← Python dependencies
-│   ├── .env.op               ← 1Password secret references (safe to commit)
-│   │
-│   ├── src/                  ← All application source code
-│   │   ├── startup.py        ← Runs on startup: checks env, starts services
-│   │   ├── config.py         ← All configuration (env-overridable)
-│   │   │
-│   │   ├── agents/           ← The four AI agents
-│   │   │   ├── trade_advisor.py       ← Orchestrator
-│   │   │   ├── pokedex_expert.py      ← Pokemon knowledge (RAG)
-│   │   │   ├── trade_market_analyst.py ← Supply/demand analytics
-│   │   │   ├── legitimacy_guard.py    ← Fraud detection
-│   │   │   └── trade_analytics.py     ← Data engine (not an agent)
-│   │   │
-│   │   ├── cli/              ← Command-line interface
-│   │   │   ├── app.py        ← Main REPL loop, renders output
-│   │   │   └── commands.py   ← Command parsing (what keywords mean what)
-│   │   │
-│   │   ├── rag/              ← Vector search infrastructure
-│   │   │   ├── vector_store.py   ← ChromaDB client wrapper
-│   │   │   ├── ingest.py         ← One-time data ingestion script
-│   │   │   └── pokeapi_fetcher.py ← Fetches from pokeapi.co
-│   │   │
-│   │   ├── memory/           ← Persistence layer
-│   │   │   ├── database.py         ← SQLite helpers + trade offer CRUD
-│   │   │   ├── user_preferences.py ← Read/write user trading goals
-│   │   │   └── conversation_memory.py ← Store and retrieve chat history
-│   │   │
-│   │   ├── data/             ← Data models and loaders
-│   │   │   ├── models.py     ← Pydantic models (Trade, UserCollection, etc.)
-│   │   │   ├── loader.py     ← Loads JSON files into typed objects
-│   │   │   └── generator.py  ← Generates mock data (make generate-data)
-│   │   │
-│   │   ├── guardrails/       ← Safety layer
-│   │   │   ├── pii_filter.py  ← Regex-based PII detection
-│   │   │   └── middleware.py  ← Wraps agent calls with PII filtering
-│   │   │
-│   │   └── observability/    ← Telemetry
-│   │       ├── observability.py  ← Phoenix startup + health checks
-│   │       └── telemetry_start.py ← Prompts user to opt in at startup
-│   │
-│   ├── data/                 ← Runtime data (created on first use)
-│   │   ├── memory.db         ← SQLite database
-│   │   ├── platform_trades.json ← Mock trade history
-│   │   └── user_collection.json ← Mock user collection
-│   │
-│   ├── tests/                ← Mirrors src/ layout (agents/, cli/, core/, …)
-│   │
-│   └── docs/                 ← Documentation
-│       ├── GETTING_STARTED.md
-│       ├── 1PASSWORD.md
-│       ├── REFERENCE/        ← TESTING, LINTING, MARKET_TRENDS, EVAL_RESULTS
-│       ├── ONBOARDING/       ← You are here
-│       └── WALKTHROUGH/   ← 14-phase deep-dive guides
+pokemon-trainer-platform-ai/
+├── app.py                    ← Entry point — run this
+├── Makefile                  ← Shortcuts for common commands
+├── pyproject.toml            ← Python dependencies
+├── .env.example              ← Template — copy to .env and fill in keys
 │
-├── chromadb_setup/           ← Docker/Colima management scripts
-│   └── chromadb-docker.sh    ← Start, stop, status, logs for ChromaDB
+├── src/                      ← All application source code
+│   ├── startup.py            ← Runs on startup: checks env, starts services
+│   ├── config.py             ← All configuration (env-overridable)
+│   │
+│   ├── agents/               ← The four AI agents
+│   │   ├── trade_advisor_core.py    ← Orchestrator: deps, system prompt, agent
+│   │   ├── trade_advisor_tools.py   ← @trade_advisor.tool functions
+│   │   ├── trade_advisor_api.py     ← Public async API
+│   │   ├── trade_advisor.py         ← Re-export facade
+│   │   ├── pokedex_expert.py        ← Pokemon knowledge (RAG)
+│   │   ├── trade_market_analyst.py  ← Supply/demand analytics
+│   │   ├── legitimacy_guard.py      ← Fraud detection
+│   │   └── trade_analytics.py       ← Data engine (not an agent)
+│   │
+│   ├── cli/                  ← Command-line interface
+│   │   ├── app.py            ← Main REPL loop, renders output
+│   │   └── commands.py       ← Command parsing (what keywords mean what)
+│   │
+│   ├── rag/                  ← Vector search infrastructure
+│   │   ├── vector_store.py   ← ChromaDB client wrapper
+│   │   ├── ingest.py         ← One-time data ingestion script
+│   │   └── pokeapi_fetcher.py ← Fetches from pokeapi.co
+│   │
+│   ├── memory/               ← Persistence layer
+│   │   ├── database.py            ← SQLite helpers + trade offer CRUD
+│   │   ├── user_preferences.py    ← Read/write user trading goals
+│   │   └── conversation_memory.py ← Store and retrieve chat history
+│   │
+│   ├── data/                 ← Data models and loaders
+│   │   ├── models.py         ← Pydantic models (Trade, UserCollection, etc.)
+│   │   ├── loader.py         ← Loads JSON files into typed objects
+│   │   └── generator.py      ← Generates mock data (make generate-data)
+│   │
+│   ├── guardrails/           ← Safety layer
+│   │   ├── pii_filter.py     ← Regex-based PII detection
+│   │   └── middleware.py     ← Wraps agent calls with PII filtering
+│   │
+│   └── observability/        ← Telemetry
+│       ├── observability.py  ← Phoenix startup + health checks
+│       └── telemetry_start.py ← Prompts user to opt in at startup
 │
-├── chroma_data/              ← ChromaDB persistent storage volume
+├── data/                     ← Runtime data (created on first use, gitignored)
+│   ├── memory.db             ← SQLite database
+│   ├── platform_trades.json  ← Mock trade history
+│   └── user_collection.json  ← Mock user collection
 │
-└── .venv/                    ← Root virtual environment (NOT inside capstone/)
+├── tests/                    ← Mirrors src/ layout (agents/, cli/, core/, …)
+│
+└── docs/                     ← Documentation
+    ├── GETTING_STARTED.md
+    ├── 1PASSWORD.md
+    ├── REFERENCE/            ← TESTING, LINTING, MARKET_TRENDS, EVAL_RESULTS
+    ├── ONBOARDING/           ← You are here
+    └── WALKTHROUGH/          ← 14-phase deep-dive guides
 ```
 
 ---
 
 ## Entry Points: Where Execution Starts
 
-### `capstone/app.py`
+### `app.py`
 
 The script you run. It does three things:
 

@@ -39,16 +39,13 @@ For installing any of the prerequisites, see [`docs/GETTING_STARTED.md`](../GETT
 
 ## Step 1: Install Dependencies
 
-From the `capstone/` directory:
+From the project root:
 
 ```bash
-uv sync --extra capstone
+uv sync
 ```
 
-`uv sync` installs all Python packages listed in `pyproject.toml`. The
-`--extra capstone` flag includes the optional packages specific to the
-capstone project (some packages are shared across different exercises in
-the repo, so extras let each exercise declare what it additionally needs).
+`uv sync` installs all Python packages listed in `pyproject.toml`.
 
 You should see `uv` download and install packages. This takes a minute on first run.
 
@@ -61,10 +58,10 @@ making the request. Never commit API keys to git.
 
 **The simple approach — create a `.env` file:**
 
-Create a file called `.env` in the `capstone/` directory:
+Create a `.env` file in the project root:
 
 ```bash
-# capstone/.env
+# .env
 ANTHROPIC_API_KEY=sk-ant-your-key-here
 ```
 
@@ -253,7 +250,7 @@ recommendation. If this works, the whole system is functioning.
 | --- | --- | --- |
 | `ChromaDB is unreachable` | Docker container not running | `make chromadb-start` |
 | `ANTHROPIC_API_KEY is empty` or `contains a 1Password URI` | Key not resolved | Check your `.env` file, or run via `op run` if using 1Password |
-| `ModuleNotFoundError` | Python path not set correctly | Make sure you are running from the `capstone/` directory with `uv run python app.py` |
+| `ModuleNotFoundError` | Python path not set correctly | Make sure you are running from the project root with `uv run python app.py` |
 | `No Pokemon found matching that query` | ChromaDB empty | Run `make ingest` |
 | `KeyError` or `FileNotFoundError` on trade data | Mock data missing | Run `make generate-data` |
 

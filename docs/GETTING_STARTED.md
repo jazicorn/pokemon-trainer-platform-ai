@@ -51,20 +51,14 @@ uv --version
 ### 1. Clone the Repository
 
 ```bash
-git clone <your-katas-repo-url>
-cd katas-exercises
+git clone <repo-url>
+cd pokemon-trainer-platform-ai
 ```
 
-### 2. Navigate to Capstone
+### 2. Install Dependencies
 
 ```bash
-cd capstone
-```
-
-### 3. Install Dependencies
-
-```bash
-uv sync --extra capstone
+uv sync
 ```
 
 This installs all required packages including:
@@ -74,7 +68,7 @@ This installs all required packages including:
 - opentelemetry (observability)
 - And more...
 
-### 4. Set Up Environment Variables
+### 3. Set Up Environment Variables
 
 **Option A — `.env` file:**
 
@@ -124,7 +118,7 @@ op run --env-file .env.op -- uv run pytest tests/ -v --tb=short
 The `.env.op` file is safe to commit — it contains `op://` URIs, not actual
 keys. Edit it to add or change which 1Password items are used.
 
-### 5. Start Services
+### 4. Start Services
 
 Start ChromaDB (required for RAG):
 
@@ -147,7 +141,7 @@ curl http://localhost:8000/api/v2/heartbeat
 # Should return: {"nanosecond heartbeat": ...}
 ```
 
-### 6. Initialize Data
+### 5. Initialize Data
 
 Generate mock data and index Pokemon:
 
@@ -159,7 +153,7 @@ uv run python -c "from data.generator import generate_platform_trades, generate_
 uv run python -m src.rag.ingest
 ```
 
-### 7. Run Tests
+### 6. Run Tests
 
 Verify everything is working:
 
@@ -242,13 +236,16 @@ COMMANDS:
 ## Project Structure
 
 ```text
-capstone/
+pokemon-trainer-platform-ai/
 ├── app.py                 # CLI entry point
 ├── src/
 │   ├── agents/           # AI agents (Pokedex, Market, Advisor, Legitimacy Guard)
 │   │   ├── pokedex_expert.py
 │   │   ├── trade_market_analyst.py
-│   │   ├── trade_advisor.py
+│   │   ├── trade_advisor_core.py      # Dependencies, system prompt, agent
+│   │   ├── trade_advisor_tools.py     # @trade_advisor.tool functions
+│   │   ├── trade_advisor_api.py       # Public async API
+│   │   ├── trade_advisor.py           # Re-export facade
 │   │   ├── trade_analytics.py
 │   │   └── legitimacy_guard.py
 │   ├── cli/              # Command parsing and Rich UI app
@@ -261,8 +258,8 @@ capstone/
 │   ├── observability/    # OpenTelemetry setup
 │   ├── rag/              # Vector store and ingestion
 │   └── startup.py        # Service startup script
-├── tests/                # Test suite
-├── data/                 # Generated data files
+├── tests/                # Mirrors src/ layout (agents/, cli/, core/, ...)
+├── data/                 # Generated data files (gitignored)
 └── observability/        # Docker compose for Phoenix
 ```
 

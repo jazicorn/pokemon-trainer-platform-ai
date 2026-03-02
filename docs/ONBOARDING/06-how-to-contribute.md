@@ -184,7 +184,7 @@ make chromadb-start    # Start it if not
 
 Your environment variable did not resolve correctly.
 
-- Simple `.env` approach: verify the `.env` file exists in `capstone/` and
+- Simple `.env` approach: verify the `.env` file exists in the project root and
   has the correct key
 - 1Password approach: run `eval $(op signin)` first, then `make run`
   (which uses `op run`)
@@ -238,11 +238,11 @@ Usually means you are running Python from the wrong directory or without
 # Wrong
 python app.py
 
-# Right — from the capstone/ directory
+# Right — from the project root
 uv run python app.py
 ```
 
-The project adds `capstone/src/` to the Python path at startup, so
+The project adds `src/` to the Python path at startup, so
 `from agents.trade_advisor import ...` works. Running `python` directly
 without `uv` skips this.
 
@@ -282,7 +282,7 @@ components:
 | Resource | What it covers |
 | --- | --- |
 | [`docs/WALKTHROUGH/PHASES_OVERVIEW.md`](../WALKTHROUGH/PHASES_OVERVIEW.md) | Phase-by-phase breakdown of every component with test commands |
-| [`capstone/ARCHITECTURE.md`](../../ARCHITECTURE.md) | Full architecture reference: business analogies, data source details, worked examples |
+| [`ARCHITECTURE.md`](../../ARCHITECTURE.md) | Full architecture reference: business analogies, data source details, worked examples |
 | [`docs/WALKTHROUGH/phase-05-pokedex-expert.md`](../WALKTHROUGH/phase-05-pokedex-expert.md) | Deep dive on RAG and the Pokedex Expert |
 | [`docs/WALKTHROUGH/phase-09-trade-advisor.md`](../WALKTHROUGH/phase-09-trade-advisor.md) | Deep dive on the Trade Advisor orchestrator |
 | [`docs/WALKTHROUGH/phase-10-multi-agent-orchestration.md`](../WALKTHROUGH/phase-10-multi-agent-orchestration.md) | How agents delegate to each other |

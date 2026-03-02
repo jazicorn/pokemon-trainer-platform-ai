@@ -29,7 +29,7 @@ Phase 12: Trade Offers (adds new CLI commands to the existing parser)
 - `src/cli/app.py` — `TradeCLI` class with one `handle_*` async method per command type. Also
   defines the `HEADER` string (shown on launch and on `help`), `ABOUT_TEXT`, and `main()` (the REPL
   entry point).
-- `capstone/app.py` — The root entry point. Adds `src/` to `sys.path`, calls `startup()`, then calls
+- `app.py` — The root entry point. Adds `src/` to `sys.path`, calls `startup()`, then calls
   `cli.app.main()`.
 
 ## Key Concepts
