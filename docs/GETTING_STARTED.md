@@ -1,6 +1,6 @@
 # Getting Started
 
-Welcome to the Pokemon Trade Advisor capstone project! This guide will help you
+Welcome to the Pokemon Trainer Platform - AI! This guide will help you
 set up and run the project from scratch.
 
 ## Prerequisites

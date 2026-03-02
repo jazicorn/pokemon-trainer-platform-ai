@@ -1,4 +1,4 @@
-"""Pytest configuration for capstone tests."""
+"""Pytest configuration for Pokemon Trainer Platform - AI tests."""
 
 import os
 import sys

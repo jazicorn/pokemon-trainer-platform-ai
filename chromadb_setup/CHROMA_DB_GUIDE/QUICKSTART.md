@@ -301,8 +301,8 @@ for embedding provider examples.
 ## Project Structure
 
 ```text
-katas-exercises/
-├── chromadb/
+pokemon-trainer-platform-ai/
+├── chromadb_setup/
 │   ├── CHROMA_DB_GUIDE/
 │   │   ├── DOCKER_QUICKSTART.md     # this file
 │   │   ├── RESOURCES.md
@@ -314,6 +314,9 @@ katas-exercises/
 │   ├── create_vector_store.py
 │   ├── test_vector_store.py
 │   └── README.md
+├── src/
+├── tests/
+├── app.py
 └── pyproject.toml
 ```
 

@@ -1,6 +1,6 @@
 # Pokemon Trainer's Second Brain
 
-Capstone Project Architecture
+Pokemon Trainer Platform - AI Architecture
 
 ## Business Context: What This Project Demonstrates
 
@@ -53,7 +53,7 @@ recommendations.
 - **Decision Support**: Synthesize all factors into actionable, explainable
   recommendations
 
-## Capstone Requirements Mapping
+## System Requirements Mapping
 
 | Requirement           | Implementation                                           |
 | --------------------- | -------------------------------------------------------- |
@@ -666,7 +666,7 @@ sacrifice your Psychic core. Would you like suggestions?
 
 Suggested build order:
 
-1. **Set up project structure**: Create folder structure under `capstone/`
+1. **Set up project structure**: Create the project folder structure
 1. **Add dependencies to pyproject.toml**: httpx, sentence-transformers
 1. **Create mock data**: Generate `platform_trades.json` with 100+ trades and
    create sample `user_collection.json`
@@ -722,7 +722,7 @@ The modular architecture allows any of these integration patterns.
 
 ## Reusing Existing Repo Components
 
-This capstone leverages existing repo infrastructure:
+This project leverages the following shared infrastructure:
 
 | Component       | Source                |
 | --------------- | --------------------- |

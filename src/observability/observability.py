@@ -1,4 +1,4 @@
-"""Observability setup for the capstone project."""
+"""Observability setup for the Pokemon Trainer Platform - AI."""
 
 import shutil
 import subprocess
@@ -17,7 +17,7 @@ from telemetry_setup import init_telemetry  # noqa: E402
 
 from config import config  # noqa: E402
 
-PHOENIX_CONTAINER = "phoenix-capstone"
+PHOENIX_CONTAINER = "phoenix-pokemon-trainer"
 
 _console = _Console(force_terminal=True)
 
