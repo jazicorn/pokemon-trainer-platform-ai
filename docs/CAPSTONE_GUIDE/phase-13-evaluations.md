@@ -46,7 +46,7 @@ Phase 13: Evaluations
   `rag_report.print(baseline=baseline)` to produce a side-by-side diff table.
 - `src/evals/__init__.py` — Re-exports the public types and scoring functions from `cases` and
   `scoring`.
-- `docs/eval_results/README.md` — Captured output from live eval runs with analysis notes.
+- `docs/REFERENCE/EVAL_RESULTS.md` — Captured output from live eval runs with analysis notes.
 - `tests/test_evals.py` — Unit tests for case definitions and scoring functions. No LLM calls.
 - `tests/test_evals_execution.py` — Pipeline integration tests using `AsyncMock` to patch
   `evaluate_trade`. No LLM calls.
@@ -190,7 +190,7 @@ RAG vs No-RAG Comparison (pydantic-evals)
 └───────────────────┴─────────────────────────────────┴──────────────────┘
 ```
 
-See `docs/eval_results/README.md` for full captured output with analysis.
+See `docs/REFERENCE/EVAL_RESULTS.md` for full captured output with analysis.
 
 ## Running the Tests
 

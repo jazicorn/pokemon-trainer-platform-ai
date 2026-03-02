@@ -122,7 +122,7 @@ performance gains of our hierarchical architecture.
 
 * **+15.8% RAG Accuracy Gain:** The RAG-enabled Pokedex Expert outperformed a plain LLM baseline
   on Pokemon knowledge retrieval, with the largest gain on multi-hop questions (+100% on Pikachu
-  evolution ancestry). See [`docs/eval_results/README.md`](docs/eval_results/README.md) for full
+  evolution ancestry). See [`docs/REFERENCE/EVAL_RESULTS.md`](docs/REFERENCE/EVAL_RESULTS.md) for full
   captured output.
 
 ### Running the Evals
