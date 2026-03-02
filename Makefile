@@ -39,7 +39,7 @@ ingest: ## Index Pokemon into ChromaDB (fetches from PokeAPI — ChromaDB must b
 	uv run python -m src.rag.ingest
 
 generate-data: ## Generate mock platform trade data and user collection
-	uv run python -c "from data.generator import generate_platform_trades, generate_user_collection; generate_platform_trades(); generate_user_collection()"
+	uv run python -m src.data.generator
 
 # ── Phoenix ───────────────────────────────────────────────────────────────────
 

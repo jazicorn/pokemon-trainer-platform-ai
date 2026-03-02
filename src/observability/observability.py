@@ -10,8 +10,8 @@ import httpx
 from rich.console import Console as _Console
 from rich.prompt import Confirm
 
-# Add repo root to path for shared telemetry_setup
-sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
+# Add project root to path for telemetry_setup
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from telemetry_setup import init_telemetry  # noqa: E402
 

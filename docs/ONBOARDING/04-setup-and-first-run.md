@@ -13,7 +13,7 @@ For the full technical reference with all options and advanced configuration, se
 
 | Tool | Why you need it |
 | --- | --- |
-| Python 3.11+ | The application is written in Python |
+| Python 3.13+ | The application is written in Python |
 | `uv` | Fast Python package manager — used instead of `pip` |
 | Docker (or Colima on macOS) | ChromaDB runs as a Docker container |
 | One LLM API key | The agents need a real LLM to reason — this is a paid external service |

@@ -55,17 +55,17 @@ recommendations.
 
 ## Capstone Requirements Mapping
 
-| Requirement           | Implementation                              |
-| --------------------- | ------------------------------------------- |
-| Pydantic AI           | All agents built with Pydantic AI           |
+| Requirement           | Implementation                                           |
+| --------------------- | -------------------------------------------------------- |
+| Pydantic AI           | All agents built with Pydantic AI                        |
 | 3+ Specialized Agents | Pokedex, Market Analyst, Trade Advisor, Legitimacy Guard |
-| RAG Implementation    | Vector store over Pokemon and trade data    |
-| Persistent Memory     | User preferences and conversation history   |
-| PII Guardrails        | Filter personal info before storage         |
-| Pydantic Evals        | Multi-agent vs single-agent comparison      |
-| OTEL Observability    | Trace agent calls and measure latency       |
-| Local Data Storage    | SQLite for structured, ChromaDB for vectors |
-| MCP Server (Optional) | Expose advisor as MCP tool                  |
+| RAG Implementation    | Vector store over Pokemon and trade data                 |
+| Persistent Memory     | User preferences and conversation history                |
+| PII Guardrails        | Filter personal info before storage                      |
+| Pydantic Evals        | Multi-agent vs single-agent comparison                   |
+| OTEL Observability    | Trace agent calls and measure latency                    |
+| Local Data Storage    | SQLite for structured, ChromaDB for vectors              |
+| MCP Server (Optional) | Expose advisor as MCP tool                               |
 
 ## System Architecture Overview
 
@@ -297,14 +297,14 @@ hallucinate.
 Managed by `TradeOffersManager` in `memory/database.py`, backed by the
 `trade_offers` SQLite table.
 
-| Column              | Purpose                                   |
-| ------------------- | ----------------------------------------- |
-| `sender_id`         | User who sent the offer                   |
-| `recipient_id`      | User the offer is addressed to            |
-| `offered_pokemon`   | Pokemon being offered                     |
-| `requested_pokemon` | Pokemon requested in return               |
-| `status`            | `pending` / `accepted` / `declined`       |
-| `ai_analysis`       | Cached AI evaluation of the offer fairness|
+| Column              | Purpose                                    |
+| ------------------- | ------------------------------------------ |
+| `sender_id`         | User who sent the offer                    |
+| `recipient_id`      | User the offer is addressed to             |
+| `offered_pokemon`   | Pokemon being offered                      |
+| `requested_pokemon` | Pokemon requested in return                |
+| `status`            | `pending` / `accepted` / `declined`        |
+| `ai_analysis`       | Cached AI evaluation of the offer fairness |
 
 **Business Equivalent**: Order management system, marketplace bid/ask book
 
@@ -414,112 +414,121 @@ history.
 
 ## Project Structure
 
-The capstone lives as a subfolder within the katas-repo, using the shared
-`pyproject.toml` at the repo root for dependency management.
-
 ```text
-katas-repo/
-├── pyproject.toml             # Shared dependencies
-├── uv.lock
-├── telemetry_setup.py         # Shared OTEL setup
-├── chromadb_setup/            # Shared ChromaDB setup (Docker + httpx)
-│   ├── CHROMA_DB_GUIDE/
-│   ├── chromadb-docker.sh
-│   ├── chromadb_quickstart.py
-│   └── ...
-├── capstone/
-│   ├── ASSIGNMENT.md          # Requirements checklist
+pokemon-trainer-platform-ai/
+├── app.py                     # Main entry point
+├── telemetry_setup.py         # OpenTelemetry initialisation
+├── pyproject.toml             # Dependencies and tool config
+├── pytest.ini                 # Test configuration
+├── Makefile                   # Shortcuts for common commands
+├── .env.example               # Template — copy to .env and fill in keys
+├── chromadb_setup/            # ChromaDB Docker management scripts
+│   └── chromadb-docker.sh
+├── docs/
+│   ├── GETTING_STARTED.md
 │   ├── ARCHITECTURE.md        # This file
-│   ├── README.md              # Quick start guide
-│   ├── app.py                 # Main entry point
-│   ├── docs/
-│   │   ├── GETTING_STARTED.md
-│   │   ├── TESTING.md
-│   │   ├── TRENDS.md
-│   │   └── WALKTHROUGH/
-│   │       ├── PHASES_OVERVIEW.md
-│   │       ├── phase-01-project-setup.md
-│   │       ├── phase-02-mock-data.md
-│   │       ├── phase-03-pokedex-expert.md
-│   │       ├── phase-04-market-analyst.md
-│   │       ├── phase-05-trade-advisor.md
-│   │       ├── phase-06-memory-system.md
-│   │       ├── phase-07-pii-guardrails.md
-│   │       ├── phase-08-evaluations.md
-│   │       ├── phase-09-cli-interface.md
-│   │       ├── phase-10-mcp-server.md
-│   │       ├── phase-11-multi-agent.md
-│   │       ├── phase-12-market-forecaating.md
-│   │       └── phase-13-legitimacy-guard.md
-│   ├── src/
+│   ├── REFERENCE/             # TESTING, LINTING, EVAL_RESULTS, MARKET_TRENDS
+│   ├── ONBOARDING/            # Step-by-step onboarding guides
+│   └── WALKTHROUGH/           # 14-phase deep-dive guides
+│       ├── PHASES_OVERVIEW.md
+│       ├── phase-01-project-setup.md
+│       ├── phase-02-mock-data.md
+│       ├── phase-03-memory-system.md
+│       ├── phase-04-pii-guardrails.md
+│       ├── phase-05-pokedex-expert.md
+│       ├── phase-06-market-analyst.md
+│       ├── phase-07-market-forecasting.md
+│       ├── phase-08-legitimacy-guard.md
+│       ├── phase-09-trade-advisor.md
+│       ├── phase-10-multi-agent-orchestration.md
+│       ├── phase-11-cli-interface.md
+│       ├── phase-12-trade-offers.md
+│       ├── phase-13-evaluations.md
+│       └── phase-14-mcp-server.md
+├── src/
+│   ├── __init__.py
+│   ├── startup.py
+│   ├── config.py
+│   ├── utils.py
+│   ├── agents/
 │   │   ├── __init__.py
-│   │   ├── startup.py
-│   │   ├── config.py
-│   │   ├── observability/
-│   │   │   ├── __init__.py
-│   │   │   └── observability.py
-│   │   ├── agents/
-│   │   │   ├── __init__.py
-│   │   │   ├── pokedex_expert.py
-│   │   │   ├── trade_market_analyst.py
-│   │   │   ├── trade_advisor.py
-│   │   │   ├── trade_analytics.py
-│   │   │   └── legitimacy_guard.py
-│   │   ├── cli/
-│   │   │   ├── __init__.py
-│   │   │   ├── app.py
-│   │   │   └── commands.py
-│   │   ├── memory/
-│   │   │   ├── __init__.py
-│   │   │   ├── database.py
-│   │   │   ├── user_preferences.py
-│   │   │   └── conversation_memory.py
-│   │   ├── rag/
-│   │   │   ├── __init__.py
-│   │   │   ├── vector_store.py
-│   │   │   ├── ingest.py
-│   │   │   └── pokeapi_fetcher.py
-│   │   ├── data/
-│   │   │   ├── __init__.py
-│   │   │   ├── models.py
-│   │   │   ├── generator.py
-│   │   │   └── loader.py
-│   │   ├── guardrails/
-│   │   │   ├── __init__.py
-│   │   │   ├── pii_filter.py
-│   │   │   └── middleware.py
-│   │   ├── evals/
-│   │   │   ├── __init__.py
-│   │   │   ├── eval_trade_advisor.py
-│   │   │   ├── eval_rag_comparison.py
-│   │   │   ├── cases.py
-│   │   │   └── scoring.py
-│   │   └── mcp_server/
-│   │       ├── __init__.py
-│   │       ├── server.py
-│   │       └── tools.py
-│   ├── data/                  # Generated data files
-│   │   ├── platform_trades.json
-│   │   └── user_collection.json
-│   └── tests/
-│       ├── conftest.py
-│       ├── test_cli.py
-│       ├── test_data.py
-│       ├── test_evals.py
-│       ├── test_guardrails.py
-│       ├── test_legitimacy_guard.py
-│       ├── test_mcp_server.py
-│       ├── test_memory.py
-│       ├── test_multi_agent.py
-│       ├── test_pokedex_agent.py
-│       ├── test_rag.py
-│       ├── test_trade_advisor.py
-│       ├── test_trade_analytics.py
-│       └── test_trade_offers.py
-├── katas/                     # Existing katas
-├── mcp_katas/                 # Existing MCP katas
-├── rag/                       # Existing RAG exercises
-└── src/                       # Existing shared source
+│   │   ├── trade_advisor_core.py      # Orchestrator: deps, system prompt, agent
+│   │   ├── trade_advisor_tools.py     # @trade_advisor.tool functions
+│   │   ├── trade_advisor_api.py       # Public async entry points
+│   │   ├── trade_advisor.py           # Re-export facade
+│   │   ├── pokedex_expert.py
+│   │   ├── trade_market_analyst.py
+│   │   ├── battle_strategy_advisor.py
+│   │   ├── legitimacy_guard.py
+│   │   └── trade_analytics.py
+│   ├── cli/
+│   │   ├── __init__.py
+│   │   ├── app.py
+│   │   └── commands.py
+│   ├── data/
+│   │   ├── __init__.py
+│   │   ├── models.py
+│   │   ├── generator.py
+│   │   ├── loader.py
+│   │   ├── tiers.py
+│   │   └── value_scoring.py
+│   ├── evals/
+│   │   ├── __init__.py
+│   │   ├── cases.py
+│   │   ├── scoring.py
+│   │   ├── eval_trade_advisor.py
+│   │   └── eval_rag_comparison.py
+│   ├── guardrails/
+│   │   ├── __init__.py
+│   │   ├── pii_filter.py
+│   │   └── middleware.py
+│   ├── mcp_server/
+│   │   ├── __init__.py
+│   │   ├── server.py
+│   │   └── tools.py
+│   ├── memory/
+│   │   ├── __init__.py
+│   │   ├── database.py
+│   │   ├── user_preferences.py
+│   │   └── conversation_memory.py
+│   ├── observability/
+│   │   ├── __init__.py
+│   │   ├── observability.py
+│   │   └── telemetry_start.py
+│   └── rag/
+│       ├── __init__.py
+│       ├── vector_store.py
+│       ├── ingest.py
+│       ├── smogon_ingest.py
+│       ├── pokeapi_fetcher.py
+│       └── smogon_fetcher.py
+├── data/                      # Runtime data (created on first use, gitignored)
+│   ├── memory.db
+│   ├── platform_trades.json
+│   └── user_collection.json
+└── tests/                     # Mirrors src/ layout
+    ├── conftest.py
+    ├── agents/
+    │   ├── test_trade_advisor.py
+    │   ├── test_trade_analytics.py
+    │   ├── test_multi_agent.py
+    │   ├── test_pokedex_agent.py
+    │   ├── test_legitimacy_guard.py
+    │   └── test_trade_offers.py
+    ├── cli/test_cli.py
+    ├── core/
+    │   ├── test_config.py
+    │   └── test_startup_validation.py
+    ├── data/test_data.py
+    ├── evals/
+    │   ├── test_evals.py
+    │   └── test_evals_execution.py
+    ├── guardrails/test_guardrails.py
+    ├── mcp/test_mcp_server.py
+    ├── memory/
+    │   ├── test_memory.py
+    │   └── test_memory_persistence.py
+    └── rag/test_rag.py        # requires_chromadb marker
 ```
 
 ## Mock Data Schemas
