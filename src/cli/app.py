@@ -6,11 +6,13 @@ import argparse
 import asyncio
 import os
 import re
+import time
+from dataclasses import dataclass, field
 
 from agents import evaluate_trade, get_pending_offers, get_trade_suggestions, query_pokedex, send_trade_offer
 from agents.trade_market_analyst import query_market
 from memory import TradeOffersManager
-from data import load_user_collection
+from data.loader import load_user_collection
 from guardrails import create_safe_input
 from memory import ConversationMemory, UserPreferencesManager
 
@@ -25,7 +27,22 @@ from rich.table import Table
 
 from .commands import CommandType, OfferParams, ParsedCommand, parse_command
 
-# Words that confirm a pending offer acceptance when typed as the first word of input
+_CONFIRMATION_TIMEOUT: float = 300.0  # seconds before a pending confirmation expires
+
+
+@dataclass
+class PendingConfirmation:
+    """Tracks a single pending user confirmation with an expiry timestamp."""
+
+    action_type: str  # "accept_offer" | "send_offers"
+    offer_id: int | None = None
+    timestamp: float = field(default_factory=time.monotonic)
+
+    def is_expired(self) -> bool:
+        return time.monotonic() - self.timestamp > _CONFIRMATION_TIMEOUT
+
+
+# Words that confirm a pending action when typed as the first word of input
 _AFFIRMATIONS: frozenset[str] = frozenset({
     "yes", "yeah", "yep", "ok", "okay", "sure", "confirm",
     "go", "proceed", "do",
@@ -83,8 +100,7 @@ class TradeCLI:
         self.conversation = ConversationMemory(user_id)
         self.preferences = UserPreferencesManager(user_id)
         self.running = True
-        self._pending_accept_id: int | None = None
-        self._pending_send_offers: bool = False
+        self._pending_confirmation: PendingConfirmation | None = None
 
     def print_header(self) -> None:
         """Print the application header."""
@@ -380,37 +396,37 @@ class TradeCLI:
 
                 first_word = cmd.args.strip().split()[0].lower()
 
-                # If an accept confirmation is pending and user is affirming, accept directly
-                if self._pending_accept_id is not None and first_word in _AFFIRMATIONS:
-                    offer_id = self._pending_accept_id
-                    self._pending_accept_id = None
-                    await self.handle_offer_accept(str(offer_id))
+                # Expire stale confirmations before checking them
+                if self._pending_confirmation is not None and self._pending_confirmation.is_expired():
+                    self._pending_confirmation = None
+
+                # Dispatch pending confirmation if the user is affirming
+                if self._pending_confirmation is not None and first_word in _AFFIRMATIONS:
+                    conf = self._pending_confirmation
+                    self._pending_confirmation = None
+
+                    if conf.action_type == "accept_offer" and conf.offer_id is not None:
+                        await self.handle_offer_accept(str(conf.offer_id))
+                    elif conf.action_type == "send_offers":
+                        self.conversation.add_message("user", cmd.args)
+                        context = self.conversation.get_context_string()
+                        with console.status("[bold green]Sending offers...", spinner="dots"):
+                            from agents.trade_advisor import evaluate_trade
+                            result = await evaluate_trade(
+                                user_id=self.user_id,
+                                raw_query=(
+                                    "The user has confirmed. Call create_outgoing_offer for every offer "
+                                    "listed in the previous message. Do NOT re-propose or ask for "
+                                    "confirmation again — it has already been given."
+                                ),
+                                conversation_context=context,
+                            )
+                        self._print_result(result)
+                        self.conversation.add_message("assistant", str(result))
                     return
 
-                # If outgoing-offer confirmation is pending and user is affirming,
-                # pass back to the LLM with context so it calls create_outgoing_offer
-                if self._pending_send_offers and first_word in _AFFIRMATIONS:
-                    self._pending_send_offers = False
-                    self.conversation.add_message("user", cmd.args)
-                    context = self.conversation.get_context_string()
-                    with console.status("[bold green]Sending offers...", spinner="dots"):
-                        from agents.trade_advisor import evaluate_trade
-                        result = await evaluate_trade(
-                            user_id=self.user_id,
-                            raw_query=(
-                                "The user has confirmed. Call create_outgoing_offer for every offer "
-                                "listed in the previous message. Do NOT re-propose or ask for "
-                                "confirmation again — it has already been given."
-                            ),
-                            conversation_context=context,
-                        )
-                    self._print_result(result)
-                    self.conversation.add_message("assistant", str(result))
-                    return
-
-                # Any other input clears both pending states
-                self._pending_accept_id = None
-                self._pending_send_offers = False
+                # Any non-affirmation clears the pending state
+                self._pending_confirmation = None
 
                 self.conversation.add_message("user", cmd.args)
                 context = self.conversation.get_context_string()
@@ -425,12 +441,18 @@ class TradeCLI:
                 self._print_result(result)
                 self.conversation.add_message("assistant", str(result))
 
-                # Track pending confirmation states from the LLM response
-                accept_match = re.search(r"accept Offer #(\d+)", result, re.IGNORECASE)
+                # Detect pending confirmation from the LLM response.
+                # Regex matches the exact phrasing mandated in the system prompt,
+                # preventing false positives from descriptive text like "you could accept Offer #3".
+                accept_match = re.search(
+                    r"Shall I go ahead and accept Offer #(\d+)", result, re.IGNORECASE
+                )
                 if accept_match:
-                    self._pending_accept_id = int(accept_match.group(1))
+                    self._pending_confirmation = PendingConfirmation(
+                        action_type="accept_offer", offer_id=int(accept_match.group(1))
+                    )
                 elif re.search(r"Shall I send these offers\?", result, re.IGNORECASE):
-                    self._pending_send_offers = True
+                    self._pending_confirmation = PendingConfirmation(action_type="send_offers")
 
     async def run(self) -> None:
         """Run the CLI main loop."""
