@@ -259,8 +259,7 @@ pokemon-trainer-platform-ai/
 │   ├── rag/              # Vector store and ingestion
 │   └── startup.py        # Service startup script
 ├── tests/                # Mirrors src/ layout (agents/, cli/, core/, ...)
-├── data/                 # Generated data files (gitignored)
-└── observability/        # Docker compose for Phoenix
+└── data/                 # Generated data files (gitignored)
 ```
 
 ## Configuration
@@ -326,8 +325,7 @@ prefs.save_preferences(
 ### Start Phoenix for Tracing
 
 ```bash
-cd observability
-docker compose up -d
+make phoenix-start
 ```
 
 View traces at: <http://localhost:6006>

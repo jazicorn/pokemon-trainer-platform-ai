@@ -1,7 +1,7 @@
 [project]
 name = "pokemon-trainer-platform-ai"
 version = "0.1.0"
-description = "AI agent for Pokemon Trainer Platform"
+description = "Pokemon Trainer Platform - AI: multi-agent trade advisor"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
