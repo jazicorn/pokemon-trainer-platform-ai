@@ -8,33 +8,45 @@ this "Second Brain" helps trainers outmaneuver the market.
 
 * **Agent Framework:** [Pydantic AI](https://ai.pydantic.dev/) (Strict type-safety & structured LLM
   outputs)
+* **LLM Support:** Anthropic Claude (default), Google Gemini, OpenAI GPT-4o, Ollama (local)
 * **Vector Database:** ChromaDB (RAG for technical Pokémon stats)
-* **Observability:** [Pydantic Logfire](https://logfire.pydantic.dev/) / OpenTelemetry (Real-time
-  agent tracing)
+* **Observability:** [Pydantic Logfire](https://logfire.pydantic.dev/) / OpenTelemetry / Arize Phoenix
+  (Real-time agent tracing)
 * **Data Layer:** SQLite (Persistent user memory & market history)
 
 ---
+
+## 📋 Prerequisites
+
+* **Python ≥ 3.13** — managed via `uv`
+* **[uv](https://docs.astral.sh/uv/)** — Python package & project manager
+* **Docker / Colima** — required for ChromaDB
+* **[1Password CLI](https://developer.1password.com/docs/cli/)** — optional, recommended for API
+  key management
 
 ## 🛠️ Installation & Setup
 
 ```bash
 # 1. Install dependencies
-uv sync --extra capstone
+uv sync
 
 # 2. Start ChromaDB (interactive — manages Docker/Colima automatically)
-./chromadb_setup/chromadb-docker.sh start
+make chromadb-start
 
 # 3. Ingest technical Pokedex data into ChromaDB
-uv run python -m src.rag.ingest
+make ingest
 
 # 4. Launch the interactive CLI
-op run --env-file .env.op -- uv run python app.py   # 1Password (recommended)
-uv run python app.py                                 # plain (requires API key in env)
+make run                  # Anthropic Claude via 1Password (default)
+make run-gemini           # Google Gemini via 1Password
+make run-openai           # OpenAI GPT-4o via 1Password
+make run-ollama           # Local Ollama llama (no API key needed)
+uv run python app.py      # plain (requires API key already in env)
 ```
 
 See [`docs/1PASSWORD.md`](docs/1PASSWORD.md) for API key setup and
 [`docs/GETTING_STARTED.md`](docs/GETTING_STARTED.md) for full installation detail.
-Run `make help` from the `capstone/` directory to see all available commands.
+Run `make help` to see all available commands.
 
 > **Tip for manual testing:** `make reset-db` deletes `data/memory.db` so mock offers and
 > conversation history are wiped clean on the next `make run`. Useful when re-testing the
@@ -71,6 +83,12 @@ that typical LLMs hallucinate:
 ## 🛠️ Testing & Quality Assurance
 
 We use **Deterministic Model Mocking** to test our agents without calling expensive APIs.
+
+```bash
+make test         # Unit/integration tests — mocked LLM, no API keys needed
+make test-live    # Same tests against live LLM APIs (via 1Password)
+make test-rag     # ChromaDB integration tests (ChromaDB must be running)
+```
 
 ---
 
@@ -129,6 +147,28 @@ has spiked to 2.4 (+100% momentum). **Recommendation:** Hold your position; mark
 * Cross-references trade proposals against your `seeking` list and `primary_goal`.
 * Suggests "Market-Smart" pivots (e.g., "Instead of Machop, trade for Gastly—it has better momentum
   for your Psychic team goal.")
+
+---
+
+## ⚙️ Make Commands Reference
+
+| Command                | Description                                      |
+| ---------------------- | ------------------------------------------------ |
+| `make run`             | Launch CLI with Claude (default) via 1Password   |
+| `make run-gemini`      | Launch CLI with Gemini Flash via 1Password       |
+| `make run-openai`      | Launch CLI with GPT-4o via 1Password             |
+| `make run-ollama`      | Launch CLI with local Ollama (no API key needed) |
+| `make test`            | Run all tests with mocked LLM                    |
+| `make test-live`       | Run tests against live APIs                      |
+| `make test-rag`        | Run ChromaDB integration tests                   |
+| `make eval`            | Run trade advisor evaluation                     |
+| `make eval-rag`        | Run RAG vs no-RAG comparison                     |
+| `make ingest`          | Index Pokémon data into ChromaDB                 |
+| `make generate-data`   | Regenerate mock trade and collection data        |
+| `make chromadb-start`  | Start ChromaDB Docker container                  |
+| `make chromadb-stop`   | Stop ChromaDB Docker container                   |
+| `make chromadb-status` | Show ChromaDB container status                   |
+| `make reset-db`        | Delete local SQLite database                     |
 
 ---
 
