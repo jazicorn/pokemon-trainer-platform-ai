@@ -128,13 +128,13 @@ op run --env-file .env.op -- uv run python app.py
 
 ```bash
 # Trade advisor structure, deps, and tool integration
-uv run pytest tests/test_trade_advisor.py -v
+uv run pytest tests/agents/test_trade_advisor.py -v
 
 # Multi-agent tool definitions (also covers the advisor's tool list)
-uv run pytest tests/test_multi_agent.py -v
+uv run pytest tests/agents/test_multi_agent.py -v
 
 # Run both together
-uv run pytest tests/test_trade_advisor.py tests/test_multi_agent.py -v
+uv run pytest tests/agents/test_trade_advisor.py tests/agents/test_multi_agent.py -v
 ```
 
 `test_trade_advisor.py` covers:

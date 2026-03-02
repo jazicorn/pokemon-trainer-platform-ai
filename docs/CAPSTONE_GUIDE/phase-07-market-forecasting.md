@@ -96,7 +96,6 @@ has never been offered.
 
 ```bash
 # Get a forecast directly from the analytics layer
-cd /Users/jasmineanderson/Code/TW-Beach/katas-exercises/capstone
 uv run python -c "
 import sys; sys.path.insert(0, 'src')
 from agents.trade_analytics import TradeAnalytics
@@ -140,8 +139,7 @@ Expected output from `get_market_forecast`:
 Forecasting tests are in the same file as Phase 6's analytics tests:
 
 ```bash
-cd /Users/jasmineanderson/Code/TW-Beach/katas-exercises/capstone
-uv run pytest tests/test_trade_analytics.py -v
+uv run pytest tests/agents/test_trade_analytics.py -v
 ```
 
 The `TestTradeAnalytics` class uses a `sample_trades` fixture with `timestamp=datetime.now()`, which
@@ -152,7 +150,7 @@ tests to produce non-trivial results. You can verify the forecast behavior by co
 To run only forecasting-adjacent tests, use `-k` to filter by keyword:
 
 ```bash
-uv run pytest tests/test_trade_analytics.py -v -k "forecast or demand or sentiment"
+uv run pytest tests/agents/test_trade_analytics.py -v -k "forecast or demand or sentiment"
 ```
 
 ## Common Gotchas

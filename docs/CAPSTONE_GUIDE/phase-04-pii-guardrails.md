@@ -93,8 +93,6 @@ import it directly.
 ## Running the Code
 
 ```bash
-cd /Users/jasmineanderson/Code/TW-Beach/katas-exercises/capstone
-
 # Basic filtering
 uv run python -c "
 import sys; sys.path.insert(0, 'src')
@@ -148,7 +146,7 @@ Warning: Note: Some personal information was detected and filtered for your priv
 ## Running the Tests
 
 ```bash
-uv run pytest tests/test_guardrails.py -v
+uv run pytest tests/guardrails/test_guardrails.py -v
 ```
 
 Test groups:

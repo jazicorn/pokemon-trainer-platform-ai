@@ -86,7 +86,6 @@ recommendation text, reasoning, and feedback — enabling future analytics on re
 
 ```bash
 # Start a REPL with src on the path
-cd /Users/jasmineanderson/Code/TW-Beach/katas-exercises/capstone
 uv run python -c "
 import sys; sys.path.insert(0, 'src')
 from memory.database import init_database
@@ -144,13 +143,13 @@ print(rec_mem.get_past_recommendations())
 
 ```bash
 # Unit tests: CRUD operations, trimming, per-user isolation
-uv run pytest tests/test_memory.py -v
+uv run pytest tests/memory/test_memory.py -v
 
 # Persistence tests: data survives across new class instances
-uv run pytest tests/test_memory_persistence.py -v
+uv run pytest tests/memory/test_memory_persistence.py -v
 
 # Run both
-uv run pytest tests/test_memory.py tests/test_memory_persistence.py -v
+uv run pytest tests/memory/test_memory.py tests/memory/test_memory_persistence.py -v
 ```
 
 `test_memory.py` uses an `autouse` fixture that patches `memory.database.get_db_path` to point at a

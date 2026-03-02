@@ -30,7 +30,7 @@ Phase 14: MCP Server (optional external interface — wraps all four agent funct
   statement, and defines `run_server()` / `main()` entry points.
 - `src/mcp_server/__init__.py` — Re-exports `mcp_server`, `run_server`, `main`, `get_tools`, the
   four tool name constants, and `VALID_TOOLS` for clean external imports.
-- `tests/test_mcp_server.py` — Verifies tool definitions and schema structure. No live agent calls.
+- `tests/mcp/test_mcp_server.py` — Verifies tool definitions and schema structure. No live agent calls.
 
 ## Key Concepts
 
@@ -119,7 +119,7 @@ To connect via Claude Desktop, add an entry to your MCP configuration file (typi
     "pokemon-trade-advisor": {
       "command": "uv",
       "args": ["run", "python", "-m", "src.mcp_server.server"],
-      "cwd": "/Users/your-username/Code/TW-Beach/katas-exercises/capstone",
+      "cwd": "/path/to/pokemon-trainer-platform-ai",
       "env": {
         "ANTHROPIC_API_KEY": "your-key-here"
       }
@@ -135,7 +135,7 @@ and can be called during a conversation.
 
 ```bash
 # MCP tool definitions and schema structure (no LLM calls, no API key needed)
-uv run pytest tests/test_mcp_server.py -v
+uv run pytest tests/mcp/test_mcp_server.py -v
 ```
 
 ### `TestMCPTools` covers

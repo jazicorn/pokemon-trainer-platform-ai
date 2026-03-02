@@ -47,8 +47,8 @@ Phase 13: Evaluations
 - `src/evals/__init__.py` — Re-exports the public types and scoring functions from `cases` and
   `scoring`.
 - `docs/REFERENCE/EVAL_RESULTS.md` — Captured output from live eval runs with analysis notes.
-- `tests/test_evals.py` — Unit tests for case definitions and scoring functions. No LLM calls.
-- `tests/test_evals_execution.py` — Pipeline integration tests using `AsyncMock` to patch
+- `tests/evals/test_evals.py` — Unit tests for case definitions and scoring functions. No LLM calls.
+- `tests/evals/test_evals_execution.py` — Pipeline integration tests using `AsyncMock` to patch
   `evaluate_trade`. No LLM calls.
 
 ## Key Concepts
@@ -196,13 +196,13 @@ See `docs/REFERENCE/EVAL_RESULTS.md` for full captured output with analysis.
 
 ```bash
 # Scoring and case structure unit tests (no LLM calls, no API key needed)
-uv run pytest tests/test_evals.py -v
+uv run pytest tests/evals/test_evals.py -v
 
 # Pipeline integration tests with mocked LLM (no API key needed)
-uv run pytest tests/test_evals_execution.py -v
+uv run pytest tests/evals/test_evals_execution.py -v
 
 # Run both together
-uv run pytest tests/test_evals.py tests/test_evals_execution.py -v
+uv run pytest tests/evals/test_evals.py tests/evals/test_evals_execution.py -v
 ```
 
 ### `test_evals.py` covers

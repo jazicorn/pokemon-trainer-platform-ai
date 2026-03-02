@@ -78,7 +78,6 @@ makes it easy to monkeypatch in tests without touching the module-level `@lru_ca
 
 ```bash
 # Regenerate both data files
-cd /Users/jasmineanderson/Code/TW-Beach/katas-exercises/capstone
 uv run python -m data.generator
 
 # Or call save_mock_data directly in a REPL
@@ -105,7 +104,7 @@ print(f'Seeking: {collection.preferences.seeking}')
 ## Running the Tests
 
 ```bash
-uv run pytest tests/test_data.py -v
+uv run pytest tests/data/test_data.py -v
 ```
 
 Test groups:

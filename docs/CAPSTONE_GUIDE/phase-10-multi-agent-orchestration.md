@@ -123,14 +123,14 @@ print(result)
 
 ```bash
 # Multi-agent delegation wiring tests
-uv run pytest tests/test_multi_agent.py -v
+uv run pytest tests/agents/test_multi_agent.py -v
 
 # Combined with trade advisor structure tests
-uv run pytest tests/test_multi_agent.py tests/test_trade_advisor.py -v
+uv run pytest tests/agents/test_multi_agent.py tests/agents/test_trade_advisor.py -v
 
 # Specialist agents tested independently
-uv run pytest tests/test_pokedex_agent.py -v
-uv run pytest tests/test_legitimacy_guard.py -v
+uv run pytest tests/agents/test_pokedex_agent.py -v
+uv run pytest tests/agents/test_legitimacy_guard.py -v
 ```
 
 `test_multi_agent.py` covers:

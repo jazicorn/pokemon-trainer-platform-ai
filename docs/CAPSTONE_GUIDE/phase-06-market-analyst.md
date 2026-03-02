@@ -103,7 +103,6 @@ output format the LLM receives.
 
 ```bash
 # Inspect market data directly without the agent
-cd /Users/jasmineanderson/Code/TW-Beach/katas-exercises/capstone
 uv run python -c "
 import sys; sys.path.insert(0, 'src')
 from agents.trade_analytics import TradeAnalytics
@@ -136,8 +135,7 @@ for p in analytics.get_trending_pokemon(days=30, limit=5):
 ## Running the Tests
 
 ```bash
-cd /Users/jasmineanderson/Code/TW-Beach/katas-exercises/capstone
-uv run pytest tests/test_trade_analytics.py -v
+uv run pytest tests/agents/test_trade_analytics.py -v
 ```
 
 ### What the tests cover

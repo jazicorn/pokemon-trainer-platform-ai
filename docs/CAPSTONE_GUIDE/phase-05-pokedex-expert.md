@@ -86,7 +86,6 @@ Run this once when setting up a new ChromaDB instance.
 ```bash
 # One-time: ingest Pokemon data into ChromaDB (requires ChromaDB running)
 # Cache already exists so this will not hit PokeAPI
-cd /Users/jasmineanderson/Code/TW-Beach/katas-exercises/capstone
 uv run python -m src.rag.ingest
 
 # Query the Pokedex Expert directly (requires API key)
@@ -122,14 +121,13 @@ print(TYPE_CHART.get(('normal', 'normal'), 'normal effectiveness (1x)'))
 
 ```bash
 # Agent structure, type chart, and async integration (no ChromaDB needed)
-cd /Users/jasmineanderson/Code/TW-Beach/katas-exercises/capstone
-uv run pytest tests/test_pokedex_agent.py -v
+uv run pytest tests/agents/test_pokedex_agent.py -v
 
 # Vector store and embedding (ChromaDB required — interactive Docker prompt shown)
-uv run pytest tests/test_rag.py -v
+uv run pytest tests/rag/test_rag.py -v
 
 # Skip ChromaDB tests entirely
-uv run pytest tests/test_rag.py::TestExtractPokemonInfo tests/test_rag.py::TestEmbedding tests/test_rag.py::TestDockerHelpers -v
+uv run pytest tests/rag/test_rag.py::TestExtractPokemonInfo tests/rag/test_rag.py::TestEmbedding tests/rag/test_rag.py::TestDockerHelpers -v
 ```
 
 ### What the tests cover
@@ -162,9 +160,9 @@ ChromaDB container. The Pokemon cache already exists so the ingest is fast (no n
 
 ### ChromaDB required for vector store tests
 
-`tests/test_rag.py::TestPokemonVectorStore` requires ChromaDB. The `ensure_chromadb` fixture offers
-to start Docker interactively. Skip it with `--ignore=tests/test_rag.py` or by naming only the
-non-Docker test classes.
+`tests/rag/test_rag.py::TestPokemonVectorStore` requires ChromaDB. The `ensure_chromadb` fixture
+offers to start Docker interactively. Skip it with `-m "not requires_chromadb"` or by naming only
+the non-ChromaDB test classes.
 
 ### Embedding dimension is 48, not 384
 

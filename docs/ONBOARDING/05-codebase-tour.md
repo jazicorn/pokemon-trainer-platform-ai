@@ -60,7 +60,7 @@ katas-exercises/
 │   │   ├── platform_trades.json ← Mock trade history
 │   │   └── user_collection.json ← Mock user collection
 │   │
-│   ├── tests/                ← One test file per major component
+│   ├── tests/                ← Mirrors src/ layout (agents/, cli/, core/, …)
 │   │
 │   └── docs/                 ← Documentation
 │       ├── GETTING_STARTED.md
@@ -100,7 +100,6 @@ Runs automatically before the CLI opens. It:
 - Asks whether to enable telemetry
 - Starts ChromaDB via Docker if it is not already running
 - Auto-recovers from Colima crashes on macOS
-  (see [`docs/INFRASTRUCTURE_FIXES.md`](../INFRASTRUCTURE_FIXES.md))
 
 ### `src/cli/app.py`
 
@@ -188,9 +187,11 @@ async def get_my_collection(ctx: RunContext[PokedexDependencies]) -> str:
     ...
 ```
 
-The pattern is identical in `trade_advisor.py`, `trade_market_analyst.py`,
-and `legitimacy_guard.py`. Once you know this structure, you can read any
-agent file.
+The pattern is identical in `trade_market_analyst.py` and `legitimacy_guard.py`.
+The Trade Advisor is split across three files — `trade_advisor_core.py`
+(dependencies + system prompt + agent), `trade_advisor_tools.py` (tools), and
+`trade_advisor_api.py` (public async API) — with `trade_advisor.py` as a thin
+re-export facade. Once you know this structure, you can read any agent file.
 
 The `SYSTEM_PROMPT` is the most impactful thing you can change. It is the
 instructions the LLM reads before every interaction — it controls the agent's
@@ -283,29 +284,34 @@ filter manually — it fires on every agent invocation.
 
 ## Tests
 
-One test file per major component, all in `tests/`:
+Tests mirror the `src/` layout — one subdirectory per module:
 
 | Test file | What it covers |
 | --- | --- |
-| `test_config.py` | Config loading and env var overrides |
-| `test_data.py` | Data model validation |
-| `test_memory.py` | SQLite operations |
-| `test_guardrails.py` | PII detection |
-| `test_pokedex_agent.py` | Pokedex Expert agent behavior (mocked LLM) |
-| `test_trade_analytics.py` | Market calculations |
-| `test_legitimacy_guard.py` | Ball legality rules |
-| `test_trade_advisor.py` | Orchestrator behavior (mocked LLM) |
-| `test_multi_agent.py` | Agent-to-agent delegation |
-| `test_cli.py` | CLI command parsing |
-| `test_trade_offers.py` | Offer management |
-| `test_rag.py` | ChromaDB integration (requires service running) |
+| `core/test_config.py` | Config loading and env var overrides |
+| `core/test_startup_validation.py` | Startup env var validation |
+| `data/test_data.py` | Data model validation |
+| `memory/test_memory.py` | SQLite operations |
+| `memory/test_memory_persistence.py` | Cross-instance persistence |
+| `guardrails/test_guardrails.py` | PII detection |
+| `agents/test_pokedex_agent.py` | Pokedex Expert agent behavior (mocked LLM) |
+| `agents/test_trade_analytics.py` | Market calculations |
+| `agents/test_legitimacy_guard.py` | Ball legality rules |
+| `agents/test_trade_advisor.py` | Orchestrator behavior (mocked LLM) |
+| `agents/test_multi_agent.py` | Agent-to-agent delegation |
+| `agents/test_trade_offers.py` | Offer management |
+| `cli/test_cli.py` | CLI command parsing |
+| `evals/test_evals.py` | Evaluation scoring unit tests |
+| `evals/test_evals_execution.py` | End-to-end eval pipeline (mocked LLM) |
+| `mcp/test_mcp_server.py` | MCP tool definitions |
+| `rag/test_rag.py` | ChromaDB integration (`requires_chromadb` marker) |
 
 Most tests mock the LLM so they run without API keys and without making
 network calls. The LLM responses are deterministic in tests, making failures
 reproducible.
 
-See [`docs/TESTING.md`](../TESTING.md) for how to run tests and the async
-testing patterns used.
+See [`docs/REFERENCE/TESTING.md`](../REFERENCE/TESTING.md) for how to run
+tests and the async testing patterns used.
 
 ---
 

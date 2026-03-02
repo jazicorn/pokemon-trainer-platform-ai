@@ -112,13 +112,13 @@ Starting CLI...
 
 ```bash
 # Config: model keys, URL defaults, env var overrides
-uv run pytest tests/test_config.py -v
+uv run pytest tests/core/test_config.py -v
 
 # Startup: env var validation and error messages
-uv run pytest tests/test_startup_validation.py -v
+uv run pytest tests/core/test_startup_validation.py -v
 
 # Run both together
-uv run pytest tests/test_config.py tests/test_startup_validation.py -v
+uv run pytest tests/core/test_config.py tests/core/test_startup_validation.py -v
 ```
 
 `test_config.py` checks that `ModelConfig.model_id` is formatted correctly per provider, that all

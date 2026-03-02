@@ -135,12 +135,12 @@ op run --env-file .env.op -- uv run python app.py --user user_002
 
 ```bash
 # All CLI tests
-uv run pytest tests/test_cli.py -v
+uv run pytest tests/cli/test_cli.py -v
 
 # Run a specific test class
-uv run pytest tests/test_cli.py::TestParseCommand -v
-uv run pytest tests/test_cli.py::TestParseTrade -v
-uv run pytest tests/test_cli.py::TestParseOffers -v
+uv run pytest tests/cli/test_cli.py::TestParseCommand -v
+uv run pytest tests/cli/test_cli.py::TestParseTrade -v
+uv run pytest tests/cli/test_cli.py::TestParseOffers -v
 ```
 
 Test groups in `test_cli.py`:

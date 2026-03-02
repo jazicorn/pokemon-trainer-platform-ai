@@ -6,58 +6,66 @@ capstone project.
 ## Quick Start
 
 ```bash
-# Run all tests (interactive ChromaDB prompt shown automatically)
-uv run pytest tests/ -v --tb=short
+# Run all tests (excludes ChromaDB-dependent tests)
+uv run pytest tests/ -v --tb=short -m "not requires_chromadb"
 
-# Skip ChromaDB/Docker tests (no Docker required)
-uv run pytest tests/ -v --tb=short --ignore=tests/test_rag.py
+# Skip ChromaDB/Docker tests explicitly
+uv run pytest tests/ -v --tb=short -m "not requires_chromadb"
 
 # Run specific test file
-uv run pytest tests/test_data.py -v
+uv run pytest tests/data/test_data.py -v
 
 # Run specific test class
-uv run pytest tests/test_rag.py::TestEmbedding -v
+uv run pytest tests/rag/test_rag.py::TestEmbedding -v
 ```
 
 ## pytest.ini Defaults
 
-`pytest.ini` at the capstone root configures two defaults that apply to every
+`pytest.ini` at the project root configures two defaults that apply to every
 `uv run pytest` invocation:
 
 | Setting | Value | Effect |
 | ------- | ----- | ------ |
-| `addopts = -s` | `--capture=no` | stdin is open so the ChromaDB Docker prompt works without passing `-s` each time |
 | `asyncio_mode = strict` | strict | async tests must be explicitly marked with `@pytest.mark.asyncio` or `pytestmark` |
+| `markers = requires_chromadb` | registered | ChromaDB tests marked and filterable with `-m "not requires_chromadb"` |
 
 Override output capturing when you want stdout suppressed (e.g. CI):
 
 ```bash
-uv run pytest tests/ -v --tb=short --capture=fd --ignore=tests/test_rag.py
+uv run pytest tests/ -v --tb=short --capture=fd -m "not requires_chromadb"
 ```
 
 ## Test Structure
 
 ```text
-capstone/
-├── pytest.ini                       # Default addopts (-s) and asyncio_mode
-└── tests/
-    ├── conftest.py                  # Shared fixtures, path setup, API key stubs
-    ├── test_cli.py                  # CLI command parsing tests
-    ├── test_data.py                 # Mock data generation tests
-    ├── test_evals.py                # Evaluation scoring unit tests
-    ├── test_evals_execution.py      # End-to-end eval pipeline tests
-    ├── test_guardrails.py           # PII detection/filtering tests
-    ├── test_legitimacy_guard.py     # Legitimacy guard agent integration tests
-    ├── test_mcp_server.py           # MCP tool definition tests
-    ├── test_memory.py               # SQLite memory system unit tests
-    ├── test_memory_persistence.py   # Cross-instance SQLite persistence tests
-    ├── test_multi_agent.py          # Multi-agent orchestration tests
-    ├── test_pokedex_agent.py        # Pokedex expert agent integration tests
-    ├── test_rag.py                  # RAG and vector store tests
-    ├── test_startup_validation.py   # Env var validation tests
-    ├── test_trade_advisor.py        # Trade advisor agent integration tests
-    ├── test_trade_analytics.py      # Market analyst tests
-    └── test_trade_offers.py         # TradeOffersManager CRUD + offer agent functions
+tests/
+├── conftest.py                     # Shared fixtures, path setup, API key stubs
+├── agents/
+│   ├── test_legitimacy_guard.py    # Legitimacy guard agent integration tests
+│   ├── test_multi_agent.py         # Multi-agent orchestration tests
+│   ├── test_pokedex_agent.py       # Pokedex expert agent integration tests
+│   ├── test_trade_advisor.py       # Trade advisor agent integration tests
+│   ├── test_trade_analytics.py     # Market analyst tests
+│   └── test_trade_offers.py        # TradeOffersManager CRUD + offer agent functions
+├── cli/
+│   └── test_cli.py                 # CLI command parsing tests
+├── core/
+│   ├── test_config.py              # Config loading and env var override tests
+│   └── test_startup_validation.py  # Env var validation tests
+├── data/
+│   └── test_data.py                # Mock data generation tests
+├── evals/
+│   ├── test_evals.py               # Evaluation scoring unit tests
+│   └── test_evals_execution.py     # End-to-end eval pipeline tests
+├── guardrails/
+│   └── test_guardrails.py          # PII detection/filtering tests
+├── mcp/
+│   └── test_mcp_server.py          # MCP tool definition tests
+├── memory/
+│   ├── test_memory.py              # SQLite memory system unit tests
+│   └── test_memory_persistence.py  # Cross-instance SQLite persistence tests
+└── rag/
+    └── test_rag.py                 # RAG and vector store tests (requires_chromadb)
 ```
 
 ## Environment Variables
@@ -120,54 +128,56 @@ These tests run without Docker or external services:
 
 ```bash
 # Data generation
-uv run pytest tests/test_data.py -v
+uv run pytest tests/data/test_data.py -v
 
 # CLI parsing
-uv run pytest tests/test_cli.py -v
+uv run pytest tests/cli/test_cli.py -v
 
 # PII guardrails
-uv run pytest tests/test_guardrails.py -v
+uv run pytest tests/guardrails/test_guardrails.py -v
 
 # Evaluation scoring (unit)
-uv run pytest tests/test_evals.py -v
+uv run pytest tests/evals/test_evals.py -v
 
 # Evaluation pipeline end-to-end (mocked LLM)
-uv run pytest tests/test_evals_execution.py -v
+uv run pytest tests/evals/test_evals_execution.py -v
 
 # MCP tool definitions
-uv run pytest tests/test_mcp_server.py -v
+uv run pytest tests/mcp/test_mcp_server.py -v
 
 # SQLite memory persistence across instances
-uv run pytest tests/test_memory_persistence.py -v
+uv run pytest tests/memory/test_memory_persistence.py -v
 
 # Startup env var validation
-uv run pytest tests/test_startup_validation.py -v
+uv run pytest tests/core/test_startup_validation.py -v
 
 # Legitimacy guard agent
-uv run pytest tests/test_legitimacy_guard.py -v
+uv run pytest tests/agents/test_legitimacy_guard.py -v
 
 # Multi-agent orchestration
-uv run pytest tests/test_multi_agent.py -v
+uv run pytest tests/agents/test_multi_agent.py -v
 
 # Pokedex agent integration (async, mocked LLM)
-uv run pytest tests/test_pokedex_agent.py -v
+uv run pytest tests/agents/test_pokedex_agent.py -v
 
 # Trade advisor integration (async, mocked LLM)
-uv run pytest tests/test_trade_advisor.py -v
+uv run pytest tests/agents/test_trade_advisor.py -v
 
 # Trade offers CRUD and agent functions (async, mocked LLM)
-uv run pytest tests/test_trade_offers.py -v
+uv run pytest tests/agents/test_trade_offers.py -v
 ```
 
 ### Integration Tests (Require ChromaDB)
 
-These tests require ChromaDB to be running. Because `pytest.ini` sets `-s` by
-default, the interactive Docker prompt appears automatically — no extra flags
-needed:
+These tests are marked `@pytest.mark.requires_chromadb` and are excluded from
+the default `make test` run. Start ChromaDB first, then use:
 
 ```bash
-# Vector store tests — Docker prompt shown automatically
-uv run pytest tests/test_rag.py::TestPokemonVectorStore -v
+# Vector store tests via make target (passes -s for interactive prompt)
+make test-rag
+
+# Or run directly
+uv run pytest tests/rag/test_rag.py::TestPokemonVectorStore -v -s
 ```
 
 ## Interactive Test Fixtures
@@ -175,7 +185,7 @@ uv run pytest tests/test_rag.py::TestPokemonVectorStore -v
 ### ChromaDB Fixture
 
 The `ensure_chromadb` fixture automatically handles Docker and ChromaDB setup.
-With `-s` on by default, the prompt appears whenever ChromaDB is not running:
+Pass `-s` so the interactive prompt appears when ChromaDB is not running:
 
 ```text
 ╭─────────────────────────────────────────╮
@@ -213,11 +223,11 @@ Force a specific platform for testing cross-platform behavior:
 ```bash
 # Test Linux flow on macOS
 TEST_DOCKER_PLATFORM=linux \
-  uv run pytest tests/test_rag.py::TestPokemonVectorStore -v
+  uv run pytest tests/rag/test_rag.py::TestPokemonVectorStore -v -s
 
 # Test Windows flow
 TEST_DOCKER_PLATFORM=win32 \
-  uv run pytest tests/test_rag.py::TestPokemonVectorStore -v
+  uv run pytest tests/rag/test_rag.py::TestPokemonVectorStore -v -s
 ```
 
 ### TEST_DOCKER_DRY_RUN
@@ -227,11 +237,11 @@ Print commands without executing them (useful for verifying logic):
 ```bash
 # Dry run - shows what would be executed
 TEST_DOCKER_DRY_RUN=1 \
-  uv run pytest tests/test_rag.py::TestPokemonVectorStore -v
+  uv run pytest tests/rag/test_rag.py::TestPokemonVectorStore -v -s
 
 # Combine with platform override
 TEST_DOCKER_PLATFORM=linux TEST_DOCKER_DRY_RUN=1 \
-  uv run pytest tests/test_rag.py::TestPokemonVectorStore -v
+  uv run pytest tests/rag/test_rag.py::TestPokemonVectorStore -v -s
 ```
 
 ## Running Tests in CI
@@ -240,10 +250,10 @@ No API keys or Docker required for the unit test suite:
 
 ```bash
 # All unit tests — API keys are stubbed automatically by conftest.py
-uv run pytest tests/ -v --tb=short --capture=fd --ignore=tests/test_rag.py
+uv run pytest tests/ -v --tb=short --capture=fd -m "not requires_chromadb"
 ```
 
-If Docker is available in CI, drop `--ignore` to run ChromaDB tests too.
+If Docker is available in CI, drop the `-m` filter to run ChromaDB tests too.
 
 ## Test Coverage
 
@@ -264,12 +274,14 @@ open htmlcov/index.html
 
 Agent integration tests use `FunctionModel` from `pydantic_ai.models.function`
 to deterministically control tool dispatch without hitting a live LLM. The pattern
-mirrors `test_legitimacy_guard.py`:
+mirrors `tests/agents/test_legitimacy_guard.py`:
 
 ```python
 import pytest
 from pydantic_ai.models.function import FunctionModel
-from pydantic_ai.messages import ModelResponse, ToolCallPart, ToolReturnPart, ModelRequest, TextPart
+from pydantic_ai.messages import (
+    ModelResponse, ToolCallPart, ToolReturnPart, ModelRequest, TextPart
+)
 
 class TestMyAgentIntegration:
     pytestmark = pytest.mark.asyncio
@@ -310,7 +322,7 @@ class TestMyAgentIntegration:
   validation when passing `MagicMock` objects as typed deps
 - When a sub-agent is called inside a tool, patch both the sub-agent's `run`
   method *and* the `Dependencies` class in the parent module's namespace
-  (see `test_trade_advisor.py` for the `sys.modules` pattern)
+  (see `tests/agents/test_trade_advisor.py` for the `sys.modules` pattern)
 
 ## Memory Persistence Tests
 
@@ -337,8 +349,8 @@ This guarantees tests are isolated and never pollute the real `data/memory.db`.
 
 ## Eval Pipeline Tests
 
-`test_evals_execution.py` tests the eval loop end-to-end by patching
-`evaluate_trade` so no live LLM call is made:
+`tests/evals/test_evals_execution.py` tests the eval loop end-to-end by
+patching `evaluate_trade` so no live LLM call is made:
 
 ```python
 from unittest.mock import AsyncMock, patch
@@ -391,12 +403,13 @@ class TestFunctionName:
 ### Using the ChromaDB Fixture
 
 ```python
+@pytest.mark.requires_chromadb
 class TestMyVectorFeature:
     """Tests requiring ChromaDB."""
 
     @pytest.fixture
     def ensure_chromadb(self):
-        """Copy the fixture from test_rag.py."""
+        """Copy the fixture from tests/rag/test_rag.py."""
         # ... fixture code ...
 
     def test_my_feature(self, ensure_chromadb):
@@ -410,7 +423,7 @@ class TestMyVectorFeature:
 ### Run Single Test with Output
 
 ```bash
-uv run pytest tests/test_cli.py::TestParseCommand::test_parse_quit_commands -v
+uv run pytest tests/cli/test_cli.py::TestParseCommand::test_parse_quit_commands -v
 ```
 
 ### Drop into Debugger on Failure
@@ -437,7 +450,7 @@ The CLI tests include performance benchmarks:
 
 ```bash
 # Run performance tests
-uv run pytest tests/test_cli.py::TestParseCommandPerformance -v
+uv run pytest tests/cli/test_cli.py::TestParseCommandPerformance -v
 ```
 
 Example performance test:
@@ -468,11 +481,11 @@ def test_parse_command_is_fast(self):
 httpx.ConnectError: [Errno 61] Connection refused
 ```
 
-**Solution:** Run the full test suite — the interactive prompt will offer to
-start Docker for you:
+**Solution:** Run the ChromaDB integration tests via the make target, which
+handles startup automatically:
 
 ```bash
-uv run pytest tests/test_rag.py -v
+make test-rag
 ```
 
 ### OSError: reading from stdin while output is captured
@@ -481,12 +494,10 @@ uv run pytest tests/test_rag.py -v
 OSError: pytest: reading from stdin while output is captured!
 ```
 
-**Solution:** This means `pytest.ini` is not being picked up. Ensure you are
-running pytest from the `capstone/` directory, not from the repo root:
+**Solution:** Pass `-s` explicitly when running ChromaDB tests:
 
 ```bash
-cd capstone
-uv run pytest tests/ -v --tb=short
+uv run pytest tests/rag/test_rag.py -v -s
 ```
 
 ### API Key Empty at App Startup (1Password)
@@ -514,7 +525,7 @@ pydantic_ai.exceptions.UserError: Set the `ANTHROPIC_API_KEY` environment variab
 ```
 
 **Solution:** `conftest.py` stubs the key automatically, but only when pytest
-finds it. Run from the `capstone/` directory. If using a secret manager (e.g.
+finds it. Run from the project root. If using a secret manager (e.g.
 1Password) that exports the variable as an empty string, the stub still handles
 it — no manual export needed.
 
@@ -547,7 +558,7 @@ increase timeout in the fixture.
 
 Before committing:
 
-- [ ] All tests pass: `uv run pytest tests/ -v --tb=short --ignore=tests/test_rag.py`
+- [ ] All tests pass: `uv run pytest tests/ -v --tb=short -m "not requires_chromadb"`
 - [ ] No type errors: `uv run pyright src/`
 - [ ] Code formatted: `uv run ruff format .`
 - [ ] Linting passes: `uv run ruff check .`

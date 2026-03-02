@@ -26,20 +26,20 @@ You can also jump directly to any phase if you need to understand one component 
 
 | Phase | Title | Layer | Key Test Files |
 | --- | --- | --- | --- |
-| [01](phase-01-project-setup.md) | Project Setup & Infrastructure | Foundation | `test_config.py`, `test_startup_validation.py` |
-| [02](phase-02-mock-data.md) | Mock Data & Models | Data | `test_data.py` |
-| [03](phase-03-memory-system.md) | Memory System | Persistence | `test_memory.py`, `test_memory_persistence.py` |
-| [04](phase-04-pii-guardrails.md) | PII Guardrails | Safety | `test_guardrails.py` |
-| [05](phase-05-pokedex-expert.md) | Pokedex Expert | Agent (RAG) | `test_pokedex_agent.py`, `test_rag.py` |
-| [06](phase-06-market-analyst.md) | Market Analyst | Agent (Analytics) | `test_trade_analytics.py` |
-| [07](phase-07-market-forecasting.md) | Market Forecasting | Agent Enhancement | `test_trade_analytics.py` |
-| [08](phase-08-legitimacy-guard.md) | Legitimacy Guard | Agent (Compliance) | `test_legitimacy_guard.py` |
-| [09](phase-09-trade-advisor.md) | Trade Advisor | Orchestrator | `test_trade_advisor.py` |
-| [10](phase-10-multi-agent-orchestration.md) | Multi-Agent Orchestration | Architecture | `test_multi_agent.py` |
-| [11](phase-11-cli-interface.md) | CLI Interface | User Interface | `test_cli.py` |
-| [12](phase-12-trade-offers.md) | Trade Offers | Feature Extension | `test_trade_offers.py` |
-| [13](phase-13-evaluations.md) | Evaluations | Quality Measurement | `test_evals.py`, `test_evals_execution.py` |
-| [14](phase-14-mcp-server.md) | MCP Server *(optional)* | External Integration | `test_mcp_server.py` |
+| [01](phase-01-project-setup.md) | Project Setup & Infrastructure | Foundation | `core/test_config.py`, `core/test_startup_validation.py` |
+| [02](phase-02-mock-data.md) | Mock Data & Models | Data | `data/test_data.py` |
+| [03](phase-03-memory-system.md) | Memory System | Persistence | `memory/test_memory.py`, `memory/test_memory_persistence.py` |
+| [04](phase-04-pii-guardrails.md) | PII Guardrails | Safety | `guardrails/test_guardrails.py` |
+| [05](phase-05-pokedex-expert.md) | Pokedex Expert | Agent (RAG) | `agents/test_pokedex_agent.py`, `rag/test_rag.py` |
+| [06](phase-06-market-analyst.md) | Market Analyst | Agent (Analytics) | `agents/test_trade_analytics.py` |
+| [07](phase-07-market-forecasting.md) | Market Forecasting | Agent Enhancement | `agents/test_trade_analytics.py` |
+| [08](phase-08-legitimacy-guard.md) | Legitimacy Guard | Agent (Compliance) | `agents/test_legitimacy_guard.py` |
+| [09](phase-09-trade-advisor.md) | Trade Advisor | Orchestrator | `agents/test_trade_advisor.py` |
+| [10](phase-10-multi-agent-orchestration.md) | Multi-Agent Orchestration | Architecture | `agents/test_multi_agent.py` |
+| [11](phase-11-cli-interface.md) | CLI Interface | User Interface | `cli/test_cli.py` |
+| [12](phase-12-trade-offers.md) | Trade Offers | Feature Extension | `agents/test_trade_offers.py` |
+| [13](phase-13-evaluations.md) | Evaluations | Quality Measurement | `evals/test_evals.py`, `evals/test_evals_execution.py` |
+| [14](phase-14-mcp-server.md) | MCP Server *(optional)* | External Integration | `mcp/test_mcp_server.py` |
 
 ---
 
@@ -107,19 +107,19 @@ understood after understanding everything above it on its branch.
 
 ```bash
 # Full test suite — skips ChromaDB-dependent vector store tests
-uv run pytest tests/ -v --tb=short --ignore=tests/test_rag.py
+uv run pytest tests/ -v --tb=short -m "not requires_chromadb"
 
 # Full suite including vector store tests (requires ChromaDB running)
 uv run pytest tests/ -v --tb=short
 
 # Single phase
-uv run pytest tests/test_memory.py tests/test_memory_persistence.py -v
+uv run pytest tests/memory/test_memory.py tests/memory/test_memory_persistence.py -v
 
 # Eval framework only (no API key needed — uses mocked LLM)
-uv run pytest tests/test_evals.py tests/test_evals_execution.py -v
+uv run pytest tests/evals/test_evals.py tests/evals/test_evals_execution.py -v
 
 # MCP server only (no API key needed)
-uv run pytest tests/test_mcp_server.py -v
+uv run pytest tests/mcp/test_mcp_server.py -v
 ```
 
 See [`docs/REFERENCE/TESTING.md`](../REFERENCE/TESTING.md) for detailed test configuration, async patterns

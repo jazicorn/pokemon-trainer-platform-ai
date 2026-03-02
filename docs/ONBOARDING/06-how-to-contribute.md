@@ -63,7 +63,7 @@ The pattern:
 After adding a tool:
 
 - Add a test in the corresponding test file (e.g.,
-  `tests/test_pokedex_agent.py`)
+  `tests/agents/test_pokedex_agent.py`)
 - The LLM will discover and use the tool automatically based on the docstring
   and argument names
 
@@ -75,8 +75,8 @@ decision-making rules, and how it formats responses.
 
 The system prompts are near the top of each agent file:
 
-- `src/agents/trade_advisor.py` — contains detailed operating modes and
-  instruction for when to call each tool
+- `src/agents/trade_advisor_core.py` — contains the system prompt with
+  detailed operating modes and instruction for when to call each tool
 - `src/agents/pokedex_expert.py` — instructs the agent to always base answers
   on retrieved data
 - `src/agents/trade_market_analyst.py` — instructs the agent on how to
@@ -126,14 +126,14 @@ Run the full test suite (excluding ChromaDB integration tests that require
 the service):
 
 ```bash
-uv run pytest tests/ -v --tb=short --ignore=tests/test_rag.py
+uv run pytest tests/ -v --tb=short -m "not requires_chromadb"
 ```
 
 Run tests for a specific component:
 
 ```bash
-uv run pytest tests/test_pokedex_agent.py -v
-uv run pytest tests/test_legitimacy_guard.py -v
+uv run pytest tests/agents/test_pokedex_agent.py -v
+uv run pytest tests/agents/test_legitimacy_guard.py -v
 ```
 
 Run with full tracebacks on failure:
@@ -145,7 +145,7 @@ uv run pytest tests/ --tb=long
 Run the ChromaDB integration tests (requires `make chromadb-start` first):
 
 ```bash
-uv run pytest tests/test_rag.py -v
+make test-rag
 ```
 
 Most tests mock the LLM, so they run without API keys and complete in
@@ -156,12 +156,12 @@ async patterns used in tests and guidance on writing new ones.
 
 ## Linting
 
-The project uses `basedpyright` for type checking and `ruff` for formatting
+The project uses `pyright` for type checking and `ruff` for formatting
 and linting. Run before committing:
 
 ```bash
-uv run basedpyright capstone/src
-uv run ruff check capstone/src
+uv run pyright src/
+uv run ruff check src/
 ```
 
 See [`docs/REFERENCE/LINTING.md`](../REFERENCE/LINTING.md) for the full setup, VS Code
@@ -222,7 +222,7 @@ behavior across many different queries.
 Run just that test with `--tb=long` for the full traceback:
 
 ```bash
-uv run pytest tests/test_trade_advisor.py::TestSomeClass::test_something -v --tb=long
+uv run pytest tests/agents/test_trade_advisor.py::TestSomeClass::test_something -v --tb=long
 ```
 
 If the test is an async test (most agent tests are), see

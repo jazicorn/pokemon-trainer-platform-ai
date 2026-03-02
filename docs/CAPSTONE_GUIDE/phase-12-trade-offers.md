@@ -35,7 +35,7 @@ Phase 13: Evaluations     (offers flow can be included in evaluation scenarios)
   `CommandType`; `OfferParams` named tuple; `_parse_offer()` helper added.
 - `src/cli/app.py` — `handle_offers()`, `handle_offer_send()`, `handle_offer_accept()`,
   `handle_offer_decline()` added to `TradeCLI`.
-- `tests/test_trade_offers.py` — CRUD tests for `TradeOffersManager` and async tests for the two
+- `tests/agents/test_trade_offers.py` — CRUD tests for `TradeOffersManager` and async tests for the two
   agent functions.
 
 ## Key Concepts
@@ -158,17 +158,17 @@ op run --env-file .env.op -- uv run python app.py
 
 ```bash
 # All trade offers tests
-uv run pytest tests/test_trade_offers.py -v
+uv run pytest tests/agents/test_trade_offers.py -v
 
 # Specific test classes
-uv run pytest tests/test_trade_offers.py::TestTradeOffersManager -v
+uv run pytest tests/agents/test_trade_offers.py::TestTradeOffersManager -v
 
 # CLI parsing for offer commands is in test_cli.py
-uv run pytest tests/test_cli.py::TestParseOffers -v
-uv run pytest tests/test_cli.py::TestParseOffer -v
+uv run pytest tests/cli/test_cli.py::TestParseOffers -v
+uv run pytest tests/cli/test_cli.py::TestParseOffer -v
 
 # Full relevant suite
-uv run pytest tests/test_trade_offers.py tests/test_cli.py::TestParseOffers -v
+uv run pytest tests/agents/test_trade_offers.py tests/cli/test_cli.py::TestParseOffers -v
 ```
 
 `test_trade_offers.py` test groups:

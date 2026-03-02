@@ -29,7 +29,7 @@ Phase 8:  Evaluations (legitimacy check accuracy is measured)
 | File | Role |
 | --- | --- |
 | `src/agents/legitimacy_guard.py` | The entire implementation: `_LEGAL_BALL_MAP`, `_SHINY_LOCKED`, `_ORIGIN_MARKS`, `_MYTHICALS`, `_LEGENDARIES`, `LegitimacyDependencies`, the `legitimacy_guard` agent, and the `verify_provenance` tool |
-| `tests/test_legitimacy_guard.py` | Three async tests using `FunctionModel` to drive the agent without a live LLM |
+| `tests/agents/test_legitimacy_guard.py` | Three async tests using `FunctionModel` to drive the agent without a live LLM |
 
 ## Key Concepts
 
@@ -98,7 +98,7 @@ Read `verify_provenance()` — it is the only tool. Pay attention to the guard c
 only runs when `allowed_balls` is found AND `ball_type` is not `"unknown"` or `""`. This means
 unknown balls do not raise a false positive.
 
-In `tests/test_legitimacy_guard.py`, read the `is_tool_result_in_history()` helper — it inspects
+In `tests/agents/test_legitimacy_guard.py`, read the `is_tool_result_in_history()` helper — it inspects
 `ModelRequest` parts for any `ToolReturnPart`. This two-turn structure is the standard
 `FunctionModel` pattern: turn 1 returns a `ToolCallPart`, turn 2 (once the tool result is in
 history) returns a `TextPart` to end the loop.
@@ -107,7 +107,6 @@ history) returns a `TextPart` to end the loop.
 
 ```bash
 # Check legitimacy directly via a Python script (requires API key)
-cd /Users/jasmineanderson/Code/TW-Beach/katas-exercises/capstone
 uv run python -c "
 import asyncio, sys
 sys.path.insert(0, 'src')
@@ -142,8 +141,7 @@ print('Is Mew a mythical?', 'mew' in _MYTHICALS)
 ## Running the Tests
 
 ```bash
-cd /Users/jasmineanderson/Code/TW-Beach/katas-exercises/capstone
-uv run pytest tests/test_legitimacy_guard.py -v
+uv run pytest tests/agents/test_legitimacy_guard.py -v
 ```
 
 All three tests are `async` and use `FunctionModel` to mock the LLM. No API key is required.
