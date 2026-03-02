@@ -1,4 +1,4 @@
-# Capstone Phases Overview
+# Pokemon Trainer Platform - AI: Phases Overview
 
 This guide walks through the Pokemon Trade Advisor codebase **phase by phase** — from infrastructure
 to the fully assembled multi-agent system. Each phase focuses on **understanding and testing** the

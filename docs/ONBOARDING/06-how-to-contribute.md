@@ -164,7 +164,7 @@ uv run pyright src/
 uv run ruff check src/
 ```
 
-See [`docs/REFERENCE/LINTING.md`](../REFERENCE/LINTING.md) for the full setup, VS Code
+See [`docs/REFERENCE/PYRIGHT.md`](../REFERENCE/PYRIGHT.md) for the full setup, VS Code
 integration, and which checks are disabled and why.
 
 ---

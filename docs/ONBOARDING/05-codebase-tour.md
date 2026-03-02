@@ -18,7 +18,7 @@ pokemon-trainer-platform-ai/
 │   ├── startup.py            ← Runs on startup: checks env, starts services
 │   ├── config.py             ← All configuration (env-overridable)
 │   │
-│   ├── agents/               ← The four AI agents
+│   ├── agents/               ← The five AI agents
 │   │   ├── trade_advisor_core.py    ← Orchestrator: deps, system prompt, agent
 │   │   ├── trade_advisor_tools.py   ← @trade_advisor.tool functions
 │   │   ├── trade_advisor_api.py     ← Public async API
@@ -26,6 +26,7 @@ pokemon-trainer-platform-ai/
 │   │   ├── pokedex_expert.py        ← Pokemon knowledge (RAG)
 │   │   ├── trade_market_analyst.py  ← Supply/demand analytics
 │   │   ├── legitimacy_guard.py      ← Fraud detection
+│   │   ├── battle_strategy_advisor.py ← Competitive Pokemon viability specialist
 │   │   └── trade_analytics.py       ← Data engine (not an agent)
 │   │
 │   ├── cli/                  ← Command-line interface
