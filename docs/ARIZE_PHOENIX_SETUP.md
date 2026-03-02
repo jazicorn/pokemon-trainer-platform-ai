@@ -2,7 +2,9 @@
 
 ## Introduction
 
-This guide walks you through setting up **Arize Phoenix**, an open-source AI observability platform, to monitor and debug your PydanticAI agents. By the end, you'll have traces flowing from your agents into Phoenix for visualization and debugging.
+This guide walks you through setting up **Arize Phoenix**, an open-source AI observability
+platform, to monitor and debug your PydanticAI agents. By the end, you'll have traces flowing
+from your agents into Phoenix for visualization and debugging.
 
 ---
 
@@ -16,24 +18,25 @@ Before diving in, here's the 30-second version of what we're setting up:
 
 ### Key Concepts
 
-| Component | What It Does |
-|-----------|--------------|
-| **TracerProvider** | Central configuration object that manages trace creation |
-| **SpanProcessor** | Processes spans before export (can transform, filter, or batch) |
-| **SpanExporter** | Sends spans to a backend (Phoenix) via OTLP protocol |
-| **Span** | A unit of work—an LLM call, a tool invocation, an agent run |
-| **Trace** | A tree of related spans representing a complete operation |
+| Component          | What It Does                                                    |
+| ------------------ | --------------------------------------------------------------- |
+| **TracerProvider** | Central configuration object that manages trace creation        |
+| **SpanProcessor**  | Processes spans before export (can transform, filter, or batch) |
+| **SpanExporter**   | Sends spans to a backend (Phoenix) via OTLP protocol            |
+| **Span**           | A unit of work—an LLM call, a tool invocation, an agent run     |
+| **Trace**          | A tree of related spans representing a complete operation       |
 
 ### Semantic Conventions: OTel GenAI vs OpenInference
 
 There are two ways to format AI/LLM trace data:
 
-| Convention | Used By | Phoenix Support |
-|------------|---------|-----------------|
-| **OTel GenAI** | Industry standard, PydanticAI native | Good — traces display correctly |
-| **OpenInference** | Arize ecosystem (Phoenix, Arize AX) | Best — richer visualizations, conversation threading, session attribution |
+| Convention        | Used By                              | Phoenix Support                                                           |
+| ----------------- | ------------------------------------ | ------------------------------------------------------------------------- |
+| **OTel GenAI**    | Industry standard, PydanticAI native | Good — traces display correctly                                           |
+| **OpenInference** | Arize ecosystem (Phoenix, Arize AX)  | Best — richer visualizations, conversation threading, session attribution |
 
-Both work with Phoenix. **We recommend OpenInference** for the best Phoenix experience. Use standard OTel if you need portability to other backends (Jaeger, Datadog, Honeycomb, etc.).
+Both work with Phoenix. **We recommend OpenInference** for the best Phoenix experience. Use
+standard OTel if you need portability to other backends (Jaeger, Datadog, Honeycomb, etc.).
 
 ---
 
@@ -43,7 +46,8 @@ You need Phoenix running to receive traces.
 
 **Recommended** (using uvx):
 
-We don't need Phoenix installed into our agent's virtual environment; we just need it running as a standalone service. The `uvx` command launches it in a temporary virtual environment:
+We don't need Phoenix installed into our agent's virtual environment; we just need it running
+as a standalone service. The `uvx` command launches it in a temporary virtual environment:
 
 ```bash
 uvx arize-phoenix serve
@@ -66,7 +70,7 @@ docker run -d -p 6006:6006 arizephoenix/phoenix:latest
 
 ### Accessing Phoenix
 
-Phoenix will be available at **http://127.0.0.1:6006**. Open this in your browser to see the UI.
+Phoenix will be available at <http://127.0.0.1:6006>. Open this in your browser to see the UI.
 
 ---
 
@@ -78,7 +82,8 @@ Phoenix will be available at **http://127.0.0.1:6006**. Open this in your browse
 uv pip install opentelemetry-sdk opentelemetry-exporter-otlp openinference-instrumentation-pydantic-ai
 ```
 
-> **Note:** If you only need standard OTel (no OpenInference enrichment), you can skip `openinference-instrumentation-pydantic-ai`.
+> **Note:** If you only need standard OTel (no OpenInference enrichment), you can skip
+> `openinference-instrumentation-pydantic-ai`.
 
 ### The `init_telemetry` Function
 
@@ -194,7 +199,7 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-Run this, then open http://127.0.0.1:6006 to see your trace.
+Run this, then open <http://127.0.0.1:6006> to see your trace.
 
 ---
 
@@ -217,7 +222,8 @@ init_telemetry(project_name="my-app", enrich_spans=True)
 
 ### `enrich_spans=False`
 
-Uses standard OTel GenAI format. Choose this if you need portability to other observability backends (Jaeger, Datadog, Honeycomb, etc.):
+Uses standard OTel GenAI format. Choose this if you need portability to other observability
+backends (Jaeger, Datadog, Honeycomb, etc.):
 
 ```python
 init_telemetry(project_name="my-app", enrich_spans=False)
@@ -225,20 +231,25 @@ init_telemetry(project_name="my-app", enrich_spans=False)
 
 ### Summary
 
-| Setting | Semantic Convention | Phoenix Features | Portability |
-|---------|---------------------|------------------|-------------|
-| `enrich_spans=True` | OpenInference | Best (threading, sessions) | Arize ecosystem |
-| `enrich_spans=False` | OTel GenAI | Good | Any OTel backend |
+| Setting              | Semantic Convention | Phoenix Features           | Portability      |
+| -------------------- | ------------------- | -------------------------- | ---------------- |
+| `enrich_spans=True`  | OpenInference       | Best (threading, sessions) | Arize ecosystem  |
+| `enrich_spans=False` | OTel GenAI          | Good                       | Any OTel backend |
 
 ---
 
 ## Why Not Use `phoenix.otel.register()`?
 
-Phoenix provides a convenience function `register()` that simplifies setup for many libraries. However, **it doesn't work well with PydanticAI** because:
+Phoenix provides a convenience function `register()` that simplifies setup for many libraries.
+However, **it doesn't work well with PydanticAI** because:
 
-1. **Processor order matters.** The `OpenInferenceSpanProcessor` must enrich spans *before* the exporter sends them. `register()` adds its exporter internally, so we can't insert our processor before it.
+1. **Processor order matters.** The `OpenInferenceSpanProcessor` must enrich spans *before*
+   the exporter sends them. `register()` adds its exporter internally, so we can't insert
+   our processor before it.
 
-2. **`auto_instrument=True` doesn't help.** Unlike libraries that OpenInference auto-patches (OpenAI, LangChain), PydanticAI's OpenInference package is a span processor, not an auto-instrumentor. PydanticAI has its own instrumentation via `Agent.instrument_all()`.
+2. **`auto_instrument=True` doesn't help.** Unlike libraries that OpenInference auto-patches
+   (OpenAI, LangChain), PydanticAI's OpenInference package is a span processor, not an
+   auto-instrumentor. PydanticAI has its own instrumentation via `Agent.instrument_all()`.
 
 The manual setup shown above gives us full control over processor order.
 
@@ -258,7 +269,8 @@ tracer_provider.add_span_processor(
 )
 ```
 
-Spans are buffered and sent in batches, which is more efficient but introduces a slight delay before traces appear in Phoenix.
+Spans are buffered and sent in batches, which is more efficient but introduces a slight delay
+before traces appear in Phoenix.
 
 ### Graceful Shutdown
 
@@ -291,7 +303,8 @@ async def handle_user_message(user_id: str, session_id: str, message: str):
         return result.output
 ```
 
-This metadata appears in Phoenix and makes it easy to filter traces by user, session, or custom attributes.
+This metadata appears in Phoenix and makes it easy to filter traces by user, session, or
+custom attributes.
 
 ---
 
@@ -299,9 +312,10 @@ This metadata appears in Phoenix and makes it easy to filter traces by user, ses
 
 ### Traces not appearing in Phoenix
 
-1. **Is Phoenix running?** Check that http://127.0.0.1:6006 loads in your browser.
+1. **Is Phoenix running?** Check that <http://127.0.0.1:6006> loads in your browser.
 
-2. **Initialization order?** Call `init_telemetry()` *before* creating any agents or making LLM calls.
+2. **Initialization order?** Call `init_telemetry()` *before* creating any agents or making
+   LLM calls.
 
 3. **Missing `Agent.instrument_all()`?** This enables PydanticAI's instrumentation.
 
@@ -317,7 +331,8 @@ Agent.instrument_all(InstrumentationSettings(include_content=True))
 
 ### Traces appearing but not linked together
 
-This usually means the TracerProvider wasn't set before agents were created. Ensure `init_telemetry()` is called at application startup, before any agent code runs.
+This usually means the TracerProvider wasn't set before agents were created. Ensure
+`init_telemetry()` is called at application startup, before any agent code runs.
 
 ---
 
