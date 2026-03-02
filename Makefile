@@ -25,13 +25,13 @@ run-ollama: ## Run app with local Ollama llama model (no API key needed)
 # ── Tests ─────────────────────────────────────────────────────────────────────
 
 test: ## Run all unit/integration tests with mocked LLM (no live keys needed)
-	uv run pytest tests/ -v --tb=short --ignore=tests/test_rag.py
+	uv run pytest tests/ -v --tb=short -m "not requires_chromadb"
 
 test-live: ## Run tests against live LLM APIs via 1Password
-	op run --env-file .env.op -- uv run pytest tests/ -v --tb=short --ignore=tests/test_rag.py
+	op run --env-file .env.op -- uv run pytest tests/ -v --tb=short -m "not requires_chromadb"
 
 test-rag: ## Run ChromaDB integration tests (ChromaDB must be running)
-	uv run pytest tests/test_rag.py -v
+	uv run pytest tests/ -v -m "requires_chromadb" -s
 
 # ── Data ──────────────────────────────────────────────────────────────────────
 

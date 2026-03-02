@@ -5,6 +5,10 @@ import pytest
 from rag.pokeapi_fetcher import extract_pokemon_info
 from rag.vector_store import get_simple_embedding, PokemonVectorStore
 
+# Assign custom marks to typed module-level constants so strict type checkers
+# that don't resolve MarkGenerator.__getattr__ can see the concrete type.
+requires_chromadb: pytest.MarkDecorator = pytest.mark.requires_chromadb
+
 
 class TestExtractPokemonInfo:
     """Tests for Pokemon info extraction."""
@@ -160,6 +164,7 @@ class TestDockerHelpers:
 # --- End Docker Helper Module ---
 
 
+@requires_chromadb
 class TestPokemonVectorStore:
     """Tests for PokemonVectorStore.
 

@@ -204,18 +204,6 @@ wheels = [
 ]
 
 [[package]]
-name = "basedpyright"
-version = "1.38.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "nodejs-wheel-binaries" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/e4/a3/20aa7c4e83f2f614e0036300f3c352775dede0655c66814da16c37b661a9/basedpyright-1.38.2.tar.gz", hash = "sha256:b433b2b8ba745ed7520cdc79a29a03682f3fb00346d272ece5944e9e5e5daa92", size = 25277019, upload-time = "2026-02-26T11:18:43.594Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/ac/12/736cab83626fea3fe65cdafb3ef3d2ee9480c56723f2fd33921537289a5e/basedpyright-1.38.2-py3-none-any.whl", hash = "sha256:153481d37fd19f9e3adedc8629d1d071b10c5f5e49321fb026b74444b7c70e24", size = 12312475, upload-time = "2026-02-26T11:18:40.373Z" },
-]
-
-[[package]]
 name = "beartype"
 version = "0.22.9"
 source = { registry = "https://pypi.org/simple" }
@@ -1364,19 +1352,12 @@ wheels = [
 ]
 
 [[package]]
-name = "nodejs-wheel-binaries"
-version = "24.13.1"
+name = "nodeenv"
+version = "1.10.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/e5/d0/81d98b8fddc45332f79d6ad5749b1c7409fb18723545eae75d9b7e0048fb/nodejs_wheel_binaries-24.13.1.tar.gz", hash = "sha256:512659a67449a038231e2e972d49e77049d2cf789ae27db39eff4ab1ca52ac57", size = 8056, upload-time = "2026-02-12T17:31:04.368Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/24/bf/d1bda4f6168e0b2e9e5958945e01910052158313224ada5ce1fb2e1113b8/nodeenv-1.10.0.tar.gz", hash = "sha256:996c191ad80897d076bdfba80a41994c2b47c68e224c542b48feba42ba00f8bb", size = 55611, upload-time = "2025-12-20T14:08:54.006Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/aa/04/1ffe1838306654fcb50bcf46172567d50c8e27a76f4b9e55a1971fab5c4f/nodejs_wheel_binaries-24.13.1-py2.py3-none-macosx_13_0_arm64.whl", hash = "sha256:360ac9382c651de294c23c4933a02358c4e11331294983f3cf50ca1ac32666b1", size = 54757440, upload-time = "2026-02-12T17:30:35.748Z" },
-    { url = "https://files.pythonhosted.org/packages/66/f6/81ad81bc3bd919a20b110130c4fd318c7b6a5abb37eb53daa353ad908012/nodejs_wheel_binaries-24.13.1-py2.py3-none-macosx_13_0_x86_64.whl", hash = "sha256:035b718946793986762cdd50deee7f5f1a8f1b0bad0f0cfd57cad5492f5ea018", size = 54932957, upload-time = "2026-02-12T17:30:40.114Z" },
-    { url = "https://files.pythonhosted.org/packages/14/be/8e8a2bd50953c4c5b7e0fca07368d287917b84054dc3c93dd26a2940f0f9/nodejs_wheel_binaries-24.13.1-py2.py3-none-manylinux_2_28_aarch64.whl", hash = "sha256:f795e9238438c4225f76fbd01e2b8e1a322116bbd0dc15a7dbd585a3ad97961e", size = 59287257, upload-time = "2026-02-12T17:30:43.781Z" },
-    { url = "https://files.pythonhosted.org/packages/58/57/92f6dfa40647702a9fa6d32393ce4595d0fc03c1daa9b245df66cc60e959/nodejs_wheel_binaries-24.13.1-py2.py3-none-manylinux_2_28_x86_64.whl", hash = "sha256:978328e3ad522571eb163b042dfbd7518187a13968fe372738f90fdfe8a46afc", size = 59781783, upload-time = "2026-02-12T17:30:47.387Z" },
-    { url = "https://files.pythonhosted.org/packages/f7/a5/457b984cf675cf86ace7903204b9c36edf7a2d1b4325ddf71eaf8d1027c7/nodejs_wheel_binaries-24.13.1-py2.py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:e1dc893df85299420cd2a5feea0c3f8482a719b5f7f82d5977d58718b8b78b5f", size = 61287166, upload-time = "2026-02-12T17:30:50.646Z" },
-    { url = "https://files.pythonhosted.org/packages/3c/99/da515f7bc3bce35cfa6005f0e0c4e3c4042a466782b143112eb393b663be/nodejs_wheel_binaries-24.13.1-py2.py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:0e581ae219a39073dcadd398a2eb648f0707b0f5d68c565586139f919c91cbe9", size = 61870142, upload-time = "2026-02-12T17:30:54.563Z" },
-    { url = "https://files.pythonhosted.org/packages/cc/c0/22001d2c96d8200834af7d1de5e72daa3266c7270330275104c3d9ddd143/nodejs_wheel_binaries-24.13.1-py2.py3-none-win_amd64.whl", hash = "sha256:d4c969ea0bcb8c8b20bc6a7b4ad2796146d820278f17d4dc20229b088c833e22", size = 41185473, upload-time = "2026-02-12T17:30:57.524Z" },
-    { url = "https://files.pythonhosted.org/packages/ab/c4/7532325f968ecfc078e8a028e69a52e4c3f95fb800906bf6931ac1e89e2b/nodejs_wheel_binaries-24.13.1-py2.py3-none-win_arm64.whl", hash = "sha256:caec398cb9e94c560bacdcba56b3828df22a355749eb291f47431af88cbf26dc", size = 38881194, upload-time = "2026-02-12T17:31:00.214Z" },
+    { url = "https://files.pythonhosted.org/packages/88/b2/d0896bdcdc8d28a7fc5717c305f1a861c26e18c05047949fb371034d98bd/nodeenv-1.10.0-py2.py3-none-any.whl", hash = "sha256:5bb13e3eed2923615535339b3c620e76779af4cb4c6a90deccc9e36b274d3827", size = 23438, upload-time = "2025-12-20T14:08:52.782Z" },
 ]
 
 [[package]]
@@ -1765,7 +1746,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "basedpyright" },
+    { name = "pyright" },
     { name = "pytest-asyncio" },
     { name = "ruff" },
 ]
@@ -1794,7 +1775,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "basedpyright", specifier = ">=1.31.7" },
+    { name = "pyright", specifier = ">=1.1.0" },
     { name = "pytest-asyncio", specifier = ">=1.3.0" },
     { name = "ruff", specifier = ">=0.14.1" },
 ]
@@ -2309,6 +2290,19 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/e8/52/d87eba7cb129b81563019d1679026e7a112ef76855d6159d24754dbd2a51/pyperclip-1.11.0.tar.gz", hash = "sha256:244035963e4428530d9e3a6101a1ef97209c6825edab1567beac148ccc1db1b6", size = 12185, upload-time = "2025-09-26T14:40:37.245Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/df/80/fc9d01d5ed37ba4c42ca2b55b4339ae6e200b456be3a1aaddf4a9fa99b8c/pyperclip-1.11.0-py3-none-any.whl", hash = "sha256:299403e9ff44581cb9ba2ffeed69c7aa96a008622ad0c46cb575ca75b5b84273", size = 11063, upload-time = "2025-09-26T14:40:36.069Z" },
+]
+
+[[package]]
+name = "pyright"
+version = "1.1.408"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "nodeenv" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/74/b2/5db700e52554b8f025faa9c3c624c59f1f6c8841ba81ab97641b54322f16/pyright-1.1.408.tar.gz", hash = "sha256:f28f2321f96852fa50b5829ea492f6adb0e6954568d1caa3f3af3a5f555eb684", size = 4400578, upload-time = "2026-01-08T08:07:38.795Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0c/82/a2c93e32800940d9573fb28c346772a14778b84ba7524e691b324620ab89/pyright-1.1.408-py3-none-any.whl", hash = "sha256:090b32865f4fdb1e0e6cd82bf5618480d48eecd2eb2e70f960982a3d9a4c17c1", size = 6399144, upload-time = "2026-01-08T08:07:37.082Z" },
 ]
 
 [[package]]

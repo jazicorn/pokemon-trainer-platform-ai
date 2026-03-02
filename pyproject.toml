@@ -30,12 +30,12 @@ chromadb = "chromadb_setup.chromadb_quickstart:main"
 
 [dependency-groups]
 dev = [
-    "basedpyright>=1.31.7",
+    "pyright>=1.1.0",
     "pytest-asyncio>=1.3.0",
     "ruff>=0.14.1",
 ]
 
-[tool.basedpyright]
+[tool.pyright]
 pythonVersion = "3.13"
 typeCheckingMode = "strict"
 venvPath = "."
@@ -47,6 +47,3 @@ reportMissingTypeStubs = false
 reportUnknownMemberType = false
 reportUnknownVariableType = false
 
-[tool.pyright]
-venvPath = "."
-venv = ".venv"
