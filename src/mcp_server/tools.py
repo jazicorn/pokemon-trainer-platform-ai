@@ -49,6 +49,22 @@ QUERY_SCHEMA: dict[str, Any] = {
     "required": ["question"],
 }
 
+POKEDEX_QUERY_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "question": {
+            "type": "string",
+            "description": "Question to ask the Pokedex Expert",
+        },
+        "user_id": {
+            "type": "string",
+            "description": "User ID for personalizing collection lookups",
+            "default": "user_001",
+        },
+    },
+    "required": ["question"],
+}
+
 
 def get_tools() -> tuple[Tool, ...]:
     """Return all available MCP tools."""
@@ -75,7 +91,7 @@ def get_tools() -> tuple[Tool, ...]:
                 "Query Pokemon information including stats, types, "
                 "abilities, and competitive analysis."
             ),
-            inputSchema=QUERY_SCHEMA,
+            inputSchema=POKEDEX_QUERY_SCHEMA,
         ),
         Tool(
             name="query_market",

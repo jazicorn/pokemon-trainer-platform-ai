@@ -1,5 +1,5 @@
 [project]
-name = "ai-agent-katas"
+name = "pokemon-trainer-platform-ai"
 version = "0.1.0"
 description = "AI agent for Pokemon Trainer Platform"
 readme = "README.md"
@@ -36,11 +36,11 @@ dev = [
 ]
 
 [tool.basedpyright]
-pythonVersion = "3.12"
+pythonVersion = "3.13"
 typeCheckingMode = "strict"
 venvPath = "."
 venv = '.venv'
-extraPaths = ["capstone/src"]
+extraPaths = ["src"]
 reportAny = false
 reportExplicitAny = false
 reportMissingTypeStubs = false

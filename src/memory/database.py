@@ -7,7 +7,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Iterator
 
-import httpx
+from utils import is_chromadb_running
 
 DB_NAME = "memory.db"
 
@@ -28,18 +28,6 @@ def get_connection() -> Iterator[sqlite3.Connection]:
         yield conn
     finally:
         conn.close()
-
-
-def is_chromadb_running() -> bool:
-    """Check if ChromaDB server is running."""
-    from config import config  # local import to avoid circular dependency
-    try:
-        response = httpx.get(
-            f"{config.chromadb_url}/api/v2/heartbeat", timeout=2.0
-        )
-        return response.status_code == 200
-    except httpx.RequestError:
-        return False
 
 
 def ensure_services(chromadb: bool = True, phoenix: bool = False) -> None:

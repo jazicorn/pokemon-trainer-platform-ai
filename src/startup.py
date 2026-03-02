@@ -7,10 +7,10 @@ import subprocess
 import time
 from pathlib import Path
 
-import httpx
 from rich.console import Console as _Console
 
 from config import config
+from utils import is_chromadb_running
 from observability.telemetry_start import prompt_and_setup as prompt_and_start_telemetry
 from memory.database import init_database
 
@@ -93,15 +93,6 @@ def validate_environment() -> None:
             f"Set it with: export {required_var}=<your-key>"
         )
 
-
-
-def is_chromadb_running() -> bool:
-    """Check if ChromaDB server is running."""
-    try:
-        response = httpx.get(f"{config.chromadb_url}/api/v2/heartbeat", timeout=2.0)
-        return response.status_code == 200
-    except httpx.RequestError:
-        return False
 
 
 def _try_colima_qemu_recovery() -> bool:

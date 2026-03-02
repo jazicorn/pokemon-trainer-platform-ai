@@ -60,7 +60,10 @@ async def _dispatch_tool(name: str, args: dict[str, Any]) -> str:
                 user_id=args.get("user_id", "user_001"),
             )
         case "query_pokedex":
-            return await query_pokedex(args["question"])
+            return await query_pokedex(
+                args["question"],
+                user_id=args.get("user_id", "user_001"),
+            )
         case "query_market":
             return await query_market(args["question"])
         case _:
