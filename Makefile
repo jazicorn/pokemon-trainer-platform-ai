@@ -44,12 +44,12 @@ generate-data: ## Generate mock platform trade data and user collection
 # ── Phoenix ───────────────────────────────────────────────────────────────────
 
 phoenix-start: ## Start Phoenix observability server (Docker)
-	docker start phoenix-capstone 2>/dev/null || \
-	docker run -d --name phoenix-capstone -p 6006:6006 arizephoenix/phoenix:latest
+	docker start phoenix-pokemon-trainer 2>/dev/null || \
+	docker run -d --name phoenix-pokemon-trainer -p 6006:6006 arizephoenix/phoenix:latest
 	@echo "Phoenix starting at http://127.0.0.1:6006"
 
 phoenix-stop: ## Stop Phoenix Docker container
-	docker stop phoenix-capstone 2>/dev/null || true
+	docker stop phoenix-pokemon-trainer 2>/dev/null || true
 	@echo "Phoenix stopped."
 
 # ── ChromaDB ──────────────────────────────────────────────────────────────────

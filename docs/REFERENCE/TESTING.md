@@ -1,7 +1,6 @@
 # Testing Guide
 
-This guide covers how to run and work with tests in the Pokemon Trade Advisor
-capstone project.
+This guide covers how to run and work with tests in the Pokemon Trainer Platform - AI.
 
 ## Quick Start
 

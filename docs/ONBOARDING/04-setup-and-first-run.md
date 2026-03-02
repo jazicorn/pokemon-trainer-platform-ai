@@ -96,8 +96,7 @@ on port 8000.
 Docker runtime instead of Docker Desktop. If you have not installed
 Colima, the script will prompt you. If Colima crashes on startup (a known
 issue with the VZ driver on some Macs), the startup script auto-recovers
-by switching to the QEMU driver — see
-[`docs/INFRASTRUCTURE_FIXES.md`](../INFRASTRUCTURE_FIXES.md) for details.
+by switching to the QEMU driver automatically.
 
 **Verify it worked:**
 

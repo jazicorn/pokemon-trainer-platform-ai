@@ -73,7 +73,7 @@ cloud providers (`anthropic:claude-sonnet-4-6`). The global `config` instance at
 every other module imports.
 
 In `observability/observability.py`, read `setup()` to see how Phoenix Docker container management
-is separated from OTEL initialization. The container is named `phoenix-capstone` and is reused
+is separated from OTEL initialization. The container is named `phoenix-pokemon-trainer` and is reused
 across runs.
 
 ## Running the Code
