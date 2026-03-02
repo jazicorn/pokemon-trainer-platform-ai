@@ -1,8 +1,11 @@
-# 🧠 Pokémon Trainer's Second Brain: Multi-Agent Financial AI
+# Pokemon Trainer Platform - AI
 
-A state-of-the-art **Hierarchical Multi-Agent System** that transforms Pokémon trading into a
-data-driven economy. By applying Wall Street-grade **Technical Analysis** to in-game trade data,
-this "Second Brain" helps trainers outmaneuver the market.
+**🧠 Pokémon Trainer's Second Brain** — Multi-Agent AI Advisor
+
+A state-of-the-art **Hierarchical Multi-Agent System** built for Pokémon trainers who want more
+than guesswork. Five specialized agents collaborate: forecasting trade market demand, verifying
+trade legitimacy, surfacing Pokédex knowledge via RAG, evaluating battle team composition, and
+routing it all through a single conversational interface.
 
 ## 🚀 The Tech Stack
 
@@ -62,10 +65,11 @@ This isolation prevents "Tool Overload" and ensures higher reasoning accuracy.
 
 | Agent                | Core Responsibility | Intelligence Layer                                                               |
 | -------------------- | ------------------- | -------------------------------------------------------------------------------- |
-| **Trade Advisor**    | **Orchestrator**    | **Intent Routing:** Distinguishes between market research vs. trade evaluation.  |
-| **Legitimacy Guard** | **Compliance**      | **Scam Prevention:** Verifies origin marks, PokéBall legality, and rarity tiers. |
-| **Market Analyst**   | **Forecaster**      | **Momentum Analysis:** Compares 7-day vs 30-day demand ratios.                   |
-| **Pokedex Expert**   | **Researcher**      | **RAG Specialist:** Grounding decisions in high-fidelity technical data.         |
+| **Trade Advisor**           | **Orchestrator** | **Intent Routing:** Distinguishes between market research vs. trade evaluation.        |
+| **Legitimacy Guard**        | **Compliance**   | **Scam Prevention:** Verifies origin marks, PokéBall legality, and rarity tiers.       |
+| **Market Analyst**          | **Forecaster**   | **Momentum Analysis:** Compares 7-day vs 30-day demand ratios.                         |
+| **Pokedex Expert**          | **Researcher**   | **RAG Specialist:** Grounding decisions in high-fidelity technical data.                |
+| **Battle Strategy Advisor** | **Strategist**   | **Competitive Viability:** Evaluates team composition and Pokémon tier placement.       |
 
 ---
 
@@ -176,4 +180,4 @@ has spiked to 2.4 (+100% momentum). **Recommendation:** Hold your position; mark
 
 This project demonstrates the ability to build complex, coordinated AI systems that move beyond
 simple chat. It showcases expertise in **Structured Tool Use**, **Agentic Delegation**, and the
-application of **Quantitative Finance** principles to unstructured data.
+application of **Quantitative Analysis**, RAG, and multi-agent coordination to a structured domain problem.
