@@ -1,4 +1,4 @@
-"""Startup infrastructure for the capstone project."""
+"""Startup infrastructure for the Pokemon Trainer Platform - AI."""
 
 import os
 import platform

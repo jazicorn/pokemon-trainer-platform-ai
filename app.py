@@ -6,10 +6,10 @@ import asyncio
 import sys
 from pathlib import Path
 
-# Ensure capstone/src is importable (so imports like `from agents import ...` work)
-CAPSTONE_DIR = Path(__file__).resolve().parent
-CAPSTONE_SRC = CAPSTONE_DIR / "src"
-sys.path.insert(0, str(CAPSTONE_SRC))
+# Ensure src/ is importable (so imports like `from agents import ...` work)
+PROJECT_ROOT = Path(__file__).resolve().parent
+SRC_DIR = PROJECT_ROOT / "src"
+sys.path.insert(0, str(SRC_DIR))
 
 
 def main() -> None:

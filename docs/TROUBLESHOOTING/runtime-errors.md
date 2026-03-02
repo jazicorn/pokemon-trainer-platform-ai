@@ -63,10 +63,9 @@ op run --env-file .env.op -- uv run python app.py
 ModuleNotFoundError: No module named 'agents'
 ```
 
-**Fix:** Run from the capstone directory with uv:
+**Fix:** Run from the project root with uv:
 
 ```bash
-cd capstone
 uv run python app.py
 ```
 

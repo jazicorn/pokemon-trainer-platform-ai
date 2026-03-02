@@ -96,15 +96,14 @@ chromadb = "chromadb_setup.chromadb_quickstart:main"
 
 ## 📁 Project Structure
 
-The `chromadb` folder lives at the **project root**, alongside `rag`, `katas`,
-and other modules, so it can be shared across assignments:
+The `chromadb_setup` folder lives at the **project root**:
 
 ```text
-katas-exercises/
-├── chromadb_setup/          # ← shared ChromaDB setup (was rag/chromadb-setup/)
-├── rag/
-├── katas/
-├── capstone/
+pokemon-trainer-platform-ai/
+├── chromadb_setup/          # ← Docker-based ChromaDB setup
+├── src/
+├── tests/
+├── app.py
 └── pyproject.toml
 ```
 

@@ -156,7 +156,7 @@ and adapt accordingly, or run your Python code on 3.12/3.13.
 ### Testing
 
 - **pytest:** Testing framework
-- **mypy / basedpyright:** Type checking
+- **mypy / pyright:** Type checking
 - **ruff:** Linting and formatting
 
 ## Deployment Options

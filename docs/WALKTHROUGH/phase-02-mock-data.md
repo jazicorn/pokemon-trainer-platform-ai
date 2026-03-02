@@ -135,5 +135,5 @@ separation) are designed to pass regardless — but do not write tests that asse
 names or trade counts beyond the generation parameters.
 
 **`data/` directory location**: `get_data_dir()` resolves relative to `loader.py`'s location — it
-walks up from `src/data/` to the capstone root, then appends `data/`. If you move `loader.py`,
+walks up from `src/data/` to the project root, then appends `data/`. If you move `loader.py`,
 update this path.

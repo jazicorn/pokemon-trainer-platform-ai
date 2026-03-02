@@ -9,7 +9,7 @@ Before you begin, ensure you have the following installed:
 
 | Tool   | Version | Purpose            |
 | ------ | ------- | ------------------ |
-| Python | 3.11+   | Runtime            |
+| Python | 3.13+   | Runtime            |
 | uv     | Latest  | Package manager    |
 | Docker | Latest  | ChromaDB container |
 | Git    | Latest  | Version control    |
@@ -21,8 +21,8 @@ Before you begin, ensure you have the following installed:
 ```bash
 # macOS
 brew install pyenv
-pyenv install 3.12
-pyenv global 3.12
+pyenv install 3.13
+pyenv global 3.13
 
 # Verify
 python --version
