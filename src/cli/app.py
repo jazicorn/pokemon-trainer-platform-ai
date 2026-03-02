@@ -295,14 +295,22 @@ class TradeCLI:
         try:
             collection = load_user_collection(self.user_id)
             p = collection.preferences
-            lines = [
-                f"**Goal:** {p.goal or 'Not set'}",
-                f"**Seeking:** {', '.join(p.seeking) or 'None'}",
-                f"**Never trade:** {', '.join(p.never_trade) or 'None'}",
-                f"**Favorite types:** {', '.join(p.favorite_types) or 'None'}",
-                f"**Trading style:** {p.trading_style}",
-            ]
-            self._print_result("\n".join(lines))
+
+            table = Table(show_header=False, box=None, padding=(0, 2), width=60)
+            table.add_column("Field", style="dim", width=18)
+            table.add_column("Value", style="white")
+
+            table.add_row("[bold white]Goal[/]",           f"[yellow]{p.goal or 'Not set'}[/]")
+            table.add_row("[bold white]Seeking[/]",        f"[blue]{', '.join(p.seeking) or 'None'}[/]")
+            table.add_row("[bold white]Never trade[/]",    f"[red]{', '.join(p.never_trade) or 'None'}[/]")
+            table.add_row("[bold white]Fav types[/]",      f"[magenta]{', '.join(p.favorite_types) or 'None'}[/]")
+            table.add_row("[bold white]Trading style[/]",  f"[cyan]{p.trading_style or 'Not set'}[/]")
+
+            console.print("[bold cyan]" + "=" * 60 + "[/]")
+            console.print("[bold white]  Trading Preferences[/]")
+            console.print(table)
+            console.print("[bold cyan]" + "=" * 60 + "[/]")
+            print()
         except Exception as e:
             console.print(f"[yellow]Could not load preferences: {e}[/yellow]")
 
