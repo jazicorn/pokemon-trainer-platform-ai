@@ -211,6 +211,7 @@ __marimo__/
 
 # Runtime data (generated at runtime, not source)
 data/
+!tests/data/
 
 # ChromaDB local vector store
 chromadb_setup/chroma_data/
