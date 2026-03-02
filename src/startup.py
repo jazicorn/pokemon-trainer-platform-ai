@@ -137,7 +137,13 @@ def start_chromadb() -> bool:
 
     # stdout: permission prompts the user must see and respond to.
     # stderr: verbose Colima/Lima boot logs — suppress so they don't flood output.
-    subprocess.run([str(script), "start"], stderr=subprocess.DEVNULL)
+    proc = subprocess.run([str(script), "start"], stderr=subprocess.DEVNULL)
+    if proc.returncode != 0:
+        _console.print(
+            "\n[yellow]ChromaDB is required to run this program.[/]\n"
+            "Start it with [bold]make chromadb-start[/] and then re-run [bold]make run[/]."
+        )
+        raise SystemExit(0)
 
     with _console.status("[bold green]Waiting for ChromaDB to respond...[/]", spinner="dots"):
         for _ in range(20):

@@ -41,6 +41,17 @@ ingest: ## Index Pokemon into ChromaDB (fetches from PokeAPI — ChromaDB must b
 generate-data: ## Generate mock platform trade data and user collection
 	uv run python -c "from data.generator import generate_platform_trades, generate_user_collection; generate_platform_trades(); generate_user_collection()"
 
+# ── Phoenix ───────────────────────────────────────────────────────────────────
+
+phoenix-start: ## Start Phoenix observability server (Docker)
+	docker start phoenix-capstone 2>/dev/null || \
+	docker run -d --name phoenix-capstone -p 6006:6006 arizephoenix/phoenix:latest
+	@echo "Phoenix starting at http://127.0.0.1:6006"
+
+phoenix-stop: ## Stop Phoenix Docker container
+	docker stop phoenix-capstone 2>/dev/null || true
+	@echo "Phoenix stopped."
+
 # ── ChromaDB ──────────────────────────────────────────────────────────────────
 
 chromadb-start: ## Start ChromaDB Docker container (interactive — manages Colima if needed)
@@ -79,5 +90,6 @@ help: ## Show this help
         eval eval-rag \
         reset-db \
         ingest generate-data \
+        phoenix-start phoenix-stop \
         chromadb-start chromadb-stop chromadb-status \
         help
