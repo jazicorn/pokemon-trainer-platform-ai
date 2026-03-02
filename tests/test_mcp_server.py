@@ -86,4 +86,15 @@ class TestToolSchemas:
 
         props = suggestions_tool.inputSchema.get("properties", {})
         assert "user_id" in props
+
+    def test_query_pokedex_has_optional_user_id(self):
+        tools = get_tools()
+        pokedex_tool = next(t for t in tools if t.name == "query_pokedex")
+
+        required = pokedex_tool.inputSchema.get("required", [])
+        assert "question" in required
+        assert "user_id" not in required
+
+        props = pokedex_tool.inputSchema.get("properties", {})
+        assert "user_id" in props
         

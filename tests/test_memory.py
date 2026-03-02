@@ -6,9 +6,9 @@ import os
 from memory.database import (
     init_database,
     get_connection,
-    is_chromadb_running,
     get_db_path,
 )
+from utils import is_chromadb_running
 from memory.user_preferences import UserPreferencesManager
 from memory.conversation_memory import ConversationMemory, RecommendationMemory
 
@@ -63,7 +63,7 @@ class TestChromaDBCheck:
         def mock_get(*args, **kwargs):
             return MockResponse()
 
-        monkeypatch.setattr("memory.database.httpx.get", mock_get)
+        monkeypatch.setattr("utils.httpx.get", mock_get)
         assert is_chromadb_running() is True
 
     def test_is_chromadb_running_when_unavailable(self, monkeypatch):
@@ -73,7 +73,7 @@ class TestChromaDBCheck:
         def mock_get(*args, **kwargs):
             raise httpx.RequestError("Connection refused")
 
-        monkeypatch.setattr("memory.database.httpx.get", mock_get)
+        monkeypatch.setattr("utils.httpx.get", mock_get)
         assert is_chromadb_running() is False
 
 

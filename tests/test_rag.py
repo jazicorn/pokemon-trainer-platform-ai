@@ -197,7 +197,7 @@ class TestPokemonVectorStore:
         import sys
         import time
 
-        from memory.database import is_chromadb_running
+        from utils import is_chromadb_running
 
         # Allow forcing platform for testing
         forced_platform = os.environ.get("TEST_DOCKER_PLATFORM")
