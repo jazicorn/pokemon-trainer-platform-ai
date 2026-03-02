@@ -63,13 +63,13 @@ Unlike "flat" agent systems, this project uses a **Master-Worker pattern**. The 
 acts as the orchestrator, detecting user intent and delegating specialized tasks to worker agents.
 This isolation prevents "Tool Overload" and ensures higher reasoning accuracy.
 
-| Agent                | Core Responsibility | Intelligence Layer                                                               |
-| -------------------- | ------------------- | -------------------------------------------------------------------------------- |
-| **Trade Advisor**           | **Orchestrator** | **Intent Routing:** Distinguishes between market research vs. trade evaluation.        |
-| **Legitimacy Guard**        | **Compliance**   | **Scam Prevention:** Verifies origin marks, PokéBall legality, and rarity tiers.       |
-| **Market Analyst**          | **Forecaster**   | **Momentum Analysis:** Compares 7-day vs 30-day demand ratios.                         |
-| **Pokedex Expert**          | **Researcher**   | **RAG Specialist:** Grounding decisions in high-fidelity technical data.                |
-| **Battle Strategy Advisor** | **Strategist**   | **Competitive Viability:** Evaluates team composition and Pokémon tier placement.       |
+| Agent                       | Core Responsibility | Intelligence Layer                                                                |
+| --------------------------- | ------------------- | --------------------------------------------------------------------------------- |
+| **Trade Advisor**           | **Orchestrator**    | **Intent Routing:** Distinguishes between market research vs. trade evaluation.   |
+| **Legitimacy Guard**        | **Compliance**      | **Scam Prevention:** Verifies origin marks, PokéBall legality, and rarity tiers.  |
+| **Market Analyst**          | **Forecaster**      | **Momentum Analysis:** Compares 7-day vs 30-day demand ratios.                    |
+| **Pokedex Expert**          | **Researcher**      | **RAG Specialist:** Grounding decisions in high-fidelity technical data.          |
+| **Battle Strategy Advisor** | **Strategist**      | **Competitive Viability:** Evaluates team composition and Pokémon tier placement. |
 
 ---
 
