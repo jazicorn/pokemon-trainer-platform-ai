@@ -47,7 +47,7 @@ class TestMultiAgentOrchestration:
         monkeypatch.setattr(pokedex_expert, "run", mock_run)
 
         # Bypass Pydantic validation by patching the module namespace
-        ta_mod = sys.modules['agents.trade_advisor']
+        ta_mod = sys.modules['agents.trade_advisor_tools']
         monkeypatch.setattr(ta_mod, "PokedexDependencies", lambda **kwargs: MagicMock())
 
         ctx = MagicMock()
@@ -68,7 +68,7 @@ class TestMultiAgentOrchestration:
         mock_run = AsyncMock(return_value=mock_result)
         monkeypatch.setattr(trade_market_analyst, "run", mock_run)
         
-        ta_mod = sys.modules['agents.trade_advisor']
+        ta_mod = sys.modules['agents.trade_advisor_tools']
         monkeypatch.setattr(ta_mod, "MarketDependencies", lambda **kwargs: MagicMock())
 
         ctx = MagicMock()

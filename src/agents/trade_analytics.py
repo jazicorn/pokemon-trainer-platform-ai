@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from data.models import PlatformTrades, Trade
 
-from data import load_platform_trades
+from data.loader import load_platform_trades
 from data.models import TradeStatus
 
 

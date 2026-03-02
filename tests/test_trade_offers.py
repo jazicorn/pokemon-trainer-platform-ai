@@ -242,7 +242,7 @@ async def test_get_pending_offers_calls_evaluate_trade(tmp_path):
         sender.create_offer("test_user", "charizard", "bulbasaur")
 
         with patch(
-            "agents.trade_advisor.evaluate_trade",
+            "agents.trade_advisor_api.evaluate_trade",
             new=AsyncMock(return_value="Charizard is worth more — bad deal."),
         ):
             from agents.trade_advisor import get_pending_offers
@@ -267,7 +267,7 @@ async def test_send_trade_offer_calls_evaluate_trade(tmp_path):
         init_database()
 
         with patch(
-            "agents.trade_advisor.evaluate_trade",
+            "agents.trade_advisor_api.evaluate_trade",
             new=AsyncMock(return_value="Fair trade — proceed."),
         ) as mock_eval:
             from agents.trade_advisor import send_trade_offer

@@ -183,7 +183,7 @@ class TestTradeAdvisorIntegration:
 
         # Also patch PokedexDependencies in trade_advisor's namespace so the MagicMock
         # vector_store passes validation when get_pokemon_info creates it.
-        ta_mod = sys.modules["agents.trade_advisor"]
+        ta_mod = sys.modules["agents.trade_advisor_tools"]
         monkeypatch.setattr(ta_mod, "PokedexDependencies", lambda **kwargs: MagicMock())
 
         deps = AdvisorDependencies.model_construct(
@@ -218,7 +218,7 @@ class TestTradeAdvisorIntegration:
         monkeypatch.setattr(tma_agent, "run", mock_run)
 
         # Also patch MarketDependencies so the MagicMock analytics passes validation.
-        ta_mod = sys.modules["agents.trade_advisor"]
+        ta_mod = sys.modules["agents.trade_advisor_tools"]
         monkeypatch.setattr(ta_mod, "MarketDependencies", lambda **kwargs: MagicMock())
 
         deps = AdvisorDependencies.model_construct(
