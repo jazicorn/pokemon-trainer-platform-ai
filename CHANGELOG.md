@@ -120,7 +120,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   `extraPaths = ["src"]`, strict mode with selective suppressions
 - `docs/`: full onboarding suite — `GETTING_STARTED.md`, `ARIZE_PHOENIX_SETUP.md`,
   `1PASSWORD.md`, `REFERENCE/`, `ONBOARDING/`, `TROUBLESHOOTING/`,
-  `CAPSTONE_GUIDE/` (14 phase guides)
+  `WALKTHROUGH/` (14 phase guides)
 
 ---
 

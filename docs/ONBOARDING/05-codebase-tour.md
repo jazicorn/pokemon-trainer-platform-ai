@@ -67,7 +67,7 @@ katas-exercises/
 │       ├── 1PASSWORD.md
 │       ├── REFERENCE/        ← TESTING, LINTING, MARKET_TRENDS, EVAL_RESULTS
 │       ├── ONBOARDING/       ← You are here
-│       └── CAPSTONE_GUIDE/   ← 14-phase deep-dive guides
+│       └── WALKTHROUGH/   ← 14-phase deep-dive guides
 │
 ├── chromadb_setup/           ← Docker/Colima management scripts
 │   └── chromadb-docker.sh    ← Start, stop, status, logs for ChromaDB

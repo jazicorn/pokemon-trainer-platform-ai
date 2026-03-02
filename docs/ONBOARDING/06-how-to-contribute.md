@@ -24,7 +24,7 @@ Config + Data Models (foundation)
 ```
 
 The full phase-by-phase breakdown of this dependency structure is in
-[`docs/CAPSTONE_GUIDE/PHASES_OVERVIEW.md`](../CAPSTONE_GUIDE/PHASES_OVERVIEW.md).
+[`docs/WALKTHROUGH/PHASES_OVERVIEW.md`](../WALKTHROUGH/PHASES_OVERVIEW.md).
 If you are making a significant change, read the relevant phase doc first —
 it explains the design intent.
 
@@ -281,11 +281,11 @@ components:
 
 | Resource | What it covers |
 | --- | --- |
-| [`docs/CAPSTONE_GUIDE/PHASES_OVERVIEW.md`](../CAPSTONE_GUIDE/PHASES_OVERVIEW.md) | Phase-by-phase breakdown of every component with test commands |
+| [`docs/WALKTHROUGH/PHASES_OVERVIEW.md`](../WALKTHROUGH/PHASES_OVERVIEW.md) | Phase-by-phase breakdown of every component with test commands |
 | [`capstone/ARCHITECTURE.md`](../../ARCHITECTURE.md) | Full architecture reference: business analogies, data source details, worked examples |
-| [`docs/CAPSTONE_GUIDE/phase-05-pokedex-expert.md`](../CAPSTONE_GUIDE/phase-05-pokedex-expert.md) | Deep dive on RAG and the Pokedex Expert |
-| [`docs/CAPSTONE_GUIDE/phase-09-trade-advisor.md`](../CAPSTONE_GUIDE/phase-09-trade-advisor.md) | Deep dive on the Trade Advisor orchestrator |
-| [`docs/CAPSTONE_GUIDE/phase-10-multi-agent-orchestration.md`](../CAPSTONE_GUIDE/phase-10-multi-agent-orchestration.md) | How agents delegate to each other |
+| [`docs/WALKTHROUGH/phase-05-pokedex-expert.md`](../WALKTHROUGH/phase-05-pokedex-expert.md) | Deep dive on RAG and the Pokedex Expert |
+| [`docs/WALKTHROUGH/phase-09-trade-advisor.md`](../WALKTHROUGH/phase-09-trade-advisor.md) | Deep dive on the Trade Advisor orchestrator |
+| [`docs/WALKTHROUGH/phase-10-multi-agent-orchestration.md`](../WALKTHROUGH/phase-10-multi-agent-orchestration.md) | How agents delegate to each other |
 | [`docs/REFERENCE/EVAL_RESULTS.md`](../REFERENCE/EVAL_RESULTS.md) | RAG vs. no-RAG evaluation results |
 | [`docs/REFERENCE/TESTING.md`](../REFERENCE/TESTING.md) | Testing patterns, async tests, mocking LLM responses |
 

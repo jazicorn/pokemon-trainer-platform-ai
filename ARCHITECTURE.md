@@ -436,7 +436,7 @@ katas-repo/
 │   │   ├── GETTING_STARTED.md
 │   │   ├── TESTING.md
 │   │   ├── TRENDS.md
-│   │   └── CAPSTONE_GUIDE/
+│   │   └── WALKTHROUGH/
 │   │       ├── PHASES_OVERVIEW.md
 │   │       ├── phase-01-project-setup.md
 │   │       ├── phase-02-mock-data.md

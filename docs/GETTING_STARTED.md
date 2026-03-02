@@ -370,7 +370,7 @@ See [TROUBLESHOOTING/runtime-errors.md](TROUBLESHOOTING/runtime-errors.md).
 ## Getting Help
 
 - Check [`REFERENCE/TESTING.md`](REFERENCE/TESTING.md) for test-specific guidance
-- Review phase documentation in `docs/CAPSTONE_GUIDE/`
+- Review phase documentation in `docs/WALKTHROUGH/`
 - Look at test files for usage examples
 
 Happy trading! 🎮
