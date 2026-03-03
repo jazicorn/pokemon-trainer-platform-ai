@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from .database import get_connection
 
 
@@ -25,7 +27,7 @@ class ConversationMemory:
 
         self._trim_history()
 
-    def get_history(self, limit: int | None = None) -> list[dict]:
+    def get_history(self, limit: int | None = None) -> list[dict[str, Any]]:
         """Get conversation history."""
         limit = limit or self.max_history
 
@@ -140,7 +142,7 @@ class RecommendationMemory:
             """, (1 if followed else 0, feedback, recommendation_id))
             conn.commit()
 
-    def get_past_recommendations(self, limit: int = 10) -> list[dict]:
+    def get_past_recommendations(self, limit: int = 10) -> list[dict[str, Any]]:
         """Get past recommendations for this user."""
         with get_connection() as conn:
             cursor = conn.cursor()

@@ -101,7 +101,7 @@ async def get_my_collection(ctx: RunContext[PokedexDependencies]) -> str:
     """Get information about the user's personal Pokemon collection and their goals."""
     collection = load_user_collection(ctx.deps.user_id)
 
-    pkmn_strings = []
+    pkmn_strings: list[str] = []
     for p in collection.pokemon:
         display_name = f"{p.nickname} ({p.pokemon_id})" if p.nickname else p.pokemon_id
         trade_status = "Tradeable" if p.tradeable else "NFT (Not for trade)"

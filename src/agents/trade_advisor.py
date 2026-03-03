@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from .trade_advisor_core import AdvisorDependencies, SYSTEM_PROMPT, trade_advisor
 from .trade_advisor_api import (
-    _build_advisor_deps,
+    _build_advisor_deps,  # pyright: ignore[reportPrivateUsage]
     evaluate_trade,
     get_pending_offers,
     get_trade_suggestions,

@@ -7,7 +7,9 @@ Tests use Docker-based ChromaDB server.
 
 import shutil
 import tempfile
+from collections.abc import Generator
 from pathlib import Path
+from typing import Any
 
 import httpx
 import pytest
@@ -76,7 +78,7 @@ class TestDocumentLoader:
     """Tests for the DocumentLoader class."""
 
     @pytest.fixture
-    def temp_docs_dir(self):
+    def temp_docs_dir(self) -> Generator[str, None, None]:
         """Create a temporary directory with test documents."""
         temp_dir = tempfile.mkdtemp()
         test_files = {
@@ -90,14 +92,14 @@ class TestDocumentLoader:
         yield temp_dir
         shutil.rmtree(temp_dir)
 
-    def test_loader_initialization(self, temp_docs_dir) -> None:
+    def test_loader_initialization(self, temp_docs_dir: str) -> None:
         assert DocumentLoader(temp_docs_dir).docs_dir.exists()
 
     def test_loader_invalid_directory_raises_error(self) -> None:
         with pytest.raises(FileNotFoundError):
             DocumentLoader("/nonexistent/directory")
 
-    def test_load_documents(self, temp_docs_dir) -> None:
+    def test_load_documents(self, temp_docs_dir: str) -> None:
         documents = DocumentLoader(temp_docs_dir).load_documents()
         # Should load 3 documents (.md, .txt, .rst) but not .pdf
         assert len(documents) == 3
@@ -106,21 +108,21 @@ class TestDocumentLoader:
             assert doc.content
             assert doc.filename
 
-    def test_load_documents_filters_extensions(self, temp_docs_dir) -> None:
+    def test_load_documents_filters_extensions(self, temp_docs_dir: str) -> None:
         filenames = [doc.filename for doc in DocumentLoader(temp_docs_dir).load_documents()]
         assert any(f.endswith(".md") for f in filenames)
         assert any(f.endswith(".txt") for f in filenames)
         assert any(f.endswith(".rst") for f in filenames)
         assert not any(f.endswith(".pdf") for f in filenames)
 
-    def test_find_documents_generator(self, temp_docs_dir) -> None:
-        result = DocumentLoader(temp_docs_dir)._find_documents()
+    def test_find_documents_generator(self, temp_docs_dir: str) -> None:
+        result = DocumentLoader(temp_docs_dir)._find_documents()  # pyright: ignore[reportPrivateUsage]
         assert hasattr(result, "__iter__")
         assert hasattr(result, "__next__")
 
-    def test_load_single_document(self, temp_docs_dir) -> None:
+    def test_load_single_document(self, temp_docs_dir: str) -> None:
         loader = DocumentLoader(temp_docs_dir)
-        doc = loader._load_single_document(Path(temp_docs_dir) / "test1.md")
+        doc = loader._load_single_document(Path(temp_docs_dir) / "test1.md")  # pyright: ignore[reportPrivateUsage]
         assert isinstance(doc, Document)
         assert "Test Document 1" in doc.content
         assert doc.filename == "test1.md"
@@ -239,7 +241,7 @@ class TestEndToEnd:
     """End-to-end integration tests."""
 
     @pytest.fixture
-    def test_environment(self):
+    def test_environment(self) -> Generator[dict[str, str], None, None]:
         docs_dir = tempfile.mkdtemp()
         test_docs = {
             "doc1.md": "# Machine Learning\n\nMachine learning is a subset of AI.",
@@ -252,7 +254,7 @@ class TestEndToEnd:
         shutil.rmtree(docs_dir)
 
     @pytest.mark.slow
-    def test_complete_pipeline(self, test_environment) -> None:
+    def test_complete_pipeline(self, test_environment: dict[str, str]) -> None:
         docs_dir = test_environment["docs_dir"]
 
         documents = DocumentLoader(docs_dir).load_documents()
@@ -277,13 +279,13 @@ class TestPerformance:
     """Performance benchmarking tests."""
 
     @pytest.mark.benchmark
-    def test_chunking_performance(self, benchmark) -> None:
+    def test_chunking_performance(self, benchmark: Any) -> None:
         chunker = TextChunker(chunk_size=100, overlap=10)
         text = " ".join(["word"] * 10000)
         assert len(benchmark(chunker.chunk_text, text)) > 0
 
     @pytest.mark.benchmark
-    def test_document_loading_performance(self, benchmark, tmp_path) -> None:
+    def test_document_loading_performance(self, benchmark: Any, tmp_path: Path) -> None:
         for i in range(100):
             (tmp_path / f"doc{i}.txt").write_text(f"Document {i} content")
         loader = DocumentLoader(str(tmp_path))

@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from functools import cached_property
-from typing import ClassVar, Iterator
+from typing import Any, ClassVar, Iterator
 
 
 @dataclass(frozen=True)
@@ -154,7 +154,7 @@ class PIIFilter:
             or next(self._find_name_matches(text), None) is not None
         )
 
-    def get_pii_report(self, text: str) -> dict:
+    def get_pii_report(self, text: str) -> dict[str, Any]:
         """Get a report of PII found in text."""
         matches = self.detect_pii(text)
 
@@ -188,6 +188,6 @@ def detect_pii(text: str) -> list[PIIMatch]:
     return _filter.detect_pii(text)
 
 
-def get_pii_report(text: str) -> dict:
+def get_pii_report(text: str) -> dict[str, Any]:
     """Get PII report for text (convenience function)."""
     return _filter.get_pii_report(text)

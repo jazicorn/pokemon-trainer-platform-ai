@@ -332,7 +332,7 @@ class TradeCLI:
 
     def _print_result(self, result: str) -> None:
         """Print a formatted result using Rich."""
-        content = result if isinstance(result, str) else getattr(result, 'output', str(result))
+        content = result
         
         print()
         md = Markdown(content)
@@ -453,6 +453,8 @@ class TradeCLI:
                     )
                 elif re.search(r"Shall I send these offers\?", result, re.IGNORECASE):
                     self._pending_confirmation = PendingConfirmation(action_type="send_offers")
+            case _:
+                pass
 
     async def run(self) -> None:
         """Run the CLI main loop."""

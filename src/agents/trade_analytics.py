@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from data.models import PlatformTrades, Trade
@@ -63,7 +63,7 @@ class TradeAnalytics:
             self._trades_by_pokemon.setdefault(req, []).append(trade)
             self._trades_by_pokemon.setdefault(off, []).append(trade)
 
-    def get_demand_ratio(self, pokemon: str, days: int | None = None) -> dict:
+    def get_demand_ratio(self, pokemon: str, days: int | None = None) -> dict[str, Any]:
         """Calculate demand ratio, optionally filtered by recent days."""
         name = pokemon.lower()
         
@@ -87,7 +87,7 @@ class TradeAnalytics:
             "demand_level": DEMAND_THRESHOLDS.classify(ratio),
         }
 
-    def get_market_forecast(self, pokemon: str) -> dict:
+    def get_market_forecast(self, pokemon: str) -> dict[str, Any]:
         """
         Forecast market direction by comparing 7-day vs 30-day momentum.
         """
@@ -117,10 +117,10 @@ class TradeAnalytics:
             "sentiment": sentiment,
             "short_term_ratio": short_term["demand_ratio"],
             "long_term_ratio": long_term["demand_ratio"],
-            "recommendation": "Hold/Buy" if sentiment == "Bullish" else "Sell/Trade Away" if sentiment == "Bearish" else "Neutral"
+            "recommendation": "Hold/Buy" if sentiment == "Bullish (Rapidly Rising)" else "Sell/Trade Away" if sentiment == "Bearish (Declining)" else "Neutral"
         }
 
-    def get_trade_success_rate(self, pokemon: str) -> dict:
+    def get_trade_success_rate(self, pokemon: str) -> dict[str, Any]:
         """Calculate trade success rate for a Pokemon."""
         name = pokemon.lower()
         relevant_trades = self._trades_by_pokemon.get(name, [])
@@ -142,7 +142,7 @@ class TradeAnalytics:
             "success_rate": round(completed / len(relevant_trades) * 100, 1),
         }
 
-    def get_trending_pokemon(self, days: int = 30, limit: int = 10) -> list[dict]:
+    def get_trending_pokemon(self, days: int = 30, limit: int = 10) -> list[dict[str, Any]]:
         """Get Pokemon with most trade activity recently."""
         cutoff = datetime.now() - timedelta(days=days)
 
@@ -166,7 +166,7 @@ class TradeAnalytics:
         """Parse timestamp to naive datetime."""
         return timestamp.replace(tzinfo=None)
 
-    def _get_demand_summary(self, pokemon: str) -> dict:
+    def _get_demand_summary(self, pokemon: str) -> dict[str, Any]:
         """Get demand ratio and level for a Pokemon."""
         demand = self.get_demand_ratio(pokemon)
         return {
@@ -174,15 +174,15 @@ class TradeAnalytics:
             "demand_level": demand["demand_level"],
         }
 
-    def get_most_requested(self, limit: int = 10) -> list[dict]:
+    def get_most_requested(self, limit: int = 10) -> list[dict[str, Any]]:
         """Get most frequently requested Pokemon."""
         return [{"pokemon": p, "request_count": c} for p, c in self._requested_counts.most_common(limit)]
 
-    def get_most_offered(self, limit: int = 10) -> list[dict]:
+    def get_most_offered(self, limit: int = 10) -> list[dict[str, Any]]:
         """Get most frequently offered Pokemon."""
         return [{"pokemon": p, "offer_count": c} for p, c in self._offered_counts.most_common(limit)]
 
-    def compare_trade_value(self, pokemon_a: str, pokemon_b: str) -> dict:
+    def compare_trade_value(self, pokemon_a: str, pokemon_b: str) -> dict[str, Any]:
         """Compare relative trade value of two Pokemon."""
         demand_a = self.get_demand_ratio(pokemon_a)
         demand_b = self.get_demand_ratio(pokemon_b)

@@ -28,6 +28,8 @@ import sys
 import time
 from pathlib import Path
 
+from typing import Any
+
 import httpx
 
 HOST = "localhost"
@@ -59,7 +61,7 @@ def dummy_embeddings(texts: list[str]) -> list[list[float]]:
 
 # ─── Low-level HTTP helpers ───────────────────────────────────────────────────
 
-def _post(path: str, body: dict) -> dict:
+def _post(path: str, body: dict[str, Any]) -> dict[str, Any]:
     r = httpx.post(f"{BASE}{path}", json=body, timeout=30)
     r.raise_for_status()
     return r.json()
@@ -80,9 +82,9 @@ def heartbeat() -> bool:
         return False
 
 
-def get_or_create_collection(name: str, metadata: dict | None = None) -> str:
+def get_or_create_collection(name: str, metadata: dict[str, Any] | None = None) -> str:
     """Create or retrieve a collection; returns its ID."""
-    body: dict = {"name": name, "get_or_create": True}
+    body: dict[str, Any] = {"name": name, "get_or_create": True}
     if metadata:
         body["metadata"] = metadata
     return _post("/collections", body)["id"]
@@ -96,7 +98,7 @@ def add_documents(
     collection_id: str,
     documents: list[str],
     ids: list[str],
-    metadatas: list[dict] | None = None,
+    metadatas: list[dict[str, Any]] | None = None,
     embeddings: list[list[float]] | None = None,
 ) -> None:
     """Add documents to a collection.
@@ -104,7 +106,7 @@ def add_documents(
     If `embeddings` is omitted, deterministic dummy embeddings are generated
     automatically — suitable for API testing but not semantic search.
     """
-    body: dict = {
+    body: dict[str, Any] = {
         "documents": documents,
         "ids": ids,
         "embeddings": embeddings if embeddings is not None else dummy_embeddings(documents),
@@ -114,7 +116,7 @@ def add_documents(
     _post(f"/collections/{collection_id}/add", body)
 
 
-def get_documents(collection_id: str, ids: list[str]) -> dict:
+def get_documents(collection_id: str, ids: list[str]) -> dict[str, Any]:
     return _post(f"/collections/{collection_id}/get", {"ids": ids})
 
 
@@ -123,7 +125,7 @@ def query_collection(
     query_texts: list[str] | None = None,
     query_embeddings: list[list[float]] | None = None,
     n_results: int = 2,
-) -> dict:
+) -> dict[str, Any]:
     """Query a collection by text or pre-computed embeddings.
 
     Exactly one of `query_texts` or `query_embeddings` must be provided.

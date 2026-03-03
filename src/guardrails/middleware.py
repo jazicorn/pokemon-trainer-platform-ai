@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 from .pii_filter import filter_pii, get_pii_report, has_pii
 
@@ -28,7 +29,7 @@ class GuardrailMiddleware:
         self.filter_input = filter_input
         self.filter_output = filter_output
 
-    def process_input(self, text: str) -> tuple[str, dict]:
+    def process_input(self, text: str) -> tuple[str, dict[str, Any]]:
         """Process user input before sending to agent.
 
         Returns:

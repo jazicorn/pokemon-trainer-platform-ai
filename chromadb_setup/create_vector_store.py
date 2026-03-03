@@ -14,8 +14,10 @@ import math
 import sys
 import traceback
 from abc import ABC, abstractmethod
+from collections.abc import Generator
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 import httpx
 
@@ -64,7 +66,7 @@ class DocumentLoader:
                 print(f"⚠️  Warning: Could not read {filepath.name}: {e}")
         return documents
 
-    def _find_documents(self):
+    def _find_documents(self) -> Generator[Path, None, None]:
         """Generator that yields paths to supported documents."""
         for ext in self.SUPPORTED_EXTENSIONS:
             yield from self.docs_dir.rglob(f"*{ext}")
@@ -285,7 +287,7 @@ class VectorStoreManager:
         total_stored = 0
         chunk_id = 0
         buf_chunks: list[str] = []
-        buf_meta: list[dict] = []
+        buf_meta: list[dict[str, Any]] = []
         buf_ids: list[str] = []
 
         def _flush() -> None:
@@ -325,7 +327,7 @@ class VectorStoreManager:
         self,
         chunks: list[str],
         embeddings: list[list[float]],
-        metadatas: list[dict],
+        metadatas: list[dict[str, Any]],
         ids: list[str],
     ) -> None:
         """POST a single batch of chunks to the ChromaDB /add endpoint."""
@@ -335,7 +337,7 @@ class VectorStoreManager:
             timeout=60,
         ).raise_for_status()
 
-    def query(self, query_texts: list[str], n_results: int = 5) -> dict:
+    def query(self, query_texts: list[str], n_results: int = 5) -> dict[str, Any]:
         """
         Query the collection by text.
 

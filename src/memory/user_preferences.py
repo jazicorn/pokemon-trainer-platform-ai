@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime
+from typing import Any
 
 from .database import get_connection
 
@@ -26,7 +27,7 @@ class UserPreferencesManager:
         """Save or update user preferences."""
         existing = self.get_preferences()
 
-        data = {
+        data: dict[str, Any] = {
             "favorite_types": favorite_types if favorite_types is not None else existing.get("favorite_types", []),
             "goal": goal if goal is not None else existing.get("goal", ""),
             "trading_style": trading_style if trading_style is not None else existing.get("trading_style", "balanced"),
@@ -52,7 +53,7 @@ class UserPreferencesManager:
             ))
             conn.commit()
 
-    def get_preferences(self) -> dict:
+    def get_preferences(self) -> dict[str, Any]:
         """Get user preferences."""
         with get_connection() as conn:
             cursor = conn.cursor()
