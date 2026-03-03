@@ -7,7 +7,6 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Iterator
 
-from utils import is_chromadb_running
 
 DB_NAME = "memory.db"
 
