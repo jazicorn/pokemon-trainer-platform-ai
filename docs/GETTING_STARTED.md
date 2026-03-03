@@ -269,15 +269,15 @@ needed. Values are read once at startup from `src/config.py`.
 
 ### Environment Variable Reference
 
-| Env var                  | Default                    | Purpose                              |
-| ------------------------ | -------------------------- | ------------------------------------ |
-| `POKEMON_MODEL`          | `claude-sonnet`            | Active LLM — see model keys below    |
-| `CHROMADB_URL`           | `http://localhost:8000`    | ChromaDB server base URL             |
-| `PHOENIX_URL`            | `http://127.0.0.1:6006`    | Phoenix tracing UI URL               |
-| `OLLAMA_URL`             | `http://localhost:11434`   | Ollama server base URL               |
-| `OLLAMA_EMBEDDING_MODEL` | `nomic-embed-text`         | Embedding model when using Ollama    |
-| `PROJECT_NAME`           | `pokemon-trade-advisor`    | Phoenix project / tracing namespace  |
-| `USE_OLLAMA_EMBEDDINGS`  | `false`                    | `true` to embed via Ollama instead   |
+| Env var                  | Default                    | Purpose                                                     |
+| ------------------------ | -------------------------- | ----------------------------------------------------------- |
+| `POKEMON_MODEL`          | `claude-sonnet`            | Active LLM — see model keys below                           |
+| `CHROMADB_URL`           | `http://localhost:8000`    | ChromaDB server base URL                                    |
+| `PHOENIX_URL`            | `http://127.0.0.1:6006`    | Phoenix tracing UI URL                                      |
+| `OLLAMA_URL`             | `http://localhost:11434`   | Ollama server base URL                                      |
+| `OLLAMA_EMBEDDING_MODEL` | `nomic-embed-text`         | Embedding model when using Ollama                           |
+| `PROJECT_NAME`           | `pokemon-trade-advisor`    | Phoenix project / tracing namespace                         |
+| `USE_OLLAMA_EMBEDDINGS`  | `false`                    | `true` to embed via Ollama instead                          |
 | `PLATFORM_DB_URL`        | (not set)                  | PostgreSQL DSN — enables live trade offers from the web API |
 
 API keys (required for non-Ollama providers):

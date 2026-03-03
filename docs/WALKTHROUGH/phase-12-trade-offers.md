@@ -39,8 +39,8 @@ Phase 13: Evaluations     (offers flow can be included in evaluation scenarios)
   `CommandType`; `OfferParams` named tuple; `_parse_offer()` helper added.
 - `src/cli/app.py` — `handle_offers()`, `handle_offer_send()`, `handle_offer_accept()`,
   `handle_offer_decline()` added to `TradeCLI`.
-- `tests/agents/test_trade_offers.py` — CRUD tests for `TradeOffersManager` and async tests for the two
-  agent functions.
+- `tests/agents/test_trade_offers.py` — CRUD tests for `TradeOffersManager` and async tests for the
+  two agent functions.
 
 ## Key Concepts
 
