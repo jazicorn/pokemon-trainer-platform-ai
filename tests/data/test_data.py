@@ -1,5 +1,9 @@
 """Tests for data models, generator, and loader."""
 
+from collections.abc import Iterator
+from datetime import datetime, timezone
+from pathlib import Path
+
 import pytest
 
 from data import (
@@ -15,6 +19,23 @@ from data.generator import (
     generate_user_collection,
     RARITY,
 )
+
+
+@pytest.fixture(autouse=True)
+def no_platform_db(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
+    """Force the JSON/mock path for all tests in this module.
+
+    Patched at the source (data.platform_db) so that both loader.py and
+    database.py — which each do ``from data.platform_db import get_platform_db``
+    inside function bodies — see the mock.
+
+    Also clears the lru_cache on load_platform_trades so a cached PG result
+    from a previous test in the same process cannot bleed through.
+    """
+    monkeypatch.setattr("data.platform_db.get_platform_db", lambda: None)
+    load_platform_trades.cache_clear()
+    yield
+    load_platform_trades.cache_clear()  # clean up after the test too
 
 
 class TestPokemonRarity:
@@ -104,24 +125,24 @@ class TestGenerateUserCollection:
 class TestDataLoader:
     """Tests for data loading functions."""
 
+    data_dir: Path
+
     @pytest.fixture(autouse=True)
-    def setup(self, tmp_path):
+    def setup(self, tmp_path: Path) -> None:
         """Generate test data before each test."""
         from data.generator import save_mock_data
         self.data_dir = tmp_path / "data"
         save_mock_data(self.data_dir)
 
-    def test_load_platform_trades_returns_model(self, monkeypatch):
+    def test_load_platform_trades_returns_model(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(
             "data.loader.get_data_dir",
             lambda: self.data_dir
         )
-        # Clear cache for fresh load
-        load_platform_trades.cache_clear()
         result = load_platform_trades()
         assert isinstance(result, PlatformTrades)
 
-    def test_load_user_collection_returns_model(self, monkeypatch):
+    def test_load_user_collection_returns_model(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(
             "data.loader.get_data_dir",
             lambda: self.data_dir
@@ -129,7 +150,7 @@ class TestDataLoader:
         result = load_user_collection("user_001")
         assert isinstance(result, UserCollection)
 
-    def test_load_user_collection_wrong_id_raises(self, monkeypatch):
+    def test_load_user_collection_wrong_id_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(
             "data.loader.get_data_dir",
             lambda: self.data_dir
@@ -148,7 +169,7 @@ class TestPydanticModels:
     def test_trade_model_validates(self):
         trade = Trade(
             trade_id="t001",
-            timestamp="2024-01-01T00:00:00Z",
+            timestamp=datetime(2024, 1, 1, tzinfo=timezone.utc),
             offered_pokemon="pikachu",
             requested_pokemon="eevee",
             status=TradeStatus.COMPLETED,

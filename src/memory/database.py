@@ -131,7 +131,21 @@ class TradeOffersManager:
         self.user_id = user_id
         init_database()
 
-    def seed_mock_offers(self) -> None:
+    def seed_offers(self) -> None:
+        """Populate the inbox for this user.
+
+        When ``PLATFORM_DB_URL`` is configured the trade offers live in
+        PostgreSQL (the shared source of truth), so no local seeding is needed.
+        Falls back to fixed mock data otherwise.
+        """
+        from data.platform_db import get_platform_db
+
+        if get_platform_db() is not None:
+            return  # PostgreSQL is the source of truth — nothing to seed locally
+
+        self._seed_mock_offers()
+
+    def _seed_mock_offers(self) -> None:
         """Seed demo incoming offers the first time a user views their inbox."""
         with get_connection() as conn:
             cursor = conn.cursor()
@@ -165,6 +179,14 @@ class TradeOffersManager:
         requested_pokemon: str,
     ) -> int:
         """Insert a new pending offer and return its ID."""
+        from data.platform_db import get_platform_db
+
+        db = get_platform_db()
+        if db is not None:
+            return db.create_offer(
+                self.user_id, recipient_id, offered_pokemon, requested_pokemon
+            )
+
         with get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
@@ -174,10 +196,17 @@ class TradeOffersManager:
                 (self.user_id, recipient_id, offered_pokemon, requested_pokemon),
             )
             conn.commit()
-            return cursor.lastrowid  # type: ignore[return-value]
+            assert cursor.lastrowid is not None
+            return cursor.lastrowid
 
     def get_inbox(self) -> list[dict[str, Any]]:
         """Return pending offers addressed to this user."""
+        from data.platform_db import get_platform_db
+
+        db = get_platform_db()
+        if db is not None:
+            return db.fetch_trade_offers(self.user_id)
+
         with get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
@@ -192,6 +221,12 @@ class TradeOffersManager:
 
     def get_sent(self) -> list[dict[str, Any]]:
         """Return all offers sent by this user."""
+        from data.platform_db import get_platform_db
+
+        db = get_platform_db()
+        if db is not None:
+            return db.fetch_sent_offers(self.user_id)
+
         with get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
@@ -206,6 +241,12 @@ class TradeOffersManager:
 
     def update_status(self, offer_id: int, status: str) -> bool:
         """Set offer status to accepted or declined. Returns True if a row was updated."""
+        from data.platform_db import get_platform_db
+
+        db = get_platform_db()
+        if db is not None:
+            return db.update_offer_status(offer_id, self.user_id, status)
+
         with get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
@@ -219,6 +260,13 @@ class TradeOffersManager:
 
     def save_ai_analysis(self, offer_id: int, analysis: str) -> None:
         """Persist AI evaluation text for an offer."""
+        from data.platform_db import get_platform_db
+
+        db = get_platform_db()
+        if db is not None:
+            db.save_offer_analysis(offer_id, analysis)
+            return
+
         with get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(

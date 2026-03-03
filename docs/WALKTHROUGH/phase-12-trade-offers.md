@@ -6,10 +6,11 @@ Phase 12 extends the system with a **peer-to-peer trade offer workflow**. Users 
 incoming trade offers (with AI evaluation attached to each one), send offers to other users (with AI
 pre-screening before the offer is persisted), and accept or decline specific offers by ID.
 
-This phase adds to three existing layers simultaneously: a new `trade_offers` SQLite table and
+This phase adds to three existing layers simultaneously: a new `trade_offers` table and
 `TradeOffersManager` class (memory layer), two new async agent functions `get_pending_offers()` and
 `send_trade_offer()` (agent layer), and four new CLI commands `offers`, `offer`, `accept`, `decline`
-(CLI layer).
+(CLI layer). The table lives in SQLite by default; when `PLATFORM_DB_URL` is set it is shared with
+the web API's PostgreSQL database instead (see `docs/REFERENCE/PLATFORM_DB.md`).
 
 ## Where It Fits
 
@@ -26,8 +27,11 @@ Phase 13: Evaluations     (offers flow can be included in evaluation scenarios)
 ## Key Files
 
 - `src/memory/database.py` — `trade_offers` table schema (in `init_database()`) and the
-  `TradeOffersManager` class with six methods: `seed_mock_offers()`, `create_offer()`,
-  `get_inbox()`, `get_sent()`, `update_status()`, `save_ai_analysis()`.
+  `TradeOffersManager` class with six methods: `seed_offers()`, `create_offer()`,
+  `get_inbox()`, `get_sent()`, `update_status()`, `save_ai_analysis()`. All methods
+  dispatch to PostgreSQL when `PLATFORM_DB_URL` is configured.
+- `src/data/platform_db.py` — optional PostgreSQL client (`PlatformDBClient`) and
+  `get_platform_db()` singleton; returns `None` silently when `PLATFORM_DB_URL` is unset.
 - `src/agents/trade_advisor.py` — `get_pending_offers(user_id)` and `send_trade_offer(sender_id,
   recipient_id, offered, requested)` — two new module-level async functions. Both reuse the existing
   `evaluate_trade()`.

@@ -15,7 +15,8 @@ routing it all through a single conversational interface.
 * **Vector Database:** ChromaDB (RAG for technical Pokémon stats)
 * **Observability:** [Pydantic Logfire](https://logfire.pydantic.dev/) / OpenTelemetry / Arize Phoenix
   (Real-time agent tracing)
-* **Data Layer:** SQLite (Persistent user memory & market history)
+* **Data Layer:** SQLite (default) or PostgreSQL via `PLATFORM_DB_URL` (persistent user memory,
+  market history & shared trade offers)
 
 ---
 

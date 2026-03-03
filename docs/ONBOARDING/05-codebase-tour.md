@@ -228,11 +228,27 @@ The SQLite layer. Contains:
 
 - `init_db()` — creates the schema on first run
 - `TradeOffersManager` — CRUD for the trade offers inbox and sent items
-  - `seed_mock_offers()` — auto-populates 5 sample offers when you first view
-    your inbox
+  - `seed_offers()` — public dispatcher: no-op when PostgreSQL is configured,
+    otherwise seeds 5 mock offers on first inbox view
   - `get_inbox(user_id)` — pending incoming offers
   - `get_sent(user_id)` — outgoing offers you created
   - `update_status(offer_id, status)` — accept or decline
+
+All five `TradeOffersManager` methods dispatch to PostgreSQL when
+`PLATFORM_DB_URL` is set, falling back to SQLite when it is not.
+
+### `src/data/platform_db.py`
+
+Optional PostgreSQL client. Only active when `PLATFORM_DB_URL` is set.
+`PlatformDBClient` wraps psycopg3 and provides the same interface as
+`TradeOffersManager`'s SQLite methods. `get_platform_db()` is a
+module-level singleton that returns `None` silently when the env var is
+unset, so all callers fall back to mock data without any extra logic.
+
+The `trade_offers` table is **shared read-write**: the web API inserts
+offers; this project reads them and writes back `status` and `ai_analysis`.
+All other tables (`trades`, `user_pokemon`, `user_preferences`,
+`user_trade_history`) are read-only from this project's perspective.
 
 ### `src/memory/user_preferences.py`
 

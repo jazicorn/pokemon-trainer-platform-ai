@@ -76,6 +76,9 @@ class Config:
     # Project settings
     project_name: str = "pokemon-trade-advisor"
 
+    # Platform PostgreSQL (optional) — set PLATFORM_DB_URL to enable live data
+    platform_db_url: str | None = None
+
     def __post_init__(self) -> None:
         """Validate configuration at instantiation time."""
         if self.default_model not in MODELS:
@@ -111,4 +114,5 @@ config = Config(
     ollama_embedding_model=os.getenv("OLLAMA_EMBEDDING_MODEL", "nomic-embed-text"),
     smogon_url=os.getenv("SMOGON_URL", "https://pkmn.github.io/smogon/data"),
     project_name=os.getenv("PROJECT_NAME", "pokemon-trade-advisor"),
+    platform_db_url=os.getenv("PLATFORM_DB_URL") or None,
 )

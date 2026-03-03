@@ -278,6 +278,7 @@ needed. Values are read once at startup from `src/config.py`.
 | `OLLAMA_EMBEDDING_MODEL` | `nomic-embed-text`         | Embedding model when using Ollama    |
 | `PROJECT_NAME`           | `pokemon-trade-advisor`    | Phoenix project / tracing namespace  |
 | `USE_OLLAMA_EMBEDDINGS`  | `false`                    | `true` to embed via Ollama instead   |
+| `PLATFORM_DB_URL`        | (not set)                  | PostgreSQL DSN — enables live trade offers from the web API |
 
 API keys (required for non-Ollama providers):
 
@@ -302,6 +303,25 @@ CHROMADB_URL=http://myserver:8000 uv run python app.py
 # Use Ollama for both inference and embeddings
 POKEMON_MODEL=llama USE_OLLAMA_EMBEDDINGS=true uv run python app.py
 ```
+
+### Platform Database (Optional)
+
+When `PLATFORM_DB_URL` is set the `trade_offers` table is shared read-write
+with the Pokemon Trainer Platform web API — the web API inserts offers and this
+project evaluates and responds to them. Without it, a local SQLite table with
+seeded mock offers is used instead (zero breaking change).
+
+```bash
+# Install the optional psycopg driver
+uv sync --group platform-db
+
+# Connect to your PostgreSQL instance
+PLATFORM_DB_URL=postgresql://user:pass@localhost:5432/pokemon_platform \
+  uv run python app.py
+```
+
+See `docs/REFERENCE/PLATFORM_DB.md` for the full schema, role setup, and
+fallback behaviour table.
 
 ### User Preferences
 

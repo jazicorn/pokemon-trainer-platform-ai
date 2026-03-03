@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from typing import Any
 
 from data.loader import load_user_collection
 from rag.vector_store import PokemonVectorStore
@@ -11,7 +12,7 @@ from .trade_advisor_core import AdvisorDependencies, trade_advisor
 from .trade_analytics import TradeAnalytics
 
 # Import tools module to ensure all @trade_advisor.tool decorators are executed.
-from . import trade_advisor_tools as _tools  # noqa: F401
+from . import trade_advisor_tools  # noqa: F401  # pyright: ignore[reportUnusedImport]
 
 
 def _build_advisor_deps(
@@ -80,13 +81,13 @@ async def get_pending_offers(user_id: str = "user_001") -> str:
     from memory.database import TradeOffersManager
 
     mgr = TradeOffersManager(user_id)
-    mgr.seed_mock_offers()
+    mgr.seed_offers()
     offers = mgr.get_inbox()
 
     if not offers:
         return "Your inbox is empty — no pending trade offers."
 
-    async def _analyze(offer: dict) -> str:
+    async def _analyze(offer: dict[str, Any]) -> str:
         analysis = offer.get("ai_analysis")
         if not analysis:
             analysis = await evaluate_trade(

@@ -2,10 +2,31 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 from unittest.mock import AsyncMock, patch
 
 from memory.database import TradeOffersManager
+
+
+# ---------------------------------------------------------------------------
+# Fixtures
+# ---------------------------------------------------------------------------
+
+@pytest.fixture(autouse=True)
+def no_platform_db(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Force the SQLite path for all tests in this module.
+
+    Without this, any test run with PLATFORM_DB_URL set in the environment
+    would silently attempt a real PostgreSQL connection and fail.
+
+    We patch the function in its *source* module (data.platform_db) because
+    every caller does ``from data.platform_db import get_platform_db`` inside
+    their function bodies (deferred import to avoid circular imports).
+    Patching a downstream module name would have no effect.
+    """
+    monkeypatch.setattr("data.platform_db.get_platform_db", lambda: None)
 
 
 # ---------------------------------------------------------------------------
@@ -14,10 +35,9 @@ from memory.database import TradeOffersManager
 # Note: pytestmark is NOT set at module level so sync class tests are not
 # incorrectly flagged. Async tests are marked individually below.
 
-def make_mgr(user_id: str = "test_user", tmp_path=None) -> TradeOffersManager:
+def make_mgr(user_id: str = "test_user", tmp_path: Path | None = None) -> TradeOffersManager:
     """Return a TradeOffersManager backed by an in-memory DB for isolation."""
     import memory.database as db_module
-    from pathlib import Path
 
     if tmp_path is not None:
         db_path = tmp_path / "test_memory.db"
@@ -35,7 +55,7 @@ def make_mgr(user_id: str = "test_user", tmp_path=None) -> TradeOffersManager:
 # ---------------------------------------------------------------------------
 
 class TestTradeOffersManager:
-    def test_create_offer_returns_positive_id(self, tmp_path):
+    def test_create_offer_returns_positive_id(self, tmp_path: Path):
         mgr = TradeOffersManager.__new__(TradeOffersManager)
         mgr.user_id = "alice"
 
@@ -52,7 +72,7 @@ class TestTradeOffersManager:
         finally:
             db_module.get_db_path = original
 
-    def test_get_inbox_filters_by_recipient(self, tmp_path):
+    def test_get_inbox_filters_by_recipient(self, tmp_path: Path):
         import memory.database as db_module
         db_path = tmp_path / "db.sqlite"
         original = db_module.get_db_path
@@ -79,7 +99,7 @@ class TestTradeOffersManager:
         finally:
             db_module.get_db_path = original
 
-    def test_get_sent_filters_by_sender(self, tmp_path):
+    def test_get_sent_filters_by_sender(self, tmp_path: Path):
         import memory.database as db_module
         db_path = tmp_path / "db.sqlite"
         original = db_module.get_db_path
@@ -103,7 +123,7 @@ class TestTradeOffersManager:
         finally:
             db_module.get_db_path = original
 
-    def test_update_status_accepted(self, tmp_path):
+    def test_update_status_accepted(self, tmp_path: Path):
         import memory.database as db_module
         db_path = tmp_path / "db.sqlite"
         original = db_module.get_db_path
@@ -126,7 +146,7 @@ class TestTradeOffersManager:
         finally:
             db_module.get_db_path = original
 
-    def test_update_status_declined(self, tmp_path):
+    def test_update_status_declined(self, tmp_path: Path):
         import memory.database as db_module
         db_path = tmp_path / "db.sqlite"
         original = db_module.get_db_path
@@ -149,7 +169,7 @@ class TestTradeOffersManager:
         finally:
             db_module.get_db_path = original
 
-    def test_update_status_wrong_user_returns_false(self, tmp_path):
+    def test_update_status_wrong_user_returns_false(self, tmp_path: Path):
         import memory.database as db_module
         db_path = tmp_path / "db.sqlite"
         original = db_module.get_db_path
@@ -170,7 +190,7 @@ class TestTradeOffersManager:
         finally:
             db_module.get_db_path = original
 
-    def test_seed_mock_offers_idempotent(self, tmp_path):
+    def test_seed_mock_offers_idempotent(self, tmp_path: Path):
         import memory.database as db_module
         db_path = tmp_path / "db.sqlite"
         original = db_module.get_db_path
@@ -182,10 +202,10 @@ class TestTradeOffersManager:
             mgr = TradeOffersManager.__new__(TradeOffersManager)
             mgr.user_id = "new_user"
 
-            mgr.seed_mock_offers()
+            mgr._seed_mock_offers()
             first_count = len(mgr.get_inbox())
 
-            mgr.seed_mock_offers()  # second call should be a no-op
+            mgr._seed_mock_offers()  # second call should be a no-op
             second_count = len(mgr.get_inbox())
 
             assert first_count == second_count
@@ -193,7 +213,7 @@ class TestTradeOffersManager:
         finally:
             db_module.get_db_path = original
 
-    def test_save_ai_analysis_persists(self, tmp_path):
+    def test_save_ai_analysis_persists(self, tmp_path: Path):
         import memory.database as db_module
         db_path = tmp_path / "db.sqlite"
         original = db_module.get_db_path
@@ -225,7 +245,7 @@ class TestTradeOffersManager:
 
 
 @pytest.mark.asyncio
-async def test_get_pending_offers_calls_evaluate_trade(tmp_path):
+async def test_get_pending_offers_calls_evaluate_trade(tmp_path: Path):
     """get_pending_offers() should call evaluate_trade for each offer."""
     import memory.database as db_module
     db_path = tmp_path / "db.sqlite"
@@ -255,7 +275,7 @@ async def test_get_pending_offers_calls_evaluate_trade(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_send_trade_offer_calls_evaluate_trade(tmp_path):
+async def test_send_trade_offer_calls_evaluate_trade(tmp_path: Path):
     """send_trade_offer() should call evaluate_trade before persisting."""
     import memory.database as db_module
     db_path = tmp_path / "db.sqlite"
@@ -281,7 +301,7 @@ async def test_send_trade_offer_calls_evaluate_trade(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_get_pending_offers_empty_inbox(tmp_path):
+async def test_get_pending_offers_empty_inbox(tmp_path: Path):
     """get_pending_offers() should return a friendly message when inbox is empty."""
     import memory.database as db_module
     db_path = tmp_path / "db.sqlite"
@@ -297,7 +317,7 @@ async def test_get_pending_offers_empty_inbox(tmp_path):
         mgr.user_id = "empty_user"
         # Don't seed — inbox is naturally empty for a brand new user
         # Override seed_mock_offers to do nothing
-        with patch.object(TOM, "seed_mock_offers", return_value=None):
+        with patch.object(TOM, "seed_offers", return_value=None):
             from agents.trade_advisor import get_pending_offers
             result = await get_pending_offers("empty_user")
 

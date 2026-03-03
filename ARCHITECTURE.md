@@ -294,17 +294,20 @@ hallucinate.
 
 ### Trade Offers (Persistent)
 
-Managed by `TradeOffersManager` in `memory/database.py`, backed by the
-`trade_offers` SQLite table.
+Managed by `TradeOffersManager` in `memory/database.py`. When `PLATFORM_DB_URL`
+is configured, this table lives in PostgreSQL and is **shared read-write** between
+the web API (inserts offers) and the AI project (reads offers, writes back status
+and analysis). Without `PLATFORM_DB_URL`, a local SQLite table is used instead.
 
-| Column              | Purpose                                    |
-| ------------------- | ------------------------------------------ |
-| `sender_id`         | User who sent the offer                    |
-| `recipient_id`      | User the offer is addressed to             |
-| `offered_pokemon`   | Pokemon being offered                      |
-| `requested_pokemon` | Pokemon requested in return                |
-| `status`            | `pending` / `accepted` / `declined`        |
-| `ai_analysis`       | Cached AI evaluation of the offer fairness |
+| Column              | Purpose                                              |
+| ------------------- | ---------------------------------------------------- |
+| `sender_id`         | User who sent the offer                              |
+| `recipient_id`      | User the offer is addressed to                       |
+| `offered_pokemon`   | Pokemon being offered                                |
+| `requested_pokemon` | Pokemon requested in return                          |
+| `status`            | `pending` / `accepted` / `declined`                  |
+| `ai_analysis`       | AI evaluation written back by this project           |
+| `responded_at`      | Timestamp set when the AI accepts or declines        |
 
 **Business Equivalent**: Order management system, marketplace bid/ask book
 
