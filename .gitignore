@@ -209,8 +209,10 @@ __marimo__/
 # macOS
 .DS_Store
 
-# Runtime data (generated at runtime, not source)
-data/
+# Runtime data (generated at runtime, not source) — anchored to repo root so
+# this doesn't also match src/data/ (a real source package) or any other
+# directory named "data" at any depth.
+/data/
 !tests/data/
 
 # ChromaDB local vector store
