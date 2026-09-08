@@ -21,7 +21,7 @@ The project ships a `.env.op` file containing `op://` URI references:
 
 ```text
 ANTHROPIC_API_KEY=op://Private/ANTHROPIC_API_KEY/credential
-GOOGLE_API_KEY=op://Private/GEMINI_API_KEY/credential
+GOOGLE_API_KEY=op://Private/GOOGLE_API_KEY/credential
 # OPENAI_API_KEY=op://Private/OPENAI_API_KEY/credential  ← uncomment if you have this
 ```
 
@@ -50,7 +50,7 @@ Keys are resolved once when you open a terminal via `$(op read ...)` in your
 
 ```bash
 export ANTHROPIC_API_KEY=$(op read "op://Private/ANTHROPIC_API_KEY/credential")
-export GOOGLE_API_KEY=$(op read "op://Private/GEMINI_API_KEY/credential")
+export GOOGLE_API_KEY=$(op read "op://Private/GOOGLE_API_KEY/credential")
 ```
 
 1Password must be unlocked at terminal startup. If it is not, `op read` fails

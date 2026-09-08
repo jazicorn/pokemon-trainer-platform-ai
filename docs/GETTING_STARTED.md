@@ -21,12 +21,22 @@ Before you begin, ensure you have the following installed:
 ```bash
 # macOS
 brew install pyenv
-pyenv install 3.13
-pyenv global 3.13
 
-# Verify
-python --version
+# Initialize pyenv for Zsh
+echo 'export PATH="$HOME/.pyenv/bin:$PATH"' >> ~/.zshrc
+echo 'eval "$(pyenv init -)"' >> ~/.zshrc
+source ~/.zshrc
+
+# Install Python 3.13
+pyenv install 3.13
+
+# Use Python 3.13 for this project
+pyenv local 3.13
 ```
+
+`pyenv local 3.13` creates a `.python-version` file in the project directory,
+so this project uses Python 3.13 without changing the Python version for other
+projects.
 
 **uv** (fast Python package manager):
 
@@ -36,15 +46,24 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Windows
 powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
-
-# Verify
-uv --version
 ```
 
 **Docker**:
 
 - macOS/Windows: [Docker Desktop](https://www.docker.com/products/docker-desktop)
+- macOS: Docker-compatible runtimes such as [Colima](https://github.com/abiosoft/colima)
+  are also supported (`brew install colima docker && colima start`)
 - Linux: `sudo apt install docker.io` or [Docker Engine](https://docs.docker.com/engine/install/)
+
+After installing the prerequisites, verify that they are available:
+
+```bash
+python --version
+which python
+uv --version
+docker --version
+git --version
+```
 
 ## Project Setup
 
@@ -60,6 +79,8 @@ cd pokemon-trainer-platform-ai
 ```bash
 uv sync
 ```
+
+This creates or updates the project's virtual environment and installs the dependencies defined by the project.
 
 This installs all required packages including:
 
@@ -78,7 +99,7 @@ ANTHROPIC_API_KEY=sk-ant-...
 # Or
 OPENAI_API_KEY=sk-...
 # Or
-GEMINI_API_KEY=...
+GOOGLE_API_KEY=...
 
 # Optional: For local models
 OLLAMA_HOST=http://localhost:11434
@@ -90,7 +111,7 @@ be unlocked at that point.
 
 ```bash
 export ANTHROPIC_API_KEY=$(op read "op://Private/ANTHROPIC_API_KEY/credential")
-export GOOGLE_API_KEY=$(op read "op://Private/GEMINI_API_KEY/credential")
+export GOOGLE_API_KEY=$(op read "op://Private/GOOGLE_API_KEY/credential")
 ```
 
 Authenticate before opening a new terminal (or reload):
@@ -367,17 +388,17 @@ See [TROUBLESHOOTING/runtime-errors.md](TROUBLESHOOTING/runtime-errors.md).
 1. **Explore the Agents**: Look at `src/agents/` to understand how each
    agent works
 
-1. **Run Evaluations**: Test the system quality:
+2. **Run Evaluations**: Test the system quality:
 
    ```bash
    uv run python -m src.evals.eval_trade_advisor
    uv run python -m src.evals.eval_rag_comparison
    ```
 
-1. **Customize**: Add your own Pokemon preferences and see how
+3. **Customize**: Add your own Pokemon preferences and see how
    recommendations change
 
-1. **Extend**: Try adding new features like:
+4. **Extend**: Try adding new features like:
    - New agent capabilities
    - Additional data sources
    - Custom evaluation metrics
