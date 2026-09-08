@@ -82,6 +82,25 @@ jobs:
               ;;
           esac
 
+      - name: Sync uv.lock with the bumped version
+        # `cz bump` only rewrites pyproject.toml's `version` (per
+        # version_files in cz.toml) — it never touches uv.lock, which also
+        # records the project's own version. Left alone, every subsequent
+        # `uv sync --locked` (including this same push's own CI run) fails
+        # with "lockfile needs to be updated". Fold the regenerated lockfile
+        # into the same release commit and move the tag to match, so the
+        # release stays a single clean commit+tag instead of gaining a
+        # trailing "update lockfile" commit.
+        if: steps.cz.outputs.released == 'true'
+        run: |
+          uv lock
+          if ! git diff --quiet -- uv.lock; then
+            git add uv.lock
+            git commit --amend --no-edit
+            tag=$(git describe --tags --abbrev=0)
+            git tag -f "$tag" HEAD
+          fi
+
       - name: Push version commit and tag
         if: steps.cz.outputs.released == 'true'
         run: git push --follow-tags
