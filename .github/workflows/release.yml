@@ -102,5 +102,15 @@ jobs:
           fi
 
       - name: Push version commit and tag
+        # NOT `git push --follow-tags`: cz.toml doesn't set `annotated_tag`,
+        # so `cz bump` creates a lightweight tag — and `--follow-tags` only
+        # pushes *annotated* tags. It silently no-ops on a lightweight one
+        # (exit 0, no tag on the remote), which is exactly what happened to
+        # v0.2.0: the bump commit landed on main but the tag never did, so
+        # image-publish.yml (triggered by `push: tags: v*`) never fired.
+        # Push the branch and the tag explicitly by name instead.
         if: steps.cz.outputs.released == 'true'
-        run: git push --follow-tags
+        run: |
+          tag=$(git describe --tags --abbrev=0)
+          git push origin HEAD:${{ github.ref_name }}
+          git push origin "$tag"
