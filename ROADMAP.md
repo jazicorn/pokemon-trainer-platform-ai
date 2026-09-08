@@ -225,7 +225,8 @@ this straightforward without spinning up a real server.
 
 **Tasks:**
 
-- Create `tests/test_api.py` using FastAPI's `TestClient` (synchronous, no server needed)
+- Create `tests/api/__init__.py` (matches every other test subdirectory's mirroring of `src/`)
+- Create `tests/api/test_api.py` using FastAPI's `TestClient` (synchronous, no server needed)
 - Mock the agent functions (`evaluate_trade`, `get_trade_suggestions`, etc.) using
   `unittest.mock.patch` — same pattern as existing agent tests
 - Set `API_KEY=test-key` in test fixtures via `monkeypatch`
@@ -246,7 +247,7 @@ this straightforward without spinning up a real server.
 
 ```bash
 make test
-# → tests/test_api.py ... passed (10+ new tests)
+# → tests/api/test_api.py ... passed (10+ new tests)
 ```
 
 ---
@@ -290,4 +291,4 @@ make test
 | `is_chromadb_running()` | `src/utils.py` |
 | `require_api_key` | `src/api/auth.py` (new) |
 | request logging middleware | `src/api/app.py` (new) |
-| API route tests | `tests/test_api.py` (new) |
+| API route tests | `tests/api/test_api.py` (new) |

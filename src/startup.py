@@ -43,6 +43,14 @@ def validate_environment() -> None:
     provider = _config.get_model().provider.value
     required_var = PROVIDER_ENV_VARS.get(provider)
 
+    # Ollama's direct Cloud API transport (OLLAMA_URL=https://ollama.com) needs
+    # an API key — the local daemon and local-proxy-to-cloud transports don't
+    # (no auth, and `ollama signin` respectively). This can't be a static
+    # per-provider entry in PROVIDER_ENV_VARS like the other providers, since
+    # it depends on ollama_url, not just the selected provider.
+    if provider == "ollama" and "ollama.com" in _config.ollama_url:
+        required_var = "OLLAMA_API_KEY"
+
     if not required_var:
         return  # Provider needs no API key (e.g. Ollama)
 

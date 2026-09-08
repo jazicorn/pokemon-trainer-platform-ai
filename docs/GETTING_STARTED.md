@@ -55,6 +55,61 @@ powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
   are also supported (`brew install colima docker && colima start`)
 - Linux: `sudo apt install docker.io` or [Docker Engine](https://docs.docker.com/engine/install/)
 
+**Ollama** (optional — only needed for `make run-ollama` / `make run-ollama-cloud`, the
+model options that require no API key at all; `make run-ollama-cloud-direct` needs an
+Ollama API key instead, but no local `ollama` install):
+
+- macOS via Homebrew:
+
+  ```bash
+  brew install ollama
+  brew services start ollama
+  ```
+
+- macOS via [MacPorts](https://www.macports.org/install.php#installing) (install MacPorts
+  itself first, then):
+
+  ```bash
+  sudo port install ollama
+  sudo port load ollama
+  ```
+
+Either way, `ollama` itself works the same from here. Verify the server is up:
+
+```bash
+curl http://localhost:11434
+# Should return: Ollama is running
+```
+
+Then either pull a local model (see `MODELS["llama"]` in `src/config.py`) — heavier on
+older/less powerful hardware, since inference runs on your machine:
+
+```bash
+ollama pull llama3.2
+```
+
+**Or — Ollama Cloud:** inference runs on Ollama's servers, not your machine. There are two
+ways to reach it — same `POKEMON_MODEL=llama-cloud`, different `OLLAMA_URL`, auto-detected
+by `src/config.py` (no local GPU needed either way):
+
+- `make run-ollama-cloud` — via the local `ollama` install above, proxied through it:
+
+  ```bash
+  ollama signin
+  ollama pull gpt-oss:120b-cloud
+  ```
+
+- `make run-ollama-cloud-direct` — talks to `https://ollama.com` directly, **no local
+  `ollama` install needed at all**. Just an API key:
+
+  ```bash
+  export OLLAMA_API_KEY=...   # from https://ollama.com/settings/keys
+  ```
+
+More cloud models: <https://ollama.com/search?c=cloud>, or see
+[docs/REFERENCE/OLLAMA_CLOUD_MODELS.md](REFERENCE/OLLAMA_CLOUD_MODELS.md) for a
+point-in-time snapshot of what's available.
+
 After installing the prerequisites, verify that they are available:
 
 ```bash
@@ -92,7 +147,13 @@ This installs all required packages including:
 
 ### 3. Set Up Environment Variables
 
-**Option A — `.env` file:**
+**Option A — `.env` file:** copy [`.env.example`](../.env.example) to `.env` and fill in your
+values. `config.py` loads it automatically via `python-dotenv` — no sourcing needed, it
+just works on the next `uv run python app.py` / `make run*`.
+
+```bash
+cp .env.example .env
+```
 
 ```bash
 # Required: At least one LLM API key
@@ -102,9 +163,16 @@ OPENAI_API_KEY=sk-...
 # Or
 GOOGLE_API_KEY=...
 
-# Optional: For local models
-OLLAMA_HOST=http://localhost:11434
+# Optional: For local or cloud Ollama models
+OLLAMA_URL=http://localhost:11434
+# OLLAMA_API_KEY=...  # only for direct Ollama Cloud API access (OLLAMA_URL=https://ollama.com)
 ```
+
+`.env.local` (also auto-loaded, also gitignored) is available too — it takes precedence
+over `.env`, which takes precedence over the defaults in `src/config.py`. Handy for
+per-machine overrides you'd rather keep separate from your main `.env`. A real
+environment variable (a shell export, Docker's `environment:`, `op run`, CI secrets)
+always wins over both files.
 
 **Option B — 1Password `.zshrc` integration:** Add `op read` exports to your
 `~/.zshrc`. Keys are resolved once when you open a terminal, so 1Password must
@@ -113,6 +181,7 @@ be unlocked at that point.
 ```bash
 export ANTHROPIC_API_KEY=$(op read "op://Private/ANTHROPIC_API_KEY/credential")
 export GOOGLE_API_KEY=$(op read "op://Private/GOOGLE_API_KEY/credential")
+# export OLLAMA_API_KEY=$(op read "op://Private/OLLAMA_API_KEY/credential")
 ```
 
 Authenticate before opening a new terminal (or reload):
@@ -297,29 +366,34 @@ needed. Values are read once at startup from `src/config.py`.
 
 ### Environment Variable Reference
 
-| Env var                  | Default                    | Purpose                                                     |
-| ------------------------ | -------------------------- | ----------------------------------------------------------- |
-| `POKEMON_MODEL`          | `claude-sonnet`            | Active LLM — see model keys below                           |
-| `CHROMADB_URL`           | `http://localhost:8000`    | ChromaDB server base URL                                    |
-| `PHOENIX_URL`            | `http://127.0.0.1:6006`    | Phoenix tracing UI URL                                      |
-| `OLLAMA_URL`             | `http://localhost:11434`   | Ollama server base URL                                      |
-| `OLLAMA_EMBEDDING_MODEL` | `nomic-embed-text`         | Embedding model when using Ollama                           |
-| `PROJECT_NAME`           | `pokemon-trade-advisor`    | Phoenix project / tracing namespace                         |
-| `USE_OLLAMA_EMBEDDINGS`  | `false`                    | `true` to embed via Ollama instead                          |
-| `PLATFORM_DB_URL`        | (not set)                  | PostgreSQL DSN — enables live trade offers from the web API |
+| Env var | Default | Purpose |
+| --- | --- | --- |
+| `POKEMON_MODEL` | `claude-sonnet` | Active LLM — see model keys below |
+| `CHROMADB_URL` | `http://localhost:8000` | ChromaDB server base URL |
+| `PHOENIX_URL` | `http://127.0.0.1:6006` | Phoenix tracing UI URL |
+| `OLLAMA_URL` | `http://localhost:11434` | Ollama server base URL — `https://ollama.com` for direct Ollama Cloud API access |
+| `OLLAMA_EMBEDDING_MODEL` | `nomic-embed-text` | Embedding model when using Ollama |
+| `PROJECT_NAME` | `pokemon-trade-advisor` | Phoenix project / tracing namespace |
+| `USE_OLLAMA_EMBEDDINGS` | `false` | `true` to embed via Ollama instead |
+| `PLATFORM_DB_URL` | (not set) | PostgreSQL DSN — enables live trade offers from the web API |
 
-API keys (required for non-Ollama providers):
+API keys:
 
-| Env var             | Provider                          |
-| ------------------- | --------------------------------- |
-| `ANTHROPIC_API_KEY` | `claude-sonnet`, `claude-haiku`   |
-| `OPENAI_API_KEY`    | `gpt-4o`, `gpt-4o-mini`           |
-| `GOOGLE_API_KEY`    | `gemini-flash`, `gemini-pro`      |
+| Env var | Required for |
+| --- | --- |
+| `ANTHROPIC_API_KEY` | `claude-sonnet`, `claude-haiku` |
+| `OPENAI_API_KEY` | `gpt-4o`, `gpt-4o-mini` |
+| `GOOGLE_API_KEY` | `gemini-flash`, `gemini-pro` |
+| `OLLAMA_API_KEY` | `llama-cloud`, only via the direct-API transport (`OLLAMA_URL=https://ollama.com`) |
+
+`OLLAMA_API_KEY` is not needed for local `llama`, and not needed for `llama-cloud` via
+the local-proxy transport either — `ollama signin` handles auth there instead. Get a key
+from <https://ollama.com/settings/keys>.
 
 ### Model Selection
 
 Available model keys: `claude-sonnet` (default), `claude-haiku`, `gemini-flash`,
-`gemini-pro`, `gpt-4o`, `gpt-4o-mini`, `llama`.
+`gemini-pro`, `gpt-4o`, `gpt-4o-mini`, `llama`, `llama-cloud`.
 
 ```bash
 # Switch model for a single run

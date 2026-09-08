@@ -5,6 +5,32 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from enum import StrEnum
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+# Resolved relative to this file, not cwd, so this works regardless of where
+# `uv run python app.py` is invoked from.
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+
+def _load_dotenv_files(project_root: Path) -> None:
+    """Load .env.local then .env, both with override=False.
+
+    Real environment variables (a shell export, Docker's `environment:`,
+    `op run`, CI secrets) always win over both files — dotenv only fills in
+    variables that aren't already set. Loading .env.local FIRST means it
+    also wins over .env, without needing override=True on that second call
+    (which would incorrectly clobber a real shell-exported var).
+
+    Factored out (rather than inlined below) so tests can point it at a
+    tmp_path instead of mutating this project's real .env/.env.local files.
+    """
+    load_dotenv(project_root / ".env.local", override=False)
+    load_dotenv(project_root / ".env", override=False)
+
+
+_load_dotenv_files(_PROJECT_ROOT)
 
 
 class ModelProvider(StrEnum):
@@ -22,6 +48,11 @@ class ModelConfig:
 
     provider: ModelProvider
     model_name: str
+    # Ollama only: the model name to use instead of `model_name` when OLLAMA_URL
+    # points directly at Ollama Cloud's API (ollama.com) rather than a local
+    # daemon. Ollama Cloud's direct API uses bare model names (no "-cloud"
+    # suffix) — see Config.get_model() for where this gets applied.
+    direct_api_model_name: str | None = None
 
     @property
     def model_id(self) -> str:
@@ -45,6 +76,20 @@ MODELS = {
     "gpt-4o": ModelConfig(ModelProvider.OPENAI, "gpt-4o"),
     "gpt-4o-mini": ModelConfig(ModelProvider.OPENAI, "gpt-4o-mini"),
     "llama": ModelConfig(ModelProvider.OLLAMA, "llama3.2"),
+    # Ollama Cloud — one key, two transports, auto-detected from OLLAMA_URL:
+    #   OLLAMA_URL=http://localhost:11434 (default) -> local daemon proxies to
+    #     the cloud. Needs: brew install ollama && ollama signin && ollama pull
+    #     gpt-oss:120b-cloud. `make ollama-mode-cloud-proxy` sets this up.
+    #   OLLAMA_URL=https://ollama.com -> direct API access, no local install.
+    #     Needs an API key from https://ollama.com/settings/keys, set as
+    #     OLLAMA_API_KEY. `make ollama-mode-cloud-direct` sets this up.
+    # More cloud models: https://ollama.com/search?c=cloud
+    # or docs/REFERENCE/OLLAMA_CLOUD_MODELS.md for a point-in-time snapshot.
+    "llama-cloud": ModelConfig(
+        ModelProvider.OLLAMA,
+        "gpt-oss:120b-cloud",
+        direct_api_model_name="gpt-oss:120b",
+    ),
 }
 
 
@@ -77,11 +122,19 @@ class Config:
             raise ValueError(f"Unknown model '{self.default_model}'. Available: {list(MODELS.keys())}")
 
     def get_model(self, name: str | None = None) -> ModelConfig:
-        """Get model config by name."""
+        """Get model config by name.
+
+        For Ollama entries with a `direct_api_model_name`, swaps in that name
+        when `ollama_url` points directly at Ollama Cloud (ollama.com) rather
+        than a local daemon — see ModelConfig.direct_api_model_name.
+        """
         model_name = name or self.default_model
         if model_name not in MODELS:
             raise ValueError(f"Unknown model: {model_name}. Available: {list(MODELS.keys())}")
-        return MODELS[model_name]
+        model = MODELS[model_name]
+        if model.direct_api_model_name and "ollama.com" in self.ollama_url:
+            return ModelConfig(model.provider, model.direct_api_model_name)
+        return model
 
     @property
     def model_id(self) -> str:
@@ -102,3 +155,24 @@ config = Config(
     project_name=os.getenv("PROJECT_NAME", "pokemon-trade-advisor"),
     platform_db_url=os.getenv("PLATFORM_DB_URL") or None,
 )
+
+# pydantic-ai's OllamaProvider reads OLLAMA_BASE_URL (not this project's own
+# OLLAMA_URL) to know where to send Ollama requests — without this, any
+# "ollama:*" model_id raises UserError at Agent construction time, regardless
+# of local or cloud use.
+#
+# It must include a "/v1" suffix — OllamaProvider passes it straight to the
+# OpenAI SDK client, which hits Ollama's OpenAI-compatible endpoints
+# (http://localhost:11434/v1/chat/completions, or https://ollama.com/v1/...
+# for direct cloud access), not Ollama's native /api/chat. config.ollama_url
+# itself stays bare (no /v1) because it's also used for embeddings via
+# get_ollama_embedding(), which calls Ollama's native /api/embeddings path.
+#
+# setdefault() so an explicitly-set OLLAMA_BASE_URL (e.g. for direct testing
+# outside this app) always wins. _stripped guards against someone reasonably
+# setting OLLAMA_URL to an already-/v1 value themselves (pydantic-ai's own
+# docs show base_url with /v1 already on it), which would otherwise double up.
+_stripped_ollama_url = config.ollama_url.rstrip("/")
+if not _stripped_ollama_url.endswith("/v1"):
+    _stripped_ollama_url += "/v1"
+os.environ.setdefault("OLLAMA_BASE_URL", _stripped_ollama_url)

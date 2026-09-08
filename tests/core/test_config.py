@@ -1,11 +1,16 @@
 """Tests for src/config.py — Config dataclass, env var overrides, and validation."""
 
 import importlib
+import os
 
 import pytest
 
 import config as cfg_module
-from config import MODELS, Config, ModelConfig, ModelProvider
+from config import MODELS, Config, ModelConfig, ModelProvider, _load_dotenv_files
+
+# _isolate_ollama_base_url in tests/conftest.py (autouse, applies here too)
+# prevents this file's importlib.reload(cfg_module) calls from leaking a
+# stale OLLAMA_BASE_URL into other tests.
 
 
 class TestModelConfig:
@@ -40,6 +45,7 @@ class TestModelsDict:
             "gemini-flash",
             "gemini-pro",
             "llama",
+            "llama-cloud",
         }
         assert expected == set(MODELS.keys())
 
@@ -76,6 +82,41 @@ class TestConfigDefaults:
 
     def test_default_use_ollama_embeddings_is_false(self):
         assert self.cfg.use_ollama_embeddings is False
+
+
+class TestDotenvLoading:
+    """_load_dotenv_files() — layered .env.local / .env loading with real
+    environment variables always taking precedence over both files.
+
+    Uses tmp_path rather than this project's real .env/.env.local — those
+    are real, potentially developer-populated files that tests must never
+    read from or write to.
+    """
+
+    VAR = "POKEMON_TEST_DOTENV_VAR"
+
+    def test_env_file_sets_previously_unset_var(self, tmp_path, monkeypatch):
+        monkeypatch.delenv(self.VAR, raising=False)
+        (tmp_path / ".env").write_text(f"{self.VAR}=from-env\n")
+        _load_dotenv_files(tmp_path)
+        assert os.environ[self.VAR] == "from-env"
+
+    def test_env_local_overrides_env(self, tmp_path, monkeypatch):
+        monkeypatch.delenv(self.VAR, raising=False)
+        (tmp_path / ".env").write_text(f"{self.VAR}=from-env\n")
+        (tmp_path / ".env.local").write_text(f"{self.VAR}=from-env-local\n")
+        _load_dotenv_files(tmp_path)
+        assert os.environ[self.VAR] == "from-env-local"
+
+    def test_real_env_var_wins_over_both_files(self, monkeypatch, tmp_path):
+        monkeypatch.setenv(self.VAR, "from-real-shell")
+        (tmp_path / ".env").write_text(f"{self.VAR}=from-env\n")
+        (tmp_path / ".env.local").write_text(f"{self.VAR}=from-env-local\n")
+        _load_dotenv_files(tmp_path)
+        assert os.environ[self.VAR] == "from-real-shell"
+
+    def test_missing_files_do_not_raise(self, tmp_path):
+        _load_dotenv_files(tmp_path)  # neither file exists in tmp_path
 
 
 class TestConfigEnvVars:
@@ -168,3 +209,75 @@ class TestConfigValidation:
     def test_model_id_property(self):
         cfg = Config(default_model="llama")
         assert cfg.model_id == "ollama:llama3.2"
+
+
+class TestOllamaCloudTransportDetection:
+    """llama-cloud resolves to one of two model names depending on OLLAMA_URL —
+    the local-daemon-proxy transport uses a "-cloud" suffixed name, direct
+    access to ollama.com's API uses the bare name (no local install needed).
+    """
+
+    def test_default_ollama_url_uses_local_proxy_suffix(self):
+        cfg = Config(default_model="llama-cloud")
+        assert cfg.get_model().model_name == "gpt-oss:120b-cloud"
+
+    def test_ollama_com_url_uses_direct_api_name(self):
+        cfg = Config(default_model="llama-cloud", ollama_url="https://ollama.com")
+        assert cfg.get_model().model_name == "gpt-oss:120b"
+
+    def test_ollama_com_url_model_id(self):
+        cfg = Config(default_model="llama-cloud", ollama_url="https://ollama.com")
+        assert cfg.model_id == "ollama:gpt-oss:120b"
+
+    def test_local_model_unaffected_by_ollama_url(self):
+        """`llama` (no direct_api_model_name) never gets suffix-swapped."""
+        cfg = Config(default_model="llama", ollama_url="https://ollama.com")
+        assert cfg.get_model().model_name == "llama3.2"
+
+
+class TestOllamaBaseUrlPropagation:
+    """pydantic-ai's OllamaProvider reads OLLAMA_BASE_URL — not this
+    project's own OLLAMA_URL. Without propagating it, any "ollama:*"
+    model_id raises UserError at Agent construction time, local or cloud.
+
+    OLLAMA_BASE_URL must carry a "/v1" suffix (OllamaProvider hands it
+    straight to the OpenAI SDK client, which hits Ollama's OpenAI-compatible
+    endpoints, not its native /api/* ones) — but config.ollama_url itself
+    must stay bare, since get_ollama_embedding() uses it against Ollama's
+    native /api/embeddings path.
+    """
+
+    def test_ollama_base_url_gets_v1_suffix(self, monkeypatch):
+        monkeypatch.setenv("OLLAMA_URL", "http://test-host:11434")
+        importlib.reload(cfg_module)
+        assert os.environ["OLLAMA_BASE_URL"] == "http://test-host:11434/v1"
+
+    def test_ollama_url_itself_has_no_v1_suffix(self, monkeypatch):
+        """config.ollama_url must stay bare for get_ollama_embedding()."""
+        monkeypatch.setenv("OLLAMA_URL", "http://test-host:11434")
+        importlib.reload(cfg_module)
+        assert cfg_module.config.ollama_url == "http://test-host:11434"
+
+    def test_cloud_direct_url_also_gets_v1_suffix(self, monkeypatch):
+        monkeypatch.setenv("OLLAMA_URL", "https://ollama.com")
+        importlib.reload(cfg_module)
+        assert os.environ["OLLAMA_BASE_URL"] == "https://ollama.com/v1"
+
+    def test_trailing_slash_on_ollama_url_does_not_double_up(self, monkeypatch):
+        monkeypatch.setenv("OLLAMA_URL", "http://test-host:11434/")
+        importlib.reload(cfg_module)
+        assert os.environ["OLLAMA_BASE_URL"] == "http://test-host:11434/v1"
+
+    def test_ollama_url_already_ending_in_v1_does_not_double_up(self, monkeypatch):
+        """A user copying pydantic-ai's own docs might set OLLAMA_URL with
+        /v1 already on it — must not become .../v1/v1."""
+        monkeypatch.setenv("OLLAMA_URL", "http://test-host:11434/v1")
+        importlib.reload(cfg_module)
+        assert os.environ["OLLAMA_BASE_URL"] == "http://test-host:11434/v1"
+
+    def test_explicit_ollama_base_url_is_not_overridden(self, monkeypatch):
+        """setdefault() must respect an explicitly-set OLLAMA_BASE_URL."""
+        monkeypatch.setenv("OLLAMA_BASE_URL", "http://explicit-override:1234/v1")
+        monkeypatch.setenv("OLLAMA_URL", "http://test-host:11434")
+        importlib.reload(cfg_module)
+        assert os.environ["OLLAMA_BASE_URL"] == "http://explicit-override:1234/v1"

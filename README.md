@@ -29,7 +29,7 @@
 
 * **Agent Framework:** [Pydantic AI](https://ai.pydantic.dev/) (Strict type-safety & structured LLM
   outputs)
-* **LLM Support:** Anthropic Claude (default), Google Gemini, OpenAI GPT-4o, Ollama (local)
+* **LLM Support:** Anthropic Claude (default), Google Gemini, OpenAI GPT-4o, Ollama (local or cloud)
 * **Vector Database:** ChromaDB (RAG for technical Pokémon stats)
 * **Observability:** [Pydantic Logfire](https://logfire.pydantic.dev/) / OpenTelemetry / Arize Phoenix
   (Real-time agent tracing)
@@ -63,6 +63,8 @@ make run                  # Anthropic Claude via 1Password (default)
 make run-gemini           # Google Gemini via 1Password
 make run-openai           # OpenAI GPT-4o via 1Password
 make run-ollama           # Local Ollama llama (no API key needed)
+make run-ollama-cloud         # Ollama Cloud via local daemon proxy (needs `ollama signin`)
+make run-ollama-cloud-direct  # Ollama Cloud direct API — no local ollama install
 uv run python app.py      # plain (requires API key already in env)
 ```
 
@@ -209,30 +211,32 @@ has spiked to 2.4 (+100% momentum). **Recommendation:** Hold your position; mark
 
 ## ⚙️ Make Commands Reference
 
-| Command                | Description                                      |
-| ---------------------- | ------------------------------------------------ |
-| `make run`             | Launch CLI with Claude (default) via 1Password   |
-| `make run-gemini`      | Launch CLI with Gemini Flash via 1Password       |
-| `make run-openai`      | Launch CLI with GPT-4o via 1Password             |
-| `make run-ollama`      | Launch CLI with local Ollama (no API key needed) |
-| `make test`            | Run all tests with mocked LLM                    |
-| `make test-live`       | Run tests against live APIs                      |
-| `make test-rag`        | Run ChromaDB integration tests                   |
-| `make eval`            | Run trade advisor evaluation                     |
-| `make eval-rag`        | Run RAG vs no-RAG comparison                     |
-| `make lint`            | Check formatting, lint rules, and types          |
-| `make lint-fix`        | Auto-fix formatting and lint issues              |
-| `make hooks-install`   | One-time setup: enable this repo's git hooks     |
-| `make commit`          | Guided Conventional Commits prompt (Commitizen)  |
-| `make docker-build`    | Build the app's Docker image                     |
-| `make docker-run`      | Run the CLI in Docker (+ ChromaDB)               |
-| `make docker-down`     | Stop and remove all Docker Compose services      |
-| `make ingest`          | Index Pokémon data into ChromaDB                 |
-| `make generate-data`   | Regenerate mock trade and collection data        |
-| `make chromadb-start`  | Start ChromaDB Docker container                  |
-| `make chromadb-stop`   | Stop ChromaDB Docker container                   |
-| `make chromadb-status` | Show ChromaDB container status                   |
-| `make reset-db`        | Delete local SQLite database                     |
+| Command | Description |
+| --- | --- |
+| `make run` | Launch CLI with Claude (default) via 1Password |
+| `make run-gemini` | Launch CLI with Gemini Flash via 1Password |
+| `make run-openai` | Launch CLI with GPT-4o via 1Password |
+| `make run-ollama` | Launch CLI with local Ollama (no API key needed) |
+| `make run-ollama-cloud` | Ollama Cloud via local daemon proxy |
+| `make run-ollama-cloud-direct` | Ollama Cloud direct API — no local ollama install |
+| `make test` | Run all tests with mocked LLM |
+| `make test-live` | Run tests against live APIs |
+| `make test-rag` | Run ChromaDB integration tests |
+| `make eval` | Run trade advisor evaluation |
+| `make eval-rag` | Run RAG vs no-RAG comparison |
+| `make lint` | Check formatting, lint rules, and types |
+| `make lint-fix` | Auto-fix formatting and lint issues |
+| `make hooks-install` | One-time setup: enable this repo's git hooks |
+| `make commit` | Guided Conventional Commits prompt (Commitizen) |
+| `make docker-build` | Build the app's Docker image |
+| `make docker-run` | Run the CLI in Docker (+ ChromaDB) |
+| `make docker-down` | Stop and remove all Docker Compose services |
+| `make ingest` | Index Pokémon data into ChromaDB |
+| `make generate-data` | Regenerate mock trade and collection data |
+| `make chromadb-start` | Start ChromaDB Docker container |
+| `make chromadb-stop` | Stop ChromaDB Docker container |
+| `make chromadb-status` | Show ChromaDB container status |
+| `make reset-db` | Delete local SQLite database |
 
 ---
 

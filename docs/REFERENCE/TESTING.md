@@ -98,15 +98,20 @@ uv run pytest tests/ -v --tb=short
 
 Other providers follow the same pattern:
 
-| Provider (`POKEMON_MODEL`)       | Required env var      |
-| -------------------------------- | --------------------- |
-| `claude-sonnet` / `claude-haiku` | `ANTHROPIC_API_KEY`   |
-| `gpt-4o` / `gpt-4o-mini`         | `OPENAI_API_KEY`      |
-| `gemini-flash` / `gemini-pro`    | `GOOGLE_API_KEY`      |
-| `llama` (Ollama)                 | *(none)*              |
+| Provider (`POKEMON_MODEL`) | Required env var |
+| --- | --- |
+| `claude-sonnet` / `claude-haiku` | `ANTHROPIC_API_KEY` |
+| `gpt-4o` / `gpt-4o-mini` | `OPENAI_API_KEY` |
+| `gemini-flash` / `gemini-pro` | `GOOGLE_API_KEY` |
+| `llama` (Ollama, local) | *(none)* |
+| `llama-cloud` (Ollama, local-proxy transport) | *(none)* — `ollama signin` handles auth |
+| `llama-cloud` (Ollama, direct API, `OLLAMA_URL=https://ollama.com`) | `OLLAMA_API_KEY` |
 
-`validate_environment()` in `startup.py` raises a clear `EnvironmentError` at
-app startup if the required key is missing, empty, or unresolved.
+`validate_environment()` in `startup.py` raises a clear `EnvironmentError` at app startup
+if the required key is missing, empty, or unresolved — including `OLLAMA_API_KEY` when
+`OLLAMA_URL` points at `ollama.com`, regardless of entry point (`make`, `uv run`, or
+otherwise). `make run-ollama-cloud-direct` also has its own preflight check, so that
+target fails even faster without waiting for Python to start.
 It detects the 1Password CLI (`op`) and tailors the message accordingly:
 
 - **`op://` URI value** → key was never resolved; suggests

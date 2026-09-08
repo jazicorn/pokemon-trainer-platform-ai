@@ -22,6 +22,22 @@ run-openai: ## Run app with GPT-4o via 1Password
 run-ollama: ## Run app with local Ollama llama model (no API key needed)
 	POKEMON_MODEL=llama USE_OLLAMA_EMBEDDINGS=true uv run python app.py
 
+run-ollama-cloud: ## Ollama Cloud via local daemon proxy (needs `ollama signin`, no API key)
+	POKEMON_MODEL=llama-cloud USE_OLLAMA_EMBEDDINGS=true uv run python app.py
+
+run-ollama-cloud-direct: ## Ollama Cloud direct API — no local ollama install (needs OLLAMA_API_KEY)
+	@if [ -z "$$OLLAMA_API_KEY" ]; then \
+		echo "❌ OLLAMA_API_KEY is not set."; \
+		echo "   Get one from https://ollama.com/settings/keys, then:"; \
+		echo "   export OLLAMA_API_KEY=your-key-here"; \
+		exit 1; \
+	fi
+	# NOTE: USE_OLLAMA_EMBEDDINGS is deliberately NOT set here — embeddings
+	# need a local Ollama daemon with nomic-embed-text pulled (see
+	# get_ollama_embedding()'s docstring), which the whole point of "direct"
+	# mode is to avoid. Embeddings fall back to the built-in simple embedder.
+	POKEMON_MODEL=llama-cloud OLLAMA_URL=https://ollama.com uv run python app.py
+
 # ── Tests ─────────────────────────────────────────────────────────────────────
 
 test: ## Run all unit/integration tests with mocked LLM (no live keys needed)
@@ -116,7 +132,7 @@ help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*##' $(MAKEFILE_LIST) \
 		| awk 'BEGIN {FS = ":.*##"}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: run run-gemini run-openai run-ollama \
+.PHONY: run run-gemini run-openai run-ollama run-ollama-cloud run-ollama-cloud-direct \
         test test-live test-rag \
         eval eval-rag \
         reset-db \
