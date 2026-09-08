@@ -1,0 +1,89 @@
+name: CI Failure Helper Comment
+
+on:
+  workflow_run:
+    workflows:
+      - CI Test
+      - CI Quality
+    types:
+      - completed
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  comment-on-failure:
+    if: ${{ github.event.workflow_run.conclusion != 'success' && github.event.workflow_run.event == 'pull_request' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Comment (or update comment) on PR with repro steps
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+            const prs = run.pull_requests || [];
+
+            if (!prs.length) {
+              core.info("CI failed but no associated pull request was found.");
+              return;
+            }
+
+            const marker = "<!-- ci-failure-helper-comment -->";
+            const repoUrl = "https://github.com/" + context.repo.owner + "/" + context.repo.repo;
+
+            const isQuality = run.name === "CI Quality";
+            const repro = isQuality
+              ? "make lint       # ruff format --check, ruff check, pyright\nmake lint-fix    # auto-fix what can be auto-fixed"
+              : 'uv run pytest tests/ -v --tb=short -m "not requires_chromadb"';
+            const docLink = isQuality
+              ? repoUrl + "/blob/main/docs/REFERENCE/PYRIGHT.md"
+              : repoUrl + "/blob/main/docs/REFERENCE/TESTING.md";
+
+            const body =
+              marker + "\n" +
+              "### ❌ " + run.name + " failed for this PR\n\n" +
+              "Reproduce locally:\n\n" +
+              "```bash\n" + repro + "\n```\n\n" +
+              "See [" + (isQuality ? "PYRIGHT.md" : "TESTING.md") + "](" + docLink + ") for troubleshooting, " +
+              "or [runtime-errors.md](" + repoUrl + "/blob/main/docs/TROUBLESHOOTING/runtime-errors.md) " +
+              "for environment issues.\n\n" +
+              "**Run:** " + run.html_url + "\n" +
+              "**Commit:** `" + run.head_sha + "`\n";
+
+            for (const pr of prs) {
+              const issue_number = pr.number;
+
+              const comments = await github.paginate(
+                github.rest.issues.listComments,
+                {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue_number,
+                  per_page: 100
+                }
+              );
+
+              const existing = comments.find((c) => (c.body || "").includes(marker));
+
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existing.id,
+                  body: body
+                });
+                core.info("Updated CI helper comment on PR #" + issue_number);
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue_number,
+                  body: body
+                });
+                core.info("Created CI helper comment on PR #" + issue_number);
+              }
+            }

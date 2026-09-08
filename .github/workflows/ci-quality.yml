@@ -1,0 +1,44 @@
+name: CI Quality
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: ruff + pyright (no Docker/ChromaDB needed)
+    runs-on: ubuntu-latest
+
+    env:
+      CI: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history, needed for the commit-message check below
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.0.1
+        with:
+          enable-cache: true
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - name: Lint, format, and type check
+        run: make lint
+
+      - name: Validate commit messages (Commitizen)
+        if: github.event_name == 'pull_request'
+        run: uv run cz check --rev-range origin/${{ github.base_ref }}..HEAD

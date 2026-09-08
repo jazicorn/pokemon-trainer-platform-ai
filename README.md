@@ -1,11 +1,29 @@
-# Pokemon Trainer Platform - AI
+<!-- markdownlint-disable MD033 -->
 
-**🧠 Pokémon Trainer's Second Brain** — Multi-Agent AI Advisor
+<h1 align="center">
+  🧠 Pokemon Trainer Platform - AI
+</h1>
 
-A state-of-the-art **Hierarchical Multi-Agent System** built for Pokémon trainers who want more
-than guesswork. Five specialized agents collaborate: forecasting trade market demand, verifying
-trade legitimacy, surfacing Pokédex knowledge via RAG, evaluating battle team composition, and
-routing it all through a single conversational interface.
+<p align="center">
+  <em>
+    A hierarchical multi-agent AI advisor for Pokémon trainers — five specialized agents
+    collaborate on trade evaluation, market forecasting, legitimacy checks, battle
+    viability, and Pokédex knowledge via RAG.
+  </em>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/license-MIT-green" alt="License: MIT">
+  <img src="https://img.shields.io/badge/python-3.13%2B-blue" alt="Python 3.13+">
+  <img src="https://img.shields.io/badge/agents-pydantic--ai-blue" alt="Pydantic AI">
+  <img src="https://img.shields.io/badge/vector--db-chromadb-blue" alt="ChromaDB">
+  <!-- markdownlint-disable-next-line MD013 -->
+  <a href="https://github.com/jazicorn/pokemon-trainer-platform-ai/actions/workflows/ci-test.yml"><img src="https://github.com/jazicorn/pokemon-trainer-platform-ai/actions/workflows/ci-test.yml/badge.svg" alt="CI Test"></a>
+  <!-- markdownlint-disable-next-line MD013 -->
+  <a href="https://github.com/jazicorn/pokemon-trainer-platform-ai/actions/workflows/ci-quality.yml"><img src="https://github.com/jazicorn/pokemon-trainer-platform-ai/actions/workflows/ci-quality.yml/badge.svg" alt="CI Quality"></a>
+</p>
+
+---
 
 ## 🚀 The Tech Stack
 
