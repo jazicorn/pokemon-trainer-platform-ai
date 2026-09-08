@@ -130,6 +130,25 @@ make test-rag     # ChromaDB integration tests (ChromaDB must be running)
 
 ---
 
+## 📦 CI/CD & Releases
+
+Every push to `main` runs [`ci-test.yml`](.github/workflows/ci-test.yml),
+[`ci-quality.yml`](.github/workflows/ci-quality.yml), and
+[`image-build.yml`](.github/workflows/image-build.yml). If it merges cleanly,
+[`release.yml`](.github/workflows/release.yml) then self-determines whether a release is
+warranted straight from [Conventional Commits](https://www.conventionalcommits.org/) history
+(`feat`/`fix`/`perf` bump; anything else is a no-op) via
+[Commitizen](https://commitizen-tools.github.io/commitizen/), pushes a
+`chore(release): bump version X → Y` commit and a matching `vX.Y.Z` tag, and
+[`image-publish.yml`](.github/workflows/image-publish.yml) then builds and publishes that
+version to GHCR:
+
+```bash
+docker pull ghcr.io/jazicorn/pokemon-trainer-platform-ai:latest
+```
+
+---
+
 ## 📈 Technical Analysis for a Gaming Economy
 
 The breakthrough feature of this project is its ability to perform **Predictive Forecasting**.

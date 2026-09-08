@@ -188,8 +188,9 @@ git commit -m "fix(cli): handle empty offer inbox"
 ```
 
 Valid types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`.
-The `(release)` scope is reserved for CI automation once this project has a release
-pipeline — a manual commit using it is rejected unless you set `ALLOW_RELEASE_SCOPE=1`.
+The `(release)` scope is reserved for [`release.yml`](../../.github/workflows/release.yml),
+which pushes `chore(release): bump version X → Y` commits via `cz bump` on every push to
+`main` — a manual commit using that scope is rejected unless you set `ALLOW_RELEASE_SCOPE=1`.
 `SKIP_COMMIT_MSG_CHECK=1 git commit ...` bypasses validation entirely for one commit.
 
 **Note:** if you have the Node.js `commitizen` package installed globally, its `cz`

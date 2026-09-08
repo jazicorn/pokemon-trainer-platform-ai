@@ -1,10 +1,20 @@
 [tool.commitizen]
 name = "cz_customize"
-version = "0.0.0"
+# Baseline matches pyproject.toml's [project] version — this repo predates
+# the release pipeline, so the first `cz bump` in CI tags this as v0.1.0
+# rather than starting over at v0.0.x.
+version = "0.1.0"
+version_files = ["pyproject.toml:version"]
 tag_format = "v$version"
 version_scheme = "semver2"
 major_version_zero = true
-update_changelog_on_bump = false
+# Auto-generates/updates CHANGELOG.md from Conventional Commits on every bump.
+# The pre-pipeline project history now lives in HISTORY.md instead, so there's
+# no more format clash between hand-written and auto-generated content.
+update_changelog_on_bump = true
+# Matches this repo's own commit schema below and the (release) scope
+# reserved for CI automation in .githooks/commit-msg.
+bump_message = "chore(release): bump version $current_version → $new_version"
 use_editor = true
 
 [tool.commitizen.customize]
