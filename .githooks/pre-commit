@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+# .githooks/pre-commit
+#
+# Runs `make lint` (ruff format check, ruff check, pyright) on staged changes
+# before a commit is allowed through — catches exactly the kind of import-sort
+# drift that otherwise only surfaces in CI.
+#
+# Right-sized version of the equivalent hook in the pokemon-trainer-platform
+# repo, adapted for this project's uv/ruff/pyright toolchain instead of
+# Gradle + Spotless + Checkstyle/PMD/SpotBugs.
+#
+# Default behavior:
+# - Only runs when a staged file could actually affect `make lint`'s output
+# - Validates only — never mutates staged content. If it fails, run
+#   `make lint-fix`, review the diff, re-stage, and commit again.
+# - Skips tests by default (tests are enforced in CI via ci-test.yml)
+#
+# Install (not automatic — Git doesn't use .githooks/ on its own):
+#   make hooks-install
+#
+# Overrides (one-off per commit):
+#   SKIP_QUALITY=1 git commit ...    Skip this hook entirely
+#   RUN_TESTS=1 git commit ...       Also run the pytest suite
+#   DEBUG_PRECOMMIT=1 git commit ... Print which staged file triggered the hook
+
+set -euo pipefail
+
+log() { printf '%s\n' "$*"; }
+debug() {
+  if [[ "${DEBUG_PRECOMMIT:-}" == "1" ]]; then
+    printf '%s\n' "pre-commit(debug): $*"
+  fi
+}
+
+if [[ "${SKIP_QUALITY:-}" == "1" ]]; then
+  log "pre-commit: SKIP_QUALITY=1 set; skipping quality gate."
+  exit 0
+fi
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+
+CHANGED="$(git diff --cached --name-only --diff-filter=ACMR || true)"
+
+debug "staged files:"
+debug "${CHANGED:-<none>}"
+
+should_run=false
+triggered_by=""
+
+while IFS= read -r f; do
+  [[ -z "$f" ]] && continue
+
+  case "$f" in
+    *.py | pyproject.toml | uv.lock | Makefile | Dockerfile | .github/workflows/*)
+      should_run=true
+      triggered_by="$f"
+      break
+      ;;
+  esac
+done <<<"$CHANGED"
+
+if [[ "$should_run" != "true" ]]; then
+  log "pre-commit: no relevant files staged; skipping quality gate."
+  exit 0
+fi
+
+debug "triggered by: $triggered_by"
+
+log "pre-commit: running quality gate (make lint)..."
+
+if ! make lint; then
+  log ""
+  log "pre-commit: ❌ make lint failed."
+  log "pre-commit: run \`make lint-fix\`, review the diff, re-stage, and commit again."
+  log "pre-commit: (or SKIP_QUALITY=1 git commit ... to bypass once)"
+  exit 1
+fi
+
+if [[ "${RUN_TESTS:-}" == "1" ]]; then
+  log "pre-commit: RUN_TESTS=1 set; running pytest..."
+  uv run pytest tests/ -q --tb=short -m "not requires_chromadb"
+fi

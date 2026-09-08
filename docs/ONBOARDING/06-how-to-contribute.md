@@ -196,6 +196,22 @@ pipeline — a manual commit using it is rejected unless you set `ALLOW_RELEASE_
 binary is not compatible with this project's `cz.toml` (different config format).
 Always go through `uv run cz` / `make commit` — never a bare `cz` on `PATH`.
 
+### Pre-Commit Quality Gate
+
+The same `make hooks-install` above also installs a `pre-commit` hook that runs
+`make lint` whenever a staged file could affect it (`*.py`, `pyproject.toml`,
+`uv.lock`, `Makefile`, `Dockerfile`, `.github/workflows/*`) — this is what catches
+import-sort drift and similar issues before they reach CI, not after.
+
+```bash
+SKIP_QUALITY=1 git commit ...     # skip the quality gate for one commit
+RUN_TESTS=1 git commit ...        # also run the pytest suite (skipped by default)
+DEBUG_PRECOMMIT=1 git commit ...  # print which staged file triggered the hook
+```
+
+It only checks (`make lint`), never auto-fixes — if it fails, run `make lint-fix`,
+review the diff, re-stage, and commit again.
+
 ---
 
 ## Debugging When Something Goes Wrong

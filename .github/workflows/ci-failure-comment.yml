@@ -5,6 +5,7 @@ on:
     workflows:
       - CI Test
       - CI Quality
+      - CI Image Build
     types:
       - completed
 
@@ -35,20 +36,31 @@ jobs:
             const marker = "<!-- ci-failure-helper-comment -->";
             const repoUrl = "https://github.com/" + context.repo.owner + "/" + context.repo.repo;
 
-            const isQuality = run.name === "CI Quality";
-            const repro = isQuality
-              ? "make lint       # ruff format --check, ruff check, pyright\nmake lint-fix    # auto-fix what can be auto-fixed"
-              : 'uv run pytest tests/ -v --tb=short -m "not requires_chromadb"';
-            const docLink = isQuality
-              ? repoUrl + "/blob/main/docs/REFERENCE/PYRIGHT.md"
-              : repoUrl + "/blob/main/docs/REFERENCE/TESTING.md";
+            const checks = {
+              "CI Quality": {
+                repro: "make lint       # ruff format --check, ruff check, pyright\nmake lint-fix    # auto-fix what can be auto-fixed",
+                docName: "PYRIGHT.md",
+                docPath: "docs/REFERENCE/PYRIGHT.md",
+              },
+              "CI Image Build": {
+                repro: "make docker-build   # docker compose build app",
+                docName: "docker-compose.yml",
+                docPath: "docker-compose.yml",
+              },
+              "CI Test": {
+                repro: 'uv run pytest tests/ -v --tb=short -m "not requires_chromadb"',
+                docName: "TESTING.md",
+                docPath: "docs/REFERENCE/TESTING.md",
+              },
+            };
+            const check = checks[run.name] || checks["CI Test"];
 
             const body =
               marker + "\n" +
               "### ❌ " + run.name + " failed for this PR\n\n" +
               "Reproduce locally:\n\n" +
-              "```bash\n" + repro + "\n```\n\n" +
-              "See [" + (isQuality ? "PYRIGHT.md" : "TESTING.md") + "](" + docLink + ") for troubleshooting, " +
+              "```bash\n" + check.repro + "\n```\n\n" +
+              "See [" + check.docName + "](" + repoUrl + "/blob/main/" + check.docPath + ") for troubleshooting, " +
               "or [runtime-errors.md](" + repoUrl + "/blob/main/docs/TROUBLESHOOTING/runtime-errors.md) " +
               "for environment issues.\n\n" +
               "**Run:** " + run.html_url + "\n" +
