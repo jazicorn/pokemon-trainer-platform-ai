@@ -170,6 +170,8 @@ has spiked to 2.4 (+100% momentum). **Recommendation:** Hold your position; mark
 | `make eval-rag`        | Run RAG vs no-RAG comparison                     |
 | `make lint`            | Check formatting, lint rules, and types          |
 | `make lint-fix`        | Auto-fix formatting and lint issues              |
+| `make hooks-install`   | One-time setup: enable this repo's git hooks     |
+| `make commit`          | Guided Conventional Commits prompt (Commitizen)  |
 | `make ingest`          | Index Pokémon data into ChromaDB                 |
 | `make generate-data`   | Regenerate mock trade and collection data        |
 | `make chromadb-start`  | Start ChromaDB Docker container                  |

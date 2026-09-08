@@ -90,6 +90,15 @@ lint-fix: ## Auto-fix formatting and lint issues where possible
 	uv run ruff format .
 	uv run ruff check --fix .
 
+# ── Commits ───────────────────────────────────────────────────────────────────
+
+hooks-install: ## One-time setup: use .githooks/ for this repo (commit-msg validation)
+	git config core.hooksPath .githooks
+	@echo "✓ Git hooks installed from .githooks/"
+
+commit: ## Guided Conventional Commits prompt (Commitizen)
+	uv run cz commit
+
 # ── Help ──────────────────────────────────────────────────────────────────────
 
 help: ## Show this help
@@ -104,4 +113,5 @@ help: ## Show this help
         phoenix-start phoenix-stop \
         chromadb-start chromadb-stop chromadb-status \
         lint lint-fix \
+        hooks-install commit \
         help

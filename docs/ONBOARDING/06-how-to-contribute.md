@@ -169,6 +169,35 @@ integration, the active ruff rule set, and which checks are disabled and why.
 
 ---
 
+## Commit Messages
+
+This project follows [Conventional Commits](https://www.conventionalcommits.org/)
+(`type(scope): subject`), enforced via [Commitizen](https://commitizen-tools.github.io/commitizen/)
+and the schema in [`cz.toml`](../../cz.toml).
+
+```bash
+# One-time setup: use this repo's commit-msg hook
+make hooks-install
+
+# Guided prompt (recommended) — walks you through type, scope, breaking change, body
+make commit
+# or: uv run cz commit
+
+# Or write the message by hand, as long as it matches the schema, e.g.:
+git commit -m "fix(cli): handle empty offer inbox"
+```
+
+Valid types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`.
+The `(release)` scope is reserved for CI automation once this project has a release
+pipeline — a manual commit using it is rejected unless you set `ALLOW_RELEASE_SCOPE=1`.
+`SKIP_COMMIT_MSG_CHECK=1 git commit ...` bypasses validation entirely for one commit.
+
+**Note:** if you have the Node.js `commitizen` package installed globally, its `cz`
+binary is not compatible with this project's `cz.toml` (different config format).
+Always go through `uv run cz` / `make commit` — never a bare `cz` on `PATH`.
+
+---
+
 ## Debugging When Something Goes Wrong
 
 ### "ChromaDB is unreachable"

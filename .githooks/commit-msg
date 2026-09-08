@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# .githooks/commit-msg
+#
+# Enforces Conventional Commits (via Commitizen + cz.toml) and reserves the
+# `(release)` scope for CI-driven release commits.
+#
+# This is a right-sized version of the equivalent hook in the
+# pokemon-trainer-platform repo: it keeps the format check and the release
+# scope guard, but drops that repo's confirm-release-commit prompt and
+# semantic-release wiring — this project doesn't have a release pipeline
+# yet. Add that back here once one exists.
+#
+# Install (not automatic — Git doesn't use .githooks/ on its own):
+#   make hooks-install
+#
+# Bypass options:
+#   SKIP_COMMIT_MSG_CHECK=1   Skip all validation for this commit
+#   ALLOW_RELEASE_SCOPE=1     Allow a manual commit using the (release) scope
+#
+# CI systems (CI=true) are always allowed to use the (release) scope.
+
+set -euo pipefail
+
+commit_msg_file="$1"
+
+if [ "${SKIP_COMMIT_MSG_CHECK:-0}" = "1" ]; then
+  echo "⚠️  Skipping commit-msg validation (SKIP_COMMIT_MSG_CHECK=1)"
+  exit 0
+fi
+
+if ! command -v uv >/dev/null 2>&1; then
+  echo "❌ 'uv' is not on PATH — cannot validate commit message."
+  echo "   Install uv, then: uv sync --group dev"
+  exit 1
+fi
+
+# Always go through `uv run cz` (this project's Python Commitizen, installed
+# via `uv sync --group dev`) rather than a bare `cz` on PATH — a global
+# Node.js `commitizen` install also provides a `cz` binary and is NOT
+# compatible with this project's cz.toml.
+CZ=(uv run cz)
+
+# --- Conventional Commits format check --------------------------------------
+
+if ! "${CZ[@]}" check --commit-msg-file "$commit_msg_file"; then
+  echo ""
+  echo "❌ Commit message does not follow Conventional Commits (see cz.toml)."
+  echo "   Run 'cz commit' (or 'uv run cz commit') for a guided prompt,"
+  echo "   or SKIP_COMMIT_MSG_CHECK=1 git commit ... to bypass once."
+  exit 1
+fi
+
+# --- Reserve the (release) scope for CI automation --------------------------
+
+first_line="$(head -n1 "$commit_msg_file")"
+
+if [[ "$first_line" =~ ^[a-z]+\(release\) ]]; then
+  if [ "${CI:-false}" = "true" ] || [ "${ALLOW_RELEASE_SCOPE:-0}" = "1" ]; then
+    exit 0
+  fi
+  echo "❌ The (release) scope is reserved for CI automation."
+  echo "   Set ALLOW_RELEASE_SCOPE=1 to override for a manual commit."
+  exit 1
+fi
+
+exit 0

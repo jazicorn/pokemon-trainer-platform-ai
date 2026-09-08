@@ -1,0 +1,65 @@
+[tool.commitizen]
+name = "cz_customize"
+version = "0.0.0"
+tag_format = "v$version"
+version_scheme = "semver2"
+major_version_zero = true
+update_changelog_on_bump = false
+use_editor = true
+
+[tool.commitizen.customize]
+# Conventional-commits style message output
+message_template = '{{change_type}}{% if scope %}({{scope}}){% endif %}{% if breaking %}!{% endif %}: {{message}}'
+example = 'chore(make): add inspect tooling'
+schema = '<type>(<scope>): <subject>'
+# Use TOML literal string to avoid backslash escaping issues.
+schema_pattern = '(feat|fix|docs|style|refactor|perf|test|build|ci|chore)(\([\w\-.]+\))?(!)?:\s.+'
+
+
+# Version bump rules (Phase 0 safe: only feat/fix/perf bump)
+bump_map = { feat = "MINOR", fix = "PATCH", perf = "PATCH" }
+
+# --- Interactive questions (this controls the cz commit menu) --------------
+
+[[tool.commitizen.customize.questions]]
+type = "list"
+name = "change_type"
+message = "Select the type of change you are committing"
+choices = [
+  { value = "fix",      name = "fix: A bug fix. Correlates with PATCH in SemVer" },
+  { value = "feat",     name = "feat: A new feature. Correlates with MINOR in SemVer" },
+  { value = "docs",     name = "docs: Documentation only changes" },
+  { value = "style",    name = "style: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)" },
+  { value = "refactor", name = "refactor: A code change that neither fixes a bug nor adds a feature" },
+  { value = "perf",     name = "perf: A code change that improves performance" },
+  { value = "test",     name = "test: Adding missing or correcting existing tests" },
+  { value = "build",    name = "build: Changes that affect the build system or external dependencies (example scopes: pip, docker, npm)" },
+  { value = "ci",       name = "ci: Changes to CI configuration files and scripts (example scopes: GitLabCI)" },
+  { value = "chore",    name = "chore: Maintenance tasks (tooling, repo hygiene, CI ergonomics)" }
+]
+
+[[tool.commitizen.customize.questions]]
+type = "input"
+name = "scope"
+message = "Scope (optional, press enter to skip)"
+
+[[tool.commitizen.customize.questions]]
+type = "confirm"
+name = "breaking"
+message = "Is this a BREAKING CHANGE?"
+default = false
+
+[[tool.commitizen.customize.questions]]
+type = "input"
+name = "message"
+message = "Write a short, imperative description of the change"
+
+[[tool.commitizen.customize.questions]]
+type = "input"
+name = "body"
+message = "Longer description (optional, press enter to skip)"
+
+[[tool.commitizen.customize.questions]]
+type = "input"
+name = "footer"
+message = "Footer (optional, e.g. BREAKING CHANGE: ..., closes #123)"
