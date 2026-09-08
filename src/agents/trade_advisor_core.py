@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from data.models import UserCollection
-from data.tiers import TIER_SCORES
 from pydantic import BaseModel
 from pydantic_ai import Agent
 
 from config import config
+from data.models import UserCollection
+from data.tiers import TIER_SCORES
 from rag.vector_store import PokemonVectorStore
 
 from .trade_analytics import TradeAnalytics

@@ -75,7 +75,6 @@ async def compare_trade_value(
     score matters more) depends on the user's trading_style and goal.
     """
     from data.value_scoring import score_summary
-
     from rag.smogon_fetcher import get_tier_map
 
     tier_map = ctx.deps.tier_map or get_tier_map()

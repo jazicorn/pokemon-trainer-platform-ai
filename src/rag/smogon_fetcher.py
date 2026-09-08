@@ -8,9 +8,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import httpx
-from data.tiers import TIER_FORMATS
 
 from config import config
+from data.tiers import TIER_FORMATS
 
 if TYPE_CHECKING:
     from typing import Any

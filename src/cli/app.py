@@ -11,7 +11,6 @@ from dataclasses import dataclass, field
 
 # Rich imports for high-quality UI and loading indicators
 import httpx
-from data.loader import load_user_collection
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
@@ -20,6 +19,7 @@ from rich.table import Table
 
 from agents import evaluate_trade, get_pending_offers, get_trade_suggestions, query_pokedex, send_trade_offer
 from agents.trade_market_analyst import query_market
+from data.loader import load_user_collection
 from guardrails import create_safe_input
 from memory import ConversationMemory, TradeOffersManager, UserPreferencesManager
 

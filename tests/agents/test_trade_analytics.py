@@ -3,12 +3,12 @@
 from datetime import datetime
 
 import pytest
-from data.models import PlatformTrades, Trade, TradeStatus
 
 from agents.trade_analytics import (
     DEMAND_THRESHOLDS,
     TradeAnalytics,
 )
+from data.models import PlatformTrades, Trade, TradeStatus
 
 
 @pytest.fixture

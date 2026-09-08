@@ -3,11 +3,6 @@
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from data.models import (
-    OwnedPokemon,
-    UserCollection,
-    UserPreferences,
-)
 from pydantic_ai.messages import ModelRequest, ModelResponse, TextPart, ToolCallPart, ToolReturnPart
 from pydantic_ai.models.function import FunctionModel
 
@@ -15,6 +10,11 @@ from agents.trade_advisor import (
     SYSTEM_PROMPT,
     AdvisorDependencies,
     trade_advisor,
+)
+from data.models import (
+    OwnedPokemon,
+    UserCollection,
+    UserPreferences,
 )
 
 # ---------------------------------------------------------------------------

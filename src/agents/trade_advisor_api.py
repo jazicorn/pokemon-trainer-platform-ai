@@ -6,7 +6,6 @@ import asyncio
 from typing import Any
 
 from data.loader import load_user_collection
-
 from rag.vector_store import PokemonVectorStore
 
 # Import tools module to ensure all @trade_advisor.tool decorators are executed.

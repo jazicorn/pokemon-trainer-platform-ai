@@ -4,11 +4,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from data.loader import load_user_collection
 from pydantic import BaseModel
 from pydantic_ai import Agent, RunContext
 
 from config import config
+from data.loader import load_user_collection
 from rag.vector_store import PokemonVectorStore
 
 if TYPE_CHECKING:

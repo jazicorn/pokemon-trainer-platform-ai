@@ -5,11 +5,6 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
-from data.generator import (
-    RARITY,
-    generate_platform_trades,
-    generate_user_collection,
-)
 
 from data import (
     PlatformTrades,
@@ -18,6 +13,11 @@ from data import (
     UserCollection,
     load_platform_trades,
     load_user_collection,
+)
+from data.generator import (
+    RARITY,
+    generate_platform_trades,
+    generate_user_collection,
 )
 
 
