@@ -34,6 +34,25 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["chromadb_setup"]
+# src/ has multiple top-level importable modules (config.py, startup.py,
+# utils.py) and packages (agents/, cli/, data/, rag/, ...) rather than one
+# single src-layout package, so a plain `packages = ["src/agents", ...]`
+# list would need updating every time a new top-level module is added.
+# dev-mode-dirs instead puts src/ itself on sys.path for `uv sync`'s
+# editable install, matching what app.py and tests/conftest.py already do
+# manually via sys.path.insert for their own entry points. Without this,
+# anything run via `python -m src.<module>` (make ingest, make
+# generate-data, `python -m src.startup`) fails with ModuleNotFoundError,
+# since neither of those manual inserts covers it.
+dev-mode-dirs = ["src"]
+# For a real (non-editable) wheel build — e.g. the Dockerfile / image-build.yml
+# — mirror the same layout via sources, since dev-mode-dirs only affects
+# editable installs.
+include = ["src/**/*.py"]
+exclude = ["src/__init__.py"]
+
+[tool.hatch.build.targets.wheel.sources]
+src = ""
 
 [tool.uv]
 package = true
