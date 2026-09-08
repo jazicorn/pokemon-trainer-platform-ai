@@ -39,10 +39,10 @@ class TestPIIDetection:
     """Tests for PII detection."""
 
     @pytest.fixture
-    def pii_filter(self):
+    def pii_filter(self) -> PIIFilter:
         return PIIFilter()
 
-    def test_detect_email(self, pii_filter):
+    def test_detect_email(self, pii_filter: PIIFilter):
         text = "Contact me at john.doe@example.com"
         matches = pii_filter.detect_pii(text)
 
@@ -50,28 +50,28 @@ class TestPIIDetection:
         assert matches[0].pii_type == "email"
         assert "john.doe@example.com" in matches[0].original
 
-    def test_detect_phone(self, pii_filter):
+    def test_detect_phone(self, pii_filter: PIIFilter):
         text = "Call me at 555-123-4567"
         matches = pii_filter.detect_pii(text)
 
         assert len(matches) == 1
         assert matches[0].pii_type == "phone"
 
-    def test_detect_ssn(self, pii_filter):
+    def test_detect_ssn(self, pii_filter: PIIFilter):
         text = "My SSN is 123-45-6789"
         matches = pii_filter.detect_pii(text)
 
         assert len(matches) == 1
         assert matches[0].pii_type == "ssn"
 
-    def test_detect_username(self, pii_filter):
+    def test_detect_username(self, pii_filter: PIIFilter):
         text = "Message @pokemon_trader"
         matches = pii_filter.detect_pii(text)
 
         assert len(matches) == 1
         assert matches[0].pii_type == "username"
 
-    def test_detect_name_after_prefix(self, pii_filter):
+    def test_detect_name_after_prefix(self, pii_filter: PIIFilter):
         text = "My friend John Smith wants to trade"
         matches = pii_filter.detect_pii(text)
 
@@ -79,7 +79,7 @@ class TestPIIDetection:
         assert matches[0].pii_type == "name"
         assert matches[0].original == "John Smith"
 
-    def test_no_false_positive_for_pokemon_names(self, pii_filter):
+    def test_no_false_positive_for_pokemon_names(self, pii_filter: PIIFilter):
         text = "My friend Pikachu is the best"
         matches = pii_filter.detect_pii(text)
 
@@ -87,13 +87,13 @@ class TestPIIDetection:
         name_matches = [m for m in matches if m.pii_type == "name"]
         assert len(name_matches) == 0
 
-    def test_no_pii_in_clean_text(self, pii_filter):
+    def test_no_pii_in_clean_text(self, pii_filter: PIIFilter):
         text = "Should I trade my Charizard for Dragonite?"
         matches = pii_filter.detect_pii(text)
 
         assert len(matches) == 0
 
-    def test_detect_multiple_pii(self, pii_filter):
+    def test_detect_multiple_pii(self, pii_filter: PIIFilter):
         text = "Email john@example.com or call 555-123-4567"
         matches = pii_filter.detect_pii(text)
 

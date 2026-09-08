@@ -218,10 +218,11 @@ class TestTradeOffersManager:
             mgr = TradeOffersManager.__new__(TradeOffersManager)
             mgr.user_id = "new_user"
 
-            mgr._seed_mock_offers()
+            # Deliberately testing the private idempotency guard directly.
+            mgr._seed_mock_offers()  # pyright: ignore[reportPrivateUsage]
             first_count = len(mgr.get_inbox())
 
-            mgr._seed_mock_offers()  # second call should be a no-op
+            mgr._seed_mock_offers()  # pyright: ignore[reportPrivateUsage]  # second call should be a no-op
             second_count = len(mgr.get_inbox())
 
             assert first_count == second_count

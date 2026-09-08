@@ -12,11 +12,17 @@ from agents.trade_advisor import AdvisorDependencies, get_market_data, get_pokem
 from agents.trade_market_analyst import trade_market_analyst
 
 
+def _fake_deps(**kwargs: object) -> MagicMock:
+    """Stand-in for a *Dependencies constructor — accepts anything, returns a
+    MagicMock. A lambda can't carry type annotations, so this is a def."""
+    return MagicMock()
+
+
 class TestMultiAgentOrchestration:
     """Tests for hierarchical agent delegation logic."""
 
     @pytest.fixture
-    def mock_deps(self):
+    def mock_deps(self) -> AdvisorDependencies:
         """Construct dependencies without strict Pydantic validation."""
         return AdvisorDependencies.model_construct(
             vector_store=MagicMock(), analytics=MagicMock(), user_collection=MagicMock()
@@ -33,7 +39,7 @@ class TestMultiAgentOrchestration:
         assert hasattr(get_pokemon_info, "tool_def") or hasattr(get_pokemon_info, "__pydantic_ai_tool__") or True
 
     @pytest.mark.anyio
-    async def test_delegation_to_pokedex(self, mock_deps, monkeypatch):
+    async def test_delegation_to_pokedex(self, mock_deps: AdvisorDependencies, monkeypatch: pytest.MonkeyPatch):
         """Verify delegation to the Pokedex Expert."""
         mock_result = MagicMock()
         mock_result.output = "Pikachu stats: 320 BST"
@@ -43,7 +49,7 @@ class TestMultiAgentOrchestration:
 
         # Bypass Pydantic validation by patching the module namespace
         ta_mod = sys.modules["agents.trade_advisor_tools"]
-        monkeypatch.setattr(ta_mod, "PokedexDependencies", lambda **kwargs: MagicMock())
+        monkeypatch.setattr(ta_mod, "PokedexDependencies", _fake_deps)
 
         ctx = MagicMock()
         ctx.deps = mock_deps
@@ -55,7 +61,7 @@ class TestMultiAgentOrchestration:
         mock_run.assert_called_once()
 
     @pytest.mark.anyio
-    async def test_delegation_to_market(self, mock_deps, monkeypatch):
+    async def test_delegation_to_market(self, mock_deps: AdvisorDependencies, monkeypatch: pytest.MonkeyPatch):
         """Verify delegation to the Market Analyst."""
         mock_result = MagicMock()
         mock_result.output = "Demand ratio for Eevee: 1.6"
@@ -64,7 +70,7 @@ class TestMultiAgentOrchestration:
         monkeypatch.setattr(trade_market_analyst, "run", mock_run)
 
         ta_mod = sys.modules["agents.trade_advisor_tools"]
-        monkeypatch.setattr(ta_mod, "MarketDependencies", lambda **kwargs: MagicMock())
+        monkeypatch.setattr(ta_mod, "MarketDependencies", _fake_deps)
 
         ctx = MagicMock()
         ctx.deps = mock_deps

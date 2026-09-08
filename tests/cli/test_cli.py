@@ -1,12 +1,13 @@
 """Tests for CLI module."""
 
+# Deliberately testing these private parsing helpers directly, by design.
 from cli.commands import (
     CommandType,
     OfferParams,
     ParsedCommand,
     TradeParams,
-    _parse_offer,
-    _parse_trade,
+    _parse_offer,  # pyright: ignore[reportPrivateUsage]
+    _parse_trade,  # pyright: ignore[reportPrivateUsage]
     parse_command,
 )
 
@@ -134,8 +135,8 @@ class TestParseCommandPerformance:
 
         assert hasattr(commands, "_QUIT_COMMANDS")
         assert hasattr(commands, "_HELP_COMMANDS")
-        assert isinstance(commands._QUIT_COMMANDS, frozenset)
-        assert isinstance(commands._HELP_COMMANDS, frozenset)
+        assert isinstance(commands._QUIT_COMMANDS, frozenset)  # pyright: ignore[reportPrivateUsage]
+        assert isinstance(commands._HELP_COMMANDS, frozenset)  # pyright: ignore[reportPrivateUsage]
 
 
 class TestTradeParams:

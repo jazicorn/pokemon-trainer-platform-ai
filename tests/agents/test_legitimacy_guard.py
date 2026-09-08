@@ -1,13 +1,14 @@
 import pytest
-from pydantic_ai.messages import ModelRequest, ModelResponse, TextPart, ToolCallPart, ToolReturnPart
-from pydantic_ai.models.function import FunctionModel
+from pydantic_ai import AgentRunResult
+from pydantic_ai.messages import ModelMessage, ModelRequest, ModelResponse, TextPart, ToolCallPart, ToolReturnPart
+from pydantic_ai.models.function import AgentInfo, FunctionModel
 from src.agents.legitimacy_guard import LegitimacyDependencies, legitimacy_guard
 
 # Mark the whole module for asyncio to handle await calls
 pytestmark = pytest.mark.asyncio
 
 
-def is_tool_result_in_history(messages) -> bool:
+def is_tool_result_in_history(messages: list[ModelMessage]) -> bool:
     """Helper to check if the conversation history already contains a tool result."""
     for msg in messages:
         # Pydantic AI stores tool results inside ModelRequest parts
@@ -17,9 +18,9 @@ def is_tool_result_in_history(messages) -> bool:
     return False
 
 
-def get_tool_returns(result) -> list[str]:
+def get_tool_returns(result: AgentRunResult[str]) -> list[str]:
     """Helper to extract all tool return values from the full conversation history."""
-    returns = []
+    returns: list[str] = []
     for msg in result.all_messages():
         if isinstance(msg, ModelRequest):
             for part in msg.parts:
@@ -32,7 +33,7 @@ async def test_legitimacy_scam_detection():
     """Test that the agent correctly triggers the tool and returns illegal status."""
     deps = LegitimacyDependencies(legal_ball_map={"mew": ["cherish"]})
 
-    def mock_scam_logic(messages, info):
+    def mock_scam_logic(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
         # 1. Break the loop if the tool has already executed
         if is_tool_result_in_history(messages):
             return ModelResponse(parts=[TextPart(content="Turn complete.")])
@@ -55,7 +56,7 @@ async def test_rarity_classification():
     """Test that the agent correctly processes a Shiny Celebi through the tool."""
     deps = LegitimacyDependencies()
 
-    def mock_rarity_logic(messages, info):
+    def mock_rarity_logic(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
         if is_tool_result_in_history(messages):
             return ModelResponse(parts=[TextPart(content="Turn complete.")])
 
@@ -76,7 +77,7 @@ async def test_agent_tool_routing():
     """Verify the agent identifies the need for the verify_provenance tool."""
     deps = LegitimacyDependencies()
 
-    def mock_routing_logic(messages, info):
+    def mock_routing_logic(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
         if is_tool_result_in_history(messages):
             return ModelResponse(parts=[TextPart(content="Done.")])
 

@@ -174,7 +174,7 @@ class TestRunTradeEval:
         """If one case raises, the loop continues and returns results for all cases."""
         call_count = 0
 
-        async def flaky(*args, **kwargs):
+        async def flaky(*args: object, **kwargs: object) -> str:
             nonlocal call_count
             call_count += 1
             if call_count == 2:

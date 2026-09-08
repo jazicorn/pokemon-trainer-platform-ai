@@ -1,6 +1,7 @@
 """Tests for RAG components."""
 
 import contextlib
+from typing import Any
 
 import pytest
 
@@ -186,7 +187,7 @@ class TestPokemonVectorStore:
     """
 
     @pytest.fixture
-    def sample_pokemon(self):
+    def sample_pokemon(self) -> list[dict[str, Any]]:
         return [
             {
                 "name": "testmon",
@@ -199,7 +200,7 @@ class TestPokemonVectorStore:
         ]
 
     @pytest.fixture
-    def ensure_chromadb(self):
+    def ensure_chromadb(self) -> bool:
         """Ensure ChromaDB is running, with interactive prompts."""
         import os
         import subprocess
@@ -225,7 +226,7 @@ class TestPokemonVectorStore:
             print("    ╰─────────────────────────────────────────╯")
             print()
 
-        def run_command(cmd: list[str], **kwargs) -> subprocess.CompletedProcess:
+        def run_command(cmd: list[str], **kwargs: Any) -> subprocess.CompletedProcess[Any]:
             """Run command or print in dry-run mode."""
             if dry_run:
                 print(f"\n    🧪 Would run: {' '.join(cmd)}")
@@ -397,10 +398,11 @@ class TestPokemonVectorStore:
         print_status("❌ ChromaDB failed to start in time")
         pytest.skip("ChromaDB failed to start")
 
-    def test_create_document_text(self, sample_pokemon, ensure_chromadb):
+    def test_create_document_text(self, sample_pokemon: list[dict[str, Any]], ensure_chromadb: bool):
         store = PokemonVectorStore(collection_name="test_pokemon")
         try:
-            doc = store._create_document_text(sample_pokemon[0])
+            # Deliberately testing the private document-formatting method directly.
+            doc = store._create_document_text(sample_pokemon[0])  # pyright: ignore[reportPrivateUsage]
             assert "testmon" in doc
             assert "fire" in doc
             assert "flying" in doc
@@ -410,7 +412,7 @@ class TestPokemonVectorStore:
                 store.delete_collection()
             store.close()
 
-    def test_add_and_query_pokemon(self, sample_pokemon, ensure_chromadb):
+    def test_add_and_query_pokemon(self, sample_pokemon: list[dict[str, Any]], ensure_chromadb: bool):
         store = PokemonVectorStore(collection_name="test_pokemon_query")
         try:
             store.add_pokemon(sample_pokemon)

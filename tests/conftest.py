@@ -32,7 +32,9 @@ if not os.environ.get("GOOGLE_API_KEY"):
 
 
 @pytest.fixture(autouse=True)
-def _isolate_ollama_base_url(monkeypatch):
+def _isolate_ollama_base_url(  # pyright: ignore[reportUnusedFunction]  # autouse fixture, never referenced by name
+    monkeypatch: pytest.MonkeyPatch,
+):
     """config.py sets OLLAMA_BASE_URL as an import-time side effect via
     os.environ.setdefault (pydantic-ai's OllamaProvider reads that name, not
     this project's own OLLAMA_URL). setdefault only acts once per process,

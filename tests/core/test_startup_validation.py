@@ -6,7 +6,7 @@ import pytest
 class TestValidateEnvironment:
     """Tests for validate_environment() in startup.py."""
 
-    def test_valid_anthropic_key_passes(self, monkeypatch):
+    def test_valid_anthropic_key_passes(self, monkeypatch: pytest.MonkeyPatch):
         """No exception when ANTHROPIC_API_KEY is present and model is claude-sonnet."""
         monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test-key")
         monkeypatch.setenv("POKEMON_MODEL", "claude-sonnet")
@@ -23,7 +23,7 @@ class TestValidateEnvironment:
         # Should not raise
         validate_environment()
 
-    def test_missing_anthropic_key_raises(self, monkeypatch):
+    def test_missing_anthropic_key_raises(self, monkeypatch: pytest.MonkeyPatch):
         """EnvironmentError raised when ANTHROPIC_API_KEY is absent for Anthropic model."""
         monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
         monkeypatch.setenv("POKEMON_MODEL", "claude-sonnet")
@@ -41,7 +41,7 @@ class TestValidateEnvironment:
 
         assert "ANTHROPIC_API_KEY" in str(exc_info.value)
 
-    def test_missing_openai_key_raises(self, monkeypatch):
+    def test_missing_openai_key_raises(self, monkeypatch: pytest.MonkeyPatch):
         """EnvironmentError raised when OPENAI_API_KEY is absent for OpenAI model."""
         monkeypatch.delenv("OPENAI_API_KEY", raising=False)
         monkeypatch.setenv("POKEMON_MODEL", "gpt-4o")
@@ -59,7 +59,7 @@ class TestValidateEnvironment:
 
         assert "OPENAI_API_KEY" in str(exc_info.value)
 
-    def test_ollama_requires_no_key(self, monkeypatch):
+    def test_ollama_requires_no_key(self, monkeypatch: pytest.MonkeyPatch):
         """No exception when using Ollama — it runs locally and needs no API key."""
         monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
         monkeypatch.delenv("OPENAI_API_KEY", raising=False)
@@ -77,7 +77,7 @@ class TestValidateEnvironment:
         # Should not raise
         validate_environment()
 
-    def test_ollama_cloud_local_proxy_requires_no_key(self, monkeypatch):
+    def test_ollama_cloud_local_proxy_requires_no_key(self, monkeypatch: pytest.MonkeyPatch):
         """llama-cloud via the local-proxy transport (default OLLAMA_URL)
         needs no API key — ollama signin handles auth, not this app."""
         monkeypatch.delenv("OLLAMA_API_KEY", raising=False)
@@ -94,7 +94,7 @@ class TestValidateEnvironment:
         # Should not raise
         validate_environment()
 
-    def test_ollama_cloud_direct_missing_key_raises(self, monkeypatch):
+    def test_ollama_cloud_direct_missing_key_raises(self, monkeypatch: pytest.MonkeyPatch):
         """llama-cloud via the direct API transport (OLLAMA_URL=ollama.com)
         does need OLLAMA_API_KEY."""
         monkeypatch.delenv("OLLAMA_API_KEY", raising=False)
@@ -114,7 +114,7 @@ class TestValidateEnvironment:
 
         assert "OLLAMA_API_KEY" in str(exc_info.value)
 
-    def test_ollama_cloud_direct_with_key_passes(self, monkeypatch):
+    def test_ollama_cloud_direct_with_key_passes(self, monkeypatch: pytest.MonkeyPatch):
         monkeypatch.setenv("OLLAMA_API_KEY", "test-ollama-cloud-key")
         monkeypatch.setenv("POKEMON_MODEL", "llama-cloud")
         monkeypatch.setenv("OLLAMA_URL", "https://ollama.com")
@@ -130,7 +130,7 @@ class TestValidateEnvironment:
         # Should not raise
         validate_environment()
 
-    def test_error_message_is_descriptive(self, monkeypatch):
+    def test_error_message_is_descriptive(self, monkeypatch: pytest.MonkeyPatch):
         """Error message names the missing variable and shows how to fix it."""
         monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
         monkeypatch.setenv("POKEMON_MODEL", "claude-haiku")

@@ -18,15 +18,22 @@ formatting/linting.
 ## Running the Linter
 
 ```bash
-# Type check source
-uv run pyright src/
+# Type check source and tests
+uv run pyright src/ tests/
 
 # Or run everything (ruff format check, ruff lint, pyright) via make
 make lint
 
-# Auto-fix formatting and lint issues where possible
+# Auto-fix formatting and lint issues where possible (does not fix type errors)
 make lint-fix
 ```
+
+`tests/` is checked with the same strict config as `src/` — a `# pyright: ignore[...]`
+comment on a specific line is the right tool for cases strict mode can't express cleanly
+(e.g. deliberately calling a private method to test its behavior directly, or a pytest
+`autouse` fixture that's never referenced by name anywhere). Prefer it over loosening the
+config, so the exception is visible exactly where it's needed instead of hiding a whole
+category of real errors project-wide.
 
 ---
 

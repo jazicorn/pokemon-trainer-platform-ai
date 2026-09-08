@@ -2,11 +2,21 @@
 
 import importlib
 import os
+from pathlib import Path
 
 import pytest
 
 import config as cfg_module
-from config import MODELS, Config, ModelConfig, ModelProvider, _load_dotenv_files
+
+# Testing the module's private dotenv-loading helper directly, by design —
+# see TestDotenvLoading.
+from config import (
+    MODELS,
+    Config,
+    ModelConfig,
+    ModelProvider,
+    _load_dotenv_files,  # pyright: ignore[reportPrivateUsage]
+)
 
 # _isolate_ollama_base_url in tests/conftest.py (autouse, applies here too)
 # prevents this file's importlib.reload(cfg_module) calls from leaking a
@@ -95,69 +105,69 @@ class TestDotenvLoading:
 
     VAR = "POKEMON_TEST_DOTENV_VAR"
 
-    def test_env_file_sets_previously_unset_var(self, tmp_path, monkeypatch):
+    def test_env_file_sets_previously_unset_var(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         monkeypatch.delenv(self.VAR, raising=False)
         (tmp_path / ".env").write_text(f"{self.VAR}=from-env\n")
         _load_dotenv_files(tmp_path)
         assert os.environ[self.VAR] == "from-env"
 
-    def test_env_local_overrides_env(self, tmp_path, monkeypatch):
+    def test_env_local_overrides_env(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         monkeypatch.delenv(self.VAR, raising=False)
         (tmp_path / ".env").write_text(f"{self.VAR}=from-env\n")
         (tmp_path / ".env.local").write_text(f"{self.VAR}=from-env-local\n")
         _load_dotenv_files(tmp_path)
         assert os.environ[self.VAR] == "from-env-local"
 
-    def test_real_env_var_wins_over_both_files(self, monkeypatch, tmp_path):
+    def test_real_env_var_wins_over_both_files(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
         monkeypatch.setenv(self.VAR, "from-real-shell")
         (tmp_path / ".env").write_text(f"{self.VAR}=from-env\n")
         (tmp_path / ".env.local").write_text(f"{self.VAR}=from-env-local\n")
         _load_dotenv_files(tmp_path)
         assert os.environ[self.VAR] == "from-real-shell"
 
-    def test_missing_files_do_not_raise(self, tmp_path):
+    def test_missing_files_do_not_raise(self, tmp_path: Path):
         _load_dotenv_files(tmp_path)  # neither file exists in tmp_path
 
 
 class TestConfigEnvVars:
     """Tests that every Config field can be set via its env var."""
 
-    def test_pokemon_model_override(self, monkeypatch):
+    def test_pokemon_model_override(self, monkeypatch: pytest.MonkeyPatch):
         monkeypatch.setenv("POKEMON_MODEL", "gpt-4o")
         importlib.reload(cfg_module)
         assert cfg_module.config.default_model == "gpt-4o"
 
-    def test_chromadb_url_override(self, monkeypatch):
+    def test_chromadb_url_override(self, monkeypatch: pytest.MonkeyPatch):
         monkeypatch.setenv("CHROMADB_URL", "http://myhost:9000")
         importlib.reload(cfg_module)
         assert cfg_module.config.chromadb_url == "http://myhost:9000"
 
-    def test_phoenix_url_override(self, monkeypatch):
+    def test_phoenix_url_override(self, monkeypatch: pytest.MonkeyPatch):
         monkeypatch.setenv("PHOENIX_URL", "http://myhost:6006")
         importlib.reload(cfg_module)
         assert cfg_module.config.phoenix_url == "http://myhost:6006"
 
-    def test_ollama_url_override(self, monkeypatch):
+    def test_ollama_url_override(self, monkeypatch: pytest.MonkeyPatch):
         monkeypatch.setenv("OLLAMA_URL", "http://myhost:11434")
         importlib.reload(cfg_module)
         assert cfg_module.config.ollama_url == "http://myhost:11434"
 
-    def test_ollama_embedding_model_override(self, monkeypatch):
+    def test_ollama_embedding_model_override(self, monkeypatch: pytest.MonkeyPatch):
         monkeypatch.setenv("OLLAMA_EMBEDDING_MODEL", "mxbai-embed-large")
         importlib.reload(cfg_module)
         assert cfg_module.config.ollama_embedding_model == "mxbai-embed-large"
 
-    def test_project_name_override(self, monkeypatch):
+    def test_project_name_override(self, monkeypatch: pytest.MonkeyPatch):
         monkeypatch.setenv("PROJECT_NAME", "my-custom-project")
         importlib.reload(cfg_module)
         assert cfg_module.config.project_name == "my-custom-project"
 
-    def test_use_ollama_embeddings_true(self, monkeypatch):
+    def test_use_ollama_embeddings_true(self, monkeypatch: pytest.MonkeyPatch):
         monkeypatch.setenv("USE_OLLAMA_EMBEDDINGS", "true")
         importlib.reload(cfg_module)
         assert cfg_module.config.use_ollama_embeddings is True
 
-    def test_use_ollama_embeddings_false_by_default(self, monkeypatch):
+    def test_use_ollama_embeddings_false_by_default(self, monkeypatch: pytest.MonkeyPatch):
         monkeypatch.delenv("USE_OLLAMA_EMBEDDINGS", raising=False)
         importlib.reload(cfg_module)
         assert cfg_module.config.use_ollama_embeddings is False
@@ -247,35 +257,35 @@ class TestOllamaBaseUrlPropagation:
     native /api/embeddings path.
     """
 
-    def test_ollama_base_url_gets_v1_suffix(self, monkeypatch):
+    def test_ollama_base_url_gets_v1_suffix(self, monkeypatch: pytest.MonkeyPatch):
         monkeypatch.setenv("OLLAMA_URL", "http://test-host:11434")
         importlib.reload(cfg_module)
         assert os.environ["OLLAMA_BASE_URL"] == "http://test-host:11434/v1"
 
-    def test_ollama_url_itself_has_no_v1_suffix(self, monkeypatch):
+    def test_ollama_url_itself_has_no_v1_suffix(self, monkeypatch: pytest.MonkeyPatch):
         """config.ollama_url must stay bare for get_ollama_embedding()."""
         monkeypatch.setenv("OLLAMA_URL", "http://test-host:11434")
         importlib.reload(cfg_module)
         assert cfg_module.config.ollama_url == "http://test-host:11434"
 
-    def test_cloud_direct_url_also_gets_v1_suffix(self, monkeypatch):
+    def test_cloud_direct_url_also_gets_v1_suffix(self, monkeypatch: pytest.MonkeyPatch):
         monkeypatch.setenv("OLLAMA_URL", "https://ollama.com")
         importlib.reload(cfg_module)
         assert os.environ["OLLAMA_BASE_URL"] == "https://ollama.com/v1"
 
-    def test_trailing_slash_on_ollama_url_does_not_double_up(self, monkeypatch):
+    def test_trailing_slash_on_ollama_url_does_not_double_up(self, monkeypatch: pytest.MonkeyPatch):
         monkeypatch.setenv("OLLAMA_URL", "http://test-host:11434/")
         importlib.reload(cfg_module)
         assert os.environ["OLLAMA_BASE_URL"] == "http://test-host:11434/v1"
 
-    def test_ollama_url_already_ending_in_v1_does_not_double_up(self, monkeypatch):
+    def test_ollama_url_already_ending_in_v1_does_not_double_up(self, monkeypatch: pytest.MonkeyPatch):
         """A user copying pydantic-ai's own docs might set OLLAMA_URL with
         /v1 already on it — must not become .../v1/v1."""
         monkeypatch.setenv("OLLAMA_URL", "http://test-host:11434/v1")
         importlib.reload(cfg_module)
         assert os.environ["OLLAMA_BASE_URL"] == "http://test-host:11434/v1"
 
-    def test_explicit_ollama_base_url_is_not_overridden(self, monkeypatch):
+    def test_explicit_ollama_base_url_is_not_overridden(self, monkeypatch: pytest.MonkeyPatch):
         """setdefault() must respect an explicitly-set OLLAMA_BASE_URL."""
         monkeypatch.setenv("OLLAMA_BASE_URL", "http://explicit-override:1234/v1")
         monkeypatch.setenv("OLLAMA_URL", "http://test-host:11434")

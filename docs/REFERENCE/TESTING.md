@@ -563,7 +563,7 @@ increase timeout in the fixture.
 Before committing:
 
 - [ ] All tests pass: `uv run pytest tests/ -v --tb=short -m "not requires_chromadb"`
-- [ ] No type errors: `uv run pyright src/`
+- [ ] No type errors: `uv run pyright src/ tests/`
 - [ ] Code formatted: `uv run ruff format .`
 - [ ] Linting passes: `uv run ruff check .`
       (or run all three lint/type checks at once with `make lint`)

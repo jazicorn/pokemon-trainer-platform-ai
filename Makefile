@@ -111,7 +111,7 @@ eval-rag: ## Run RAG vs no-RAG comparison eval (requires API key + ChromaDB)
 lint: ## Check formatting, lint rules, and types (no changes made)
 	uv run ruff format --check .
 	uv run ruff check .
-	uv run pyright src/
+	uv run pyright src/ tests/
 
 lint-fix: ## Auto-fix formatting and lint issues where possible
 	uv run ruff format .

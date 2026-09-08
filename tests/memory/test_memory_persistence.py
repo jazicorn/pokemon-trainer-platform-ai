@@ -5,6 +5,8 @@ is correctly read by a brand-new instance pointed at the same database —
 the fundamental guarantee of persistent storage.
 """
 
+from pathlib import Path
+
 import pytest
 
 from memory.conversation_memory import ConversationMemory, RecommendationMemory
@@ -13,7 +15,7 @@ from memory.user_preferences import UserPreferencesManager
 
 
 @pytest.fixture
-def isolated_db(tmp_path, monkeypatch):
+def isolated_db(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """Redirect all memory.database operations to a fresh temp file."""
     db_file = tmp_path / "test_memory.db"
     monkeypatch.setattr("memory.database.get_db_path", lambda: db_file)
@@ -29,7 +31,7 @@ def isolated_db(tmp_path, monkeypatch):
 class TestConversationPersistence:
     """ConversationMemory writes must survive creating a new instance."""
 
-    def test_messages_persist_across_instances(self, isolated_db):
+    def test_messages_persist_across_instances(self, isolated_db: Path):
         """Messages written by instance A are readable by instance B."""
         instance_a = ConversationMemory("user_test")
         instance_a.add_message("user", "Hello, I want to trade my Pikachu.")
@@ -43,7 +45,7 @@ class TestConversationPersistence:
         assert "Hello, I want to trade my Pikachu." in contents
         assert "I can help with that trade." in contents
 
-    def test_clear_on_one_instance_affects_new_instance(self, isolated_db):
+    def test_clear_on_one_instance_affects_new_instance(self, isolated_db: Path):
         """Clearing history on instance A leaves nothing for instance B."""
         instance_a = ConversationMemory("user_clear_test")
         instance_a.add_message("user", "Some message")
@@ -52,7 +54,7 @@ class TestConversationPersistence:
         instance_b = ConversationMemory("user_clear_test")
         assert instance_b.get_history() == []
 
-    def test_history_trim_respects_max_history(self, isolated_db):
+    def test_history_trim_respects_max_history(self, isolated_db: Path):
         """Adding more messages than max_history keeps at most max_history rows."""
         instance_a = ConversationMemory("user_trim_test", max_history=10)
         for i in range(25):
@@ -63,7 +65,7 @@ class TestConversationPersistence:
 
         assert len(history) <= 10
 
-    def test_different_users_are_isolated(self, isolated_db):
+    def test_different_users_are_isolated(self, isolated_db: Path):
         """Messages for user A must not appear in user B's history."""
         ConversationMemory("user_alice").add_message("user", "Alice message")
         ConversationMemory("user_bob").add_message("user", "Bob message")
@@ -74,7 +76,7 @@ class TestConversationPersistence:
         assert all("Alice" in m["content"] for m in alice_history)
         assert all("Bob" in m["content"] for m in bob_history)
 
-    def test_get_context_string_contains_persisted_messages(self, isolated_db):
+    def test_get_context_string_contains_persisted_messages(self, isolated_db: Path):
         """get_context_string() works correctly with persisted messages."""
         instance_a = ConversationMemory("user_ctx_test")
         instance_a.add_message("user", "Trade Pikachu for Gengar?")
@@ -93,7 +95,7 @@ class TestConversationPersistence:
 class TestPreferencesPersistence:
     """UserPreferencesManager writes must survive creating a new instance."""
 
-    def test_preferences_persist_across_instances(self, isolated_db):
+    def test_preferences_persist_across_instances(self, isolated_db: Path):
         """Preferences saved by instance A are readable by instance B."""
         instance_a = UserPreferencesManager("user_prefs_test")
         instance_a.save_preferences(
@@ -109,7 +111,7 @@ class TestPreferencesPersistence:
         assert "fire" in prefs["favorite_types"]
         assert prefs["trading_style"] == "aggressive"
 
-    def test_update_seeking_persists(self, isolated_db):
+    def test_update_seeking_persists(self, isolated_db: Path):
         """Adding a Pokemon to the seeking list persists to a new instance."""
         instance_a = UserPreferencesManager("user_seeking_test")
         instance_a.update_seeking("gengar", add=True)
@@ -119,7 +121,7 @@ class TestPreferencesPersistence:
 
         assert "gengar" in prefs["seeking"]
 
-    def test_remove_from_seeking_persists(self, isolated_db):
+    def test_remove_from_seeking_persists(self, isolated_db: Path):
         """Removing a Pokemon from seeking persists to a new instance."""
         instance_a = UserPreferencesManager("user_seeking_remove")
         instance_a.update_seeking("eevee", add=True)
@@ -130,7 +132,7 @@ class TestPreferencesPersistence:
 
         assert "eevee" not in prefs["seeking"]
 
-    def test_update_never_trade_persists(self, isolated_db):
+    def test_update_never_trade_persists(self, isolated_db: Path):
         """never_trade list updates are persisted across instances."""
         instance_a = UserPreferencesManager("user_never_test")
         instance_a.update_never_trade("mewtwo", add=True)
@@ -140,7 +142,7 @@ class TestPreferencesPersistence:
 
         assert "mewtwo" in prefs["never_trade"]
 
-    def test_empty_preferences_for_unknown_user(self, isolated_db):
+    def test_empty_preferences_for_unknown_user(self, isolated_db: Path):
         """A brand-new user with no saved prefs returns an empty dict."""
         prefs = UserPreferencesManager("brand_new_user").get_preferences()
         assert prefs == {}
@@ -154,7 +156,7 @@ class TestPreferencesPersistence:
 class TestRecommendationPersistence:
     """RecommendationMemory writes must survive creating a new instance."""
 
-    def test_recommendation_persists_across_instances(self, isolated_db):
+    def test_recommendation_persists_across_instances(self, isolated_db: Path):
         """A recommendation saved by instance A is retrievable by instance B."""
         instance_a = RecommendationMemory("user_rec_test")
         instance_a.save_recommendation(
@@ -171,7 +173,7 @@ class TestRecommendationPersistence:
         assert recs[0]["offered_pokemon"] == "pikachu"
         assert recs[0]["requested_pokemon"] == "gengar"
 
-    def test_save_recommendation_returns_positive_id(self, isolated_db):
+    def test_save_recommendation_returns_positive_id(self, isolated_db: Path):
         """save_recommendation() returns a positive integer row ID."""
         mem = RecommendationMemory("user_id_test")
         rec_id = mem.save_recommendation(
@@ -183,7 +185,7 @@ class TestRecommendationPersistence:
         assert isinstance(rec_id, int)
         assert rec_id > 0
 
-    def test_feedback_recorded_and_visible_to_new_instance(self, isolated_db):
+    def test_feedback_recorded_and_visible_to_new_instance(self, isolated_db: Path):
         """Feedback recorded by instance A is visible to instance B."""
         instance_a = RecommendationMemory("user_feedback_test")
         rec_id = instance_a.save_recommendation(
@@ -200,7 +202,7 @@ class TestRecommendationPersistence:
         assert recs[0]["user_followed"] == 1
         assert recs[0]["user_feedback"] == "Great advice!"
 
-    def test_multiple_recommendations_both_present(self, isolated_db):
+    def test_multiple_recommendations_both_present(self, isolated_db: Path):
         """get_past_recommendations returns all saved recommendations."""
         mem = RecommendationMemory("user_order_test")
         mem.save_recommendation("first", "mon_a", "accept", "Reason A")

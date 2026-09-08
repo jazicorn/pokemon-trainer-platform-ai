@@ -1,10 +1,12 @@
 """Tests for Trade Advisor agent."""
 
+from datetime import date
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from pydantic_ai.messages import ModelRequest, ModelResponse, TextPart, ToolCallPart, ToolReturnPart
-from pydantic_ai.models.function import FunctionModel
+from pydantic_ai import AgentRunResult
+from pydantic_ai.messages import ModelMessage, ModelRequest, ModelResponse, TextPart, ToolCallPart, ToolReturnPart
+from pydantic_ai.models.function import AgentInfo, FunctionModel
 
 from agents.trade_advisor import (
     SYSTEM_PROMPT,
@@ -22,21 +24,27 @@ from data.models import (
 # ---------------------------------------------------------------------------
 
 
-def _is_tool_result_in_history(messages) -> bool:
+def _is_tool_result_in_history(messages: list[ModelMessage]) -> bool:
     for msg in messages:
         if isinstance(msg, ModelRequest) and any(isinstance(part, ToolReturnPart) for part in msg.parts):
             return True
     return False
 
 
-def _get_tool_returns(result) -> list[str]:
-    returns = []
+def _get_tool_returns(result: AgentRunResult[str]) -> list[str]:
+    returns: list[str] = []
     for msg in result.all_messages():
         if isinstance(msg, ModelRequest):
             for part in msg.parts:
                 if isinstance(part, ToolReturnPart):
                     returns.append(str(part.content))
     return returns
+
+
+def _fake_deps(**kwargs: object) -> MagicMock:
+    """Stand-in for a *Dependencies constructor — accepts anything, returns a
+    MagicMock. A lambda can't carry type annotations, so this is a def."""
+    return MagicMock()
 
 
 class TestAdvisorDependencies:
@@ -58,7 +66,7 @@ class TestAdvisorDependencies:
             pokemon=[
                 OwnedPokemon(
                     pokemon_id="pikachu",
-                    acquired_date="2024-01-01",
+                    acquired_date=date(2024, 1, 1),
                     acquired_via="catch",
                     tradeable=True,
                 )
@@ -97,19 +105,19 @@ class TestUserContextHelpers:
     """Tests for user context tool helpers."""
 
     @pytest.fixture
-    def sample_collection(self):
+    def sample_collection(self) -> UserCollection:
         return UserCollection(
             user_id="test_user",
             pokemon=[
                 OwnedPokemon(
                     pokemon_id="pikachu",
-                    acquired_date="2024-01-01",
+                    acquired_date=date(2024, 1, 1),
                     acquired_via="catch",
                     tradeable=True,
                 ),
                 OwnedPokemon(
                     pokemon_id="mewtwo",
-                    acquired_date="2024-01-01",
+                    acquired_date=date(2024, 1, 1),
                     acquired_via="catch",
                     tradeable=False,
                 ),
@@ -123,19 +131,19 @@ class TestUserContextHelpers:
             ),
         )
 
-    def test_collection_has_pokemon(self, sample_collection):
+    def test_collection_has_pokemon(self, sample_collection: UserCollection):
         assert len(sample_collection.pokemon) == 2
 
-    def test_collection_has_tradeable_pokemon(self, sample_collection):
+    def test_collection_has_tradeable_pokemon(self, sample_collection: UserCollection):
         tradeable = [p for p in sample_collection.pokemon if p.tradeable]
         assert len(tradeable) == 1
         assert tradeable[0].pokemon_id == "pikachu"
 
-    def test_collection_has_seeking_list(self, sample_collection):
+    def test_collection_has_seeking_list(self, sample_collection: UserCollection):
         assert "charizard" in sample_collection.preferences.seeking
         assert "blastoise" in sample_collection.preferences.seeking
 
-    def test_collection_has_never_trade(self, sample_collection):
+    def test_collection_has_never_trade(self, sample_collection: UserCollection):
         assert "mewtwo" in sample_collection.preferences.never_trade
 
 
@@ -150,13 +158,13 @@ class TestTradeAdvisorIntegration:
     pytestmark = pytest.mark.asyncio
 
     @pytest.fixture
-    def sample_collection(self):
+    def sample_collection(self) -> UserCollection:
         return UserCollection(
             user_id="test_user",
             pokemon=[
                 OwnedPokemon(
                     pokemon_id="pikachu",
-                    acquired_date="2024-01-01",
+                    acquired_date=date(2024, 1, 1),
                     acquired_via="catch",
                     tradeable=True,
                 ),
@@ -170,7 +178,9 @@ class TestTradeAdvisorIntegration:
             ),
         )
 
-    async def test_get_pokemon_info_delegates_to_pokedex(self, monkeypatch, sample_collection):
+    async def test_get_pokemon_info_delegates_to_pokedex(
+        self, monkeypatch: pytest.MonkeyPatch, sample_collection: UserCollection
+    ):
         """get_pokemon_info tool correctly delegates to pokedex_expert.run()."""
         import sys
 
@@ -185,7 +195,7 @@ class TestTradeAdvisorIntegration:
         # Also patch PokedexDependencies in trade_advisor's namespace so the MagicMock
         # vector_store passes validation when get_pokemon_info creates it.
         ta_mod = sys.modules["agents.trade_advisor_tools"]
-        monkeypatch.setattr(ta_mod, "PokedexDependencies", lambda **kwargs: MagicMock())
+        monkeypatch.setattr(ta_mod, "PokedexDependencies", _fake_deps)
 
         deps = AdvisorDependencies.model_construct(
             vector_store=MagicMock(),
@@ -193,7 +203,7 @@ class TestTradeAdvisorIntegration:
             user_collection=sample_collection,
         )
 
-        def mock_model(messages, info):
+        def mock_model(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
             if _is_tool_result_in_history(messages):
                 return ModelResponse(parts=[TextPart(content="Turn complete.")])
             return ModelResponse(parts=[ToolCallPart(tool_name="get_pokemon_info", args={"pokemon": "pikachu"})])
@@ -205,7 +215,9 @@ class TestTradeAdvisorIntegration:
         tool_outputs = _get_tool_returns(result)
         assert any("Pikachu" in out for out in tool_outputs)
 
-    async def test_get_market_data_delegates_to_market_analyst(self, monkeypatch, sample_collection):
+    async def test_get_market_data_delegates_to_market_analyst(
+        self, monkeypatch: pytest.MonkeyPatch, sample_collection: UserCollection
+    ):
         """get_market_data tool correctly delegates to trade_market_analyst.run()."""
         import sys
 
@@ -219,7 +231,7 @@ class TestTradeAdvisorIntegration:
 
         # Also patch MarketDependencies so the MagicMock analytics passes validation.
         ta_mod = sys.modules["agents.trade_advisor_tools"]
-        monkeypatch.setattr(ta_mod, "MarketDependencies", lambda **kwargs: MagicMock())
+        monkeypatch.setattr(ta_mod, "MarketDependencies", _fake_deps)
 
         deps = AdvisorDependencies.model_construct(
             vector_store=None,
@@ -227,7 +239,7 @@ class TestTradeAdvisorIntegration:
             user_collection=sample_collection,
         )
 
-        def mock_model(messages, info):
+        def mock_model(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
             if _is_tool_result_in_history(messages):
                 return ModelResponse(parts=[TextPart(content="Turn complete.")])
             return ModelResponse(parts=[ToolCallPart(tool_name="get_market_data", args={"pokemon": "eevee"})])
@@ -239,7 +251,7 @@ class TestTradeAdvisorIntegration:
         tool_outputs = _get_tool_returns(result)
         assert any("Eevee" in out or "demand" in out.lower() for out in tool_outputs)
 
-    async def test_get_user_context_returns_collection_data(self, sample_collection):
+    async def test_get_user_context_returns_collection_data(self, sample_collection: UserCollection):
         """get_user_context tool surfaces the user's goal and owned Pokemon."""
         deps = AdvisorDependencies(
             vector_store=None,
@@ -247,7 +259,7 @@ class TestTradeAdvisorIntegration:
             user_collection=sample_collection,
         )
 
-        def mock_model(messages, info):
+        def mock_model(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
             if _is_tool_result_in_history(messages):
                 return ModelResponse(parts=[TextPart(content="Turn complete.")])
             return ModelResponse(parts=[ToolCallPart(tool_name="get_user_context", args={})])
@@ -259,7 +271,7 @@ class TestTradeAdvisorIntegration:
         assert any("Complete Gen 1" in out for out in tool_outputs)
         assert any("pikachu" in out.lower() for out in tool_outputs)
 
-    async def test_get_pokemon_info_no_vector_store_graceful_fallback(self, sample_collection):
+    async def test_get_pokemon_info_no_vector_store_graceful_fallback(self, sample_collection: UserCollection):
         """get_pokemon_info returns a graceful message when vector_store is None."""
         deps = AdvisorDependencies(
             vector_store=None,
@@ -267,7 +279,7 @@ class TestTradeAdvisorIntegration:
             user_collection=sample_collection,
         )
 
-        def mock_model(messages, info):
+        def mock_model(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
             if _is_tool_result_in_history(messages):
                 return ModelResponse(parts=[TextPart(content="Turn complete.")])
             return ModelResponse(parts=[ToolCallPart(tool_name="get_pokemon_info", args={"pokemon": "pikachu"})])
@@ -278,7 +290,7 @@ class TestTradeAdvisorIntegration:
         tool_outputs = _get_tool_returns(result)
         assert any("not available" in out.lower() for out in tool_outputs)
 
-    async def test_get_market_data_no_analytics_graceful_fallback(self, sample_collection):
+    async def test_get_market_data_no_analytics_graceful_fallback(self, sample_collection: UserCollection):
         """get_market_data returns a graceful message when analytics is None."""
         deps = AdvisorDependencies(
             vector_store=None,
@@ -286,7 +298,7 @@ class TestTradeAdvisorIntegration:
             user_collection=sample_collection,
         )
 
-        def mock_model(messages, info):
+        def mock_model(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
             if _is_tool_result_in_history(messages):
                 return ModelResponse(parts=[TextPart(content="Turn complete.")])
             return ModelResponse(parts=[ToolCallPart(tool_name="get_market_data", args={"pokemon": "eevee"})])
@@ -305,7 +317,7 @@ class TestTradeAdvisorIntegration:
             user_collection=None,
         )
 
-        def mock_model(messages, info):
+        def mock_model(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
             if _is_tool_result_in_history(messages):
                 return ModelResponse(parts=[TextPart(content="Turn complete.")])
             return ModelResponse(parts=[ToolCallPart(tool_name="get_user_context", args={})])

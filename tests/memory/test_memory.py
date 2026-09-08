@@ -1,5 +1,9 @@
 """Tests for memory system."""
 
+from collections.abc import Generator
+from pathlib import Path
+from typing import NoReturn
+
 import pytest
 
 from memory.conversation_memory import ConversationMemory, RecommendationMemory
@@ -12,7 +16,7 @@ from utils import is_chromadb_running
 
 
 @pytest.fixture(autouse=True)
-def setup_test_db(tmp_path, monkeypatch):
+def setup_test_db(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Generator[Path]:
     """Use a temporary database for tests."""
     test_db = tmp_path / "test_memory.db"
 
@@ -53,23 +57,23 @@ class TestChromaDBCheck:
         result = is_chromadb_running()
         assert isinstance(result, bool)
 
-    def test_is_chromadb_running_when_available(self, monkeypatch):
+    def test_is_chromadb_running_when_available(self, monkeypatch: pytest.MonkeyPatch):
         """Test when ChromaDB is available."""
 
         class MockResponse:
             status_code = 200
 
-        def mock_get(*args, **kwargs):
+        def mock_get(*args: object, **kwargs: object) -> MockResponse:
             return MockResponse()
 
         monkeypatch.setattr("utils.httpx.get", mock_get)
         assert is_chromadb_running() is True
 
-    def test_is_chromadb_running_when_unavailable(self, monkeypatch):
+    def test_is_chromadb_running_when_unavailable(self, monkeypatch: pytest.MonkeyPatch):
         """Test when ChromaDB is not available."""
         import httpx
 
-        def mock_get(*args, **kwargs):
+        def mock_get(*args: object, **kwargs: object) -> NoReturn:
             raise httpx.RequestError("Connection refused")
 
         monkeypatch.setattr("utils.httpx.get", mock_get)

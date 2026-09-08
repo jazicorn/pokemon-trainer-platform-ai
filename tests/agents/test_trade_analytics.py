@@ -12,7 +12,7 @@ from data.models import PlatformTrades, Trade, TradeStatus
 
 
 @pytest.fixture
-def sample_trades():
+def sample_trades() -> PlatformTrades:
     """Create sample trade data."""
     trades = [
         Trade(
@@ -68,7 +68,7 @@ class TestDemandThresholds:
 class TestTradeAnalytics:
     """Tests for TradeAnalytics."""
 
-    def test_demand_ratio_high_demand(self, sample_trades):
+    def test_demand_ratio_high_demand(self, sample_trades: PlatformTrades):
         analytics = TradeAnalytics(trades=sample_trades)
         result = analytics.get_demand_ratio("charizard")
 
@@ -77,7 +77,7 @@ class TestTradeAnalytics:
         assert result["demand_ratio"] == 2.0
         assert result["demand_level"] == "high"
 
-    def test_demand_ratio_no_trades(self, sample_trades):
+    def test_demand_ratio_no_trades(self, sample_trades: PlatformTrades):
         analytics = TradeAnalytics(trades=sample_trades)
         result = analytics.get_demand_ratio("bulbasaur")
 
@@ -85,7 +85,7 @@ class TestTradeAnalytics:
         assert result["times_offered"] == 0
         assert result["demand_ratio"] == "∞"
 
-    def test_trade_success_rate(self, sample_trades):
+    def test_trade_success_rate(self, sample_trades: PlatformTrades):
         analytics = TradeAnalytics(trades=sample_trades)
         result = analytics.get_trade_success_rate("charizard")
 
@@ -93,14 +93,14 @@ class TestTradeAnalytics:
         assert result["completed"] == 2
         assert result["success_rate"] == 66.7
 
-    def test_trade_success_rate_no_trades(self, sample_trades):
+    def test_trade_success_rate_no_trades(self, sample_trades: PlatformTrades):
         analytics = TradeAnalytics(trades=sample_trades)
         result = analytics.get_trade_success_rate("bulbasaur")
 
         assert result["total_trades"] == 0
         assert result["success_rate"] == 0.0
 
-    def test_most_requested(self, sample_trades):
+    def test_most_requested(self, sample_trades: PlatformTrades):
         analytics = TradeAnalytics(trades=sample_trades)
         result = analytics.get_most_requested(limit=5)
 
@@ -108,7 +108,7 @@ class TestTradeAnalytics:
         assert result[0]["pokemon"] == "charizard"
         assert result[0]["request_count"] == 2
 
-    def test_compare_trade_value(self, sample_trades):
+    def test_compare_trade_value(self, sample_trades: PlatformTrades):
         analytics = TradeAnalytics(trades=sample_trades)
         result = analytics.compare_trade_value("charizard", "pikachu")
 

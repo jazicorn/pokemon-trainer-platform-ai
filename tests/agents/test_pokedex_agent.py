@@ -3,8 +3,9 @@
 from unittest.mock import MagicMock
 
 import pytest
-from pydantic_ai.messages import ModelRequest, ModelResponse, TextPart, ToolCallPart, ToolReturnPart
-from pydantic_ai.models.function import FunctionModel
+from pydantic_ai import AgentRunResult
+from pydantic_ai.messages import ModelMessage, ModelRequest, ModelResponse, TextPart, ToolCallPart, ToolReturnPart
+from pydantic_ai.models.function import AgentInfo, FunctionModel
 
 from agents.pokedex_expert import (
     TYPE_CHART,
@@ -17,7 +18,7 @@ from agents.pokedex_expert import (
 # ---------------------------------------------------------------------------
 
 
-def _is_tool_result_in_history(messages) -> bool:
+def _is_tool_result_in_history(messages: list[ModelMessage]) -> bool:
     """Return True if any message in history contains a ToolReturnPart."""
     for msg in messages:
         if isinstance(msg, ModelRequest) and any(isinstance(part, ToolReturnPart) for part in msg.parts):
@@ -25,9 +26,9 @@ def _is_tool_result_in_history(messages) -> bool:
     return False
 
 
-def _get_tool_returns(result) -> list[str]:
+def _get_tool_returns(result: AgentRunResult[str]) -> list[str]:
     """Extract all tool return values from the full conversation history."""
-    returns = []
+    returns: list[str] = []
     for msg in result.all_messages():
         if isinstance(msg, ModelRequest):
             for part in msg.parts:
@@ -90,7 +91,7 @@ class TestPokedexAgentIntegration:
         mock_store.query.return_value = [{"document": "Pikachu — Electric type. HP: 35, Attack: 55, Speed: 90."}]
         deps = PokedexDependencies.model_construct(vector_store=mock_store)
 
-        def mock_model(messages, info):
+        def mock_model(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
             if _is_tool_result_in_history(messages):
                 return ModelResponse(parts=[TextPart(content="Turn complete.")])
             return ModelResponse(parts=[ToolCallPart(tool_name="search_pokemon", args={"query": "pikachu"})])
@@ -106,7 +107,7 @@ class TestPokedexAgentIntegration:
         """When vector_store is None, search_pokemon returns a graceful message."""
         deps = PokedexDependencies(vector_store=None)
 
-        def mock_model(messages, info):
+        def mock_model(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
             if _is_tool_result_in_history(messages):
                 return ModelResponse(parts=[TextPart(content="Turn complete.")])
             return ModelResponse(parts=[ToolCallPart(tool_name="search_pokemon", args={"query": "pikachu"})])
@@ -121,7 +122,7 @@ class TestPokedexAgentIntegration:
         """get_type_effectiveness tool returns the expected effectiveness string."""
         deps = PokedexDependencies(vector_store=None)
 
-        def mock_model(messages, info):
+        def mock_model(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
             if _is_tool_result_in_history(messages):
                 return ModelResponse(parts=[TextPart(content="Turn complete.")])
             return ModelResponse(
@@ -143,7 +144,7 @@ class TestPokedexAgentIntegration:
         """An unmapped type pair falls back to normal effectiveness (1x)."""
         deps = PokedexDependencies(vector_store=None)
 
-        def mock_model(messages, info):
+        def mock_model(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
             if _is_tool_result_in_history(messages):
                 return ModelResponse(parts=[TextPart(content="Turn complete.")])
             return ModelResponse(
@@ -165,7 +166,7 @@ class TestPokedexAgentIntegration:
         """Verifies the tool call part appears in the new_messages() history."""
         deps = PokedexDependencies(vector_store=None)
 
-        def mock_model(messages, info):
+        def mock_model(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
             if _is_tool_result_in_history(messages):
                 return ModelResponse(parts=[TextPart(content="Turn complete.")])
             return ModelResponse(
