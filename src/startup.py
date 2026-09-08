@@ -138,16 +138,31 @@ def _try_colima_qemu_recovery() -> bool:
     return True
 
 
+def _run_chromadb_script(script: Path) -> int:
+    """Run chromadb-docker.sh start, returning its exit code.
+
+    stdout is left connected to the terminal — permission prompts the user
+    must see and respond to live there. stderr is captured rather than
+    discarded: on the happy path it's just verbose Colima/Lima boot logs
+    (suppressed, matching the original intent), but on failure it's the
+    actual diagnostic error — printing it there instead of silently
+    swallowing it is the difference between a debuggable failure and a dead
+    end (e.g. Docker's own error text when `docker run` fails to start a
+    container it just created).
+    """
+    proc = subprocess.run([str(script), "start"], stderr=subprocess.PIPE, text=True)
+    if proc.returncode != 0 and proc.stderr:
+        _console.print(f"[dim]{proc.stderr.strip()}[/]")
+    return proc.returncode
+
+
 def start_chromadb() -> bool:
     """Start ChromaDB using the shared chromadb_setup script."""
     _console.print("[bold]Starting ChromaDB...[/]")
     repo_root = Path(__file__).parent.parent
     script = repo_root / "chromadb_setup" / "chromadb-docker.sh"
 
-    # stdout: permission prompts the user must see and respond to.
-    # stderr: verbose Colima/Lima boot logs — suppress so they don't flood output.
-    proc = subprocess.run([str(script), "start"], stderr=subprocess.DEVNULL)
-    if proc.returncode != 0:
+    if _run_chromadb_script(script) != 0:
         _console.print(
             "\n[yellow]ChromaDB is required to run this program.[/]\n"
             "Start it with [bold]make chromadb-start[/] and then re-run [bold]make run[/]."
@@ -164,7 +179,7 @@ def start_chromadb() -> bool:
     # Docker/Colima may be in a broken VZ state — attempt one automatic recovery.
     if _try_colima_qemu_recovery():
         _console.print("[bold]Retrying ChromaDB startup after Colima recovery...[/]")
-        subprocess.run([str(script), "start"], stderr=subprocess.DEVNULL)
+        _run_chromadb_script(script)
         with _console.status("[bold green]Waiting for ChromaDB to respond...[/]", spinner="dots"):
             for _ in range(20):
                 time.sleep(0.5)
@@ -208,3 +223,11 @@ def startup(
             _console.print(f"ChromaDB already running at {config.chromadb_url}")
         else:
             start_chromadb()
+
+
+if __name__ == "__main__":
+    # `uv run python -m src.startup` — run the full startup sequence (env
+    # validation, local DB init, telemetry prompt, ChromaDB) on its own,
+    # without launching the interactive CLI. See GETTING_STARTED.md's
+    # "Start Services" step.
+    startup()

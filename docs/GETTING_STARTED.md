@@ -51,8 +51,11 @@ powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 **Docker**:
 
 - macOS/Windows: [Docker Desktop](https://www.docker.com/products/docker-desktop)
-- macOS: Docker-compatible runtimes such as [Colima](https://github.com/abiosoft/colima)
+- macOS via Homebrew: Docker-compatible runtimes such as [Colima](https://github.com/abiosoft/colima)
   are also supported (`brew install colima docker && colima start`)
+- macOS via [MacPorts](https://www.macports.org/install.php#installing) (install MacPorts
+  itself first, then): `sudo port install colima docker && colima start` — MacPorts' `docker`
+  port is the CLI only, same as Homebrew's; Colima provides the actual engine either way
 - Linux: `sudo apt install docker.io` or [Docker Engine](https://docs.docker.com/engine/install/)
 
 **Ollama** (optional — only needed for `make run-ollama` / `make run-ollama-cloud`, the
