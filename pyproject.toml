@@ -1,6 +1,6 @@
 [project]
 name = "pokemon-trainer-platform-ai"
-version = "0.2.0"
+version = "0.2.1"
 description = "Pokemon Trainer Platform - AI: multi-agent trade advisor"
 readme = "README.md"
 requires-python = ">=3.13"

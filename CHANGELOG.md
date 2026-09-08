@@ -1,3 +1,20 @@
+## v0.2.1 (2026-09-08)
+
+
+- fix(ci): push the release tag explicitly instead of --follow-tags
+- `git push --follow-tags` only pushes *annotated* tags — cz.toml doesn't
+set `annotated_tag`, so `cz bump` creates lightweight ones. The push
+step exited 0 and looked successful, but silently never pushed the
+tag. This is exactly what happened with v0.2.0: the bump commit landed
+on main, but no v0.2.0 tag ever reached the remote, so image-publish.yml
+(which only triggers on a pushed `v*` tag) never ran and no Docker
+image was built.
+- Push the branch and tag explicitly by name instead of relying on
+--follow-tags' annotated-tags-only behavior.
+- Also add scripts/release.sh: a manual release script (bump, sync
+uv.lock, push) for running a release from the console when the
+automated pipeline can't be used, mirroring release.yml's own steps.
+
 ## v0.2.0 (2026-09-08)
 
 
