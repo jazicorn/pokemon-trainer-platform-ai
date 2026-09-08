@@ -5,13 +5,19 @@ from __future__ import annotations
 # (tier name, pkmn.github.io/smogon data path) pairs, in priority order.
 # `smogon_fetcher.get_tier_map()` walks these top to bottom and assigns each
 # Pokemon the first (highest) tier it appears in.
+#
+# Path is `sets/<format-id>` — the same `/sets` endpoint `get_sets()` already
+# uses (data.pkmn.cc's API only exposes analyses/formats/imgs/sets/stats/teams;
+# there is no separate "formats-data" endpoint). `sets/<format-id>.json` is
+# keyed directly by Pokemon name for that single format, which is exactly the
+# per-tier species list we need. Verified against the live API on 2026-09-08.
 TIER_FORMATS: list[tuple[str, str]] = [
-    ("Uber", "formats-data/gen9ubers"),
-    ("OU", "formats-data/gen9ou"),
-    ("UU", "formats-data/gen9uu"),
-    ("RU", "formats-data/gen9ru"),
-    ("NU", "formats-data/gen9nu"),
-    ("PU", "formats-data/gen9pu"),
+    ("Uber", "sets/gen9ubers"),
+    ("OU", "sets/gen9ou"),
+    ("UU", "sets/gen9uu"),
+    ("RU", "sets/gen9ru"),
+    ("NU", "sets/gen9nu"),
+    ("PU", "sets/gen9pu"),
 ]
 
 # Battle-score points awarded per competitive tier, used by
