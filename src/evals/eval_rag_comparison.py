@@ -14,23 +14,26 @@ import asyncio
 from dataclasses import dataclass
 
 from pydantic_ai import Agent
-from pydantic_evals import Dataset, Case
+from pydantic_evals import Case, Dataset
 from pydantic_evals.evaluators import Evaluator, EvaluatorContext
 
 from agents import query_pokedex
 from config import config
+
 from .cases import KNOWLEDGE_CASES
 
 
 @dataclass
 class KnowledgeInputs:
     """Inputs for a Pokemon knowledge evaluation case."""
+
     question: str
 
 
 @dataclass
 class KeywordEvaluator(Evaluator):
     """Score response based on presence of expected keywords."""
+
     keywords: tuple[str, ...]
 
     def evaluate(self, ctx: EvaluatorContext) -> dict[str, float]:

@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from pydantic_ai import RunContext
 
-from .trade_advisor_core import AdvisorDependencies, trade_advisor
 from .battle_strategy_advisor import BattleDependencies, battle_strategy_advisor
 from .legitimacy_guard import LegitimacyDependencies, legitimacy_guard
 from .pokedex_expert import PokedexDependencies, pokedex_expert
+from .trade_advisor_core import AdvisorDependencies, trade_advisor
 from .trade_market_analyst import MarketDependencies, trade_market_analyst
 
 
@@ -59,11 +59,7 @@ async def get_user_context(
     owned = [p.pokemon_id for p in uc.pokemon]
     seeking = uc.preferences.seeking
 
-    return (
-        f"User Goal: {uc.preferences.goal}\n"
-        f"Owned Pokemon: {', '.join(owned)}\n"
-        f"Seeking: {', '.join(seeking)}"
-    )
+    return f"User Goal: {uc.preferences.goal}\nOwned Pokemon: {', '.join(owned)}\nSeeking: {', '.join(seeking)}"
 
 
 @trade_advisor.tool
@@ -79,6 +75,7 @@ async def compare_trade_value(
     score matters more) depends on the user's trading_style and goal.
     """
     from data.value_scoring import score_summary
+
     from rag.smogon_fetcher import get_tier_map
 
     tier_map = ctx.deps.tier_map or get_tier_map()
@@ -176,16 +173,11 @@ async def create_outgoing_offer(
 
     mgr = TradeOffersManager(ctx.deps.user_id)
     offer_id = mgr.create_offer(recipient_id, offered_pokemon, requested_pokemon)
-    return (
-        f"✅ Offer #{offer_id} sent to {recipient_id}: "
-        f"your {offered_pokemon} for their {requested_pokemon}."
-    )
+    return f"✅ Offer #{offer_id} sent to {recipient_id}: your {offered_pokemon} for their {requested_pokemon}."
 
 
 @trade_advisor.tool
-async def check_legitimacy(
-    ctx: RunContext[AdvisorDependencies], pokemon: str, ball: str = "unknown"
-) -> str:
+async def check_legitimacy(ctx: RunContext[AdvisorDependencies], pokemon: str, ball: str = "unknown") -> str:
     """Calls the Legitimacy Guard to verify if a Pokemon is legal and rare."""
     deps = LegitimacyDependencies()
     ball_context = f"in a {ball} Ball" if ball != "unknown" else "with unknown ball type"

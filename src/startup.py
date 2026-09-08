@@ -10,9 +10,9 @@ from pathlib import Path
 from rich.console import Console as _Console
 
 from config import config
-from utils import is_chromadb_running
-from observability.telemetry_start import prompt_and_setup as prompt_and_start_telemetry
 from memory.database import init_database
+from observability.telemetry_start import prompt_and_setup as prompt_and_start_telemetry
+from utils import is_chromadb_running
 
 _console = _Console(force_terminal=True)
 
@@ -39,6 +39,7 @@ def validate_environment() -> None:
     """
     # Local import so tests that reload the config module see the updated instance.
     from config import config as _config
+
     provider = _config.get_model().provider.value
     required_var = PROVIDER_ENV_VARS.get(provider)
 
@@ -54,7 +55,7 @@ def validate_environment() -> None:
     if value and value.startswith("op://"):
         # Env var holds an op:// URI that was never resolved — the command
         # was not run via `op run`. Offer the correct invocation.
-        raise EnvironmentError(
+        raise OSError(
             f"Environment variable {required_var} contains a 1Password URI,\n"
             f"not an actual key. Run your command via op run so it is resolved:\n"
             f"  op run --env-file .env.op -- uv run python app.py\n"
@@ -64,7 +65,7 @@ def validate_environment() -> None:
     elif value == "" and op_available:
         # The shell ran `op read ...` but got an empty result — 1Password is
         # probably not signed in, so the variable was exported as an empty string.
-        raise EnvironmentError(
+        raise OSError(
             f"Environment variable {required_var} is set but empty.\n"
             f"The configured model provider '{provider}' requires this key.\n"
             f"Your 1Password CLI integration may not be authenticated.\n"
@@ -78,21 +79,20 @@ def validate_environment() -> None:
     elif op_available:
         # op is installed but the variable isn't set at all — the shell
         # integration may not be configured for this key yet.
-        raise EnvironmentError(
+        raise OSError(
             f"Missing required environment variable: {required_var}\n"
             f"The configured model provider '{provider}' requires this key.\n"
             f"Your 1Password CLI is available. If the key is stored in 1Password,\n"
             f"add this to your ~/.zshrc:\n"
-            f"  export {required_var}=$(op read \"op://Private/{required_var}/credential\")\n"
+            f'  export {required_var}=$(op read "op://Private/{required_var}/credential")\n'
             f"Then authenticate with: eval $(op signin)"
         )
     else:
-        raise EnvironmentError(
+        raise OSError(
             f"Missing required environment variable: {required_var}\n"
             f"The configured model provider '{provider}' requires this key.\n"
             f"Set it with: export {required_var}=<your-key>"
         )
-
 
 
 def _try_colima_qemu_recovery() -> bool:
@@ -118,7 +118,8 @@ def _try_colima_qemu_recovery() -> bool:
 
     start = subprocess.run(
         ["colima", "start", "--vm-type", "qemu"],
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
         timeout=180,
     )
     if start.returncode != 0:

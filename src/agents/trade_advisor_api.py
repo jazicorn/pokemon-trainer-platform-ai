@@ -6,13 +6,13 @@ import asyncio
 from typing import Any
 
 from data.loader import load_user_collection
-from rag.vector_store import PokemonVectorStore
 
-from .trade_advisor_core import AdvisorDependencies, trade_advisor
-from .trade_analytics import TradeAnalytics
+from rag.vector_store import PokemonVectorStore
 
 # Import tools module to ensure all @trade_advisor.tool decorators are executed.
 from . import trade_advisor_tools  # noqa: F401  # pyright: ignore[reportUnusedImport]
+from .trade_advisor_core import AdvisorDependencies, trade_advisor
+from .trade_analytics import TradeAnalytics
 
 
 def _build_advisor_deps(
@@ -59,9 +59,7 @@ async def evaluate_trade(
             deps.strategy_store.close()
 
 
-async def get_trade_suggestions(
-    user_id: str = "user_001", conversation_context: str | None = None
-) -> str:
+async def get_trade_suggestions(user_id: str = "user_001", conversation_context: str | None = None) -> str:
     """Proactive suggestions based on current market bullish trends and user goals."""
     deps = _build_advisor_deps(user_id, conversation_context)
     prompt = "Look at my seeking list and cross-reference with trending bullish Pokemon for suggestions."
@@ -90,16 +88,14 @@ async def get_pending_offers(user_id: str = "user_001") -> str:
     async def _analyze(offer: dict[str, Any]) -> str:
         analysis = offer.get("ai_analysis")
         if not analysis:
-            analysis = await evaluate_trade(
-                offer["requested_pokemon"], offer["offered_pokemon"], user_id
-            )
+            analysis = await evaluate_trade(offer["requested_pokemon"], offer["offered_pokemon"], user_id)
             mgr.save_ai_analysis(offer["id"], analysis)
         return analysis
 
     analyses = await asyncio.gather(*[_analyze(o) for o in offers])
 
     lines: list[str] = [f"You have **{len(offers)}** pending offer(s):\n"]
-    for offer, analysis in zip(offers, analyses):
+    for offer, analysis in zip(offers, analyses, strict=True):
         lines.append(
             f"**Offer #{offer['id']}** from `{offer['sender_id']}`\n"
             f"  They offer: **{offer['offered_pokemon']}** → They want: **{offer['requested_pokemon']}**\n"

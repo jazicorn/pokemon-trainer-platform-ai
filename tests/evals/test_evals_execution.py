@@ -7,21 +7,22 @@ using a patched evaluate_trade to avoid live LLM calls.
 
 from __future__ import annotations
 
-import pytest
 from unittest.mock import AsyncMock, patch
 
+import pytest
+
+from evals.cases import TRADE_CASES
 from evals.eval_trade_advisor import (
     TradeEvalResult,
     compute_summary,
     evaluate_single_trade,
     run_trade_eval,
 )
-from evals.cases import TRADE_CASES, TradeCase
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_result(
     case_id: str = "test_case",
@@ -45,6 +46,7 @@ def _make_result(
 # TradeEvalResult unit tests
 # ---------------------------------------------------------------------------
 
+
 class TestTradeEvalResult:
     def test_combined_score_is_average_of_keyword_and_recommendation(self):
         result = _make_result(keyword_score=0.6, recommendation_score=0.8)
@@ -63,6 +65,7 @@ class TestTradeEvalResult:
 # evaluate_single_trade
 # ---------------------------------------------------------------------------
 
+
 class TestEvaluateSingleTrade:
     """evaluate_single_trade should score a mocked agent response correctly."""
 
@@ -71,10 +74,7 @@ class TestEvaluateSingleTrade:
         """A response containing expected keywords and positive sentiment passes."""
         # obvious_good_trade expects: accept, recommend, dragonite, valuable
         case = TRADE_CASES[0]  # obvious_good_trade, is_good_trade=True
-        canned_response = (
-            "I recommend you accept this trade. Dragonite is extremely valuable "
-            "compared to Geodude."
-        )
+        canned_response = "I recommend you accept this trade. Dragonite is extremely valuable compared to Geodude."
 
         with patch(
             "evals.eval_trade_advisor.evaluate_trade",
@@ -140,6 +140,7 @@ class TestEvaluateSingleTrade:
 # run_trade_eval
 # ---------------------------------------------------------------------------
 
+
 class TestRunTradeEval:
     """run_trade_eval should iterate over all TRADE_CASES and return results."""
 
@@ -193,13 +194,16 @@ class TestRunTradeEval:
 # compute_summary
 # ---------------------------------------------------------------------------
 
+
 class TestComputeSummary:
     def test_empty_list_returns_zeroes(self):
         stats = compute_summary([])
         assert stats == {"total": 0, "passed": 0, "pass_rate": 0.0}
 
     def test_all_passed(self):
-        results = [_make_result(passed=True, keyword_score=0.8, recommendation_score=1.0, latency_ms=100.0) for _ in range(4)]
+        results = [
+            _make_result(passed=True, keyword_score=0.8, recommendation_score=1.0, latency_ms=100.0) for _ in range(4)
+        ]
         stats = compute_summary(results)
         assert stats["total"] == 4
         assert stats["passed"] == 4

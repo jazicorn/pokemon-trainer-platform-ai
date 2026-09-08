@@ -79,6 +79,17 @@ eval-rag: ## Run RAG vs no-RAG comparison eval (requires API key + ChromaDB)
 	op run --env-file .env.op -- uv run python -c \
 		"import sys; sys.path.insert(0, 'src'); import asyncio; from evals.eval_rag_comparison import main; asyncio.run(main())"
 
+# ── Lint ──────────────────────────────────────────────────────────────────────
+
+lint: ## Check formatting, lint rules, and types (no changes made)
+	uv run ruff format --check .
+	uv run ruff check .
+	uv run pyright src/
+
+lint-fix: ## Auto-fix formatting and lint issues where possible
+	uv run ruff format .
+	uv run ruff check --fix .
+
 # ── Help ──────────────────────────────────────────────────────────────────────
 
 help: ## Show this help
@@ -92,4 +103,5 @@ help: ## Show this help
         ingest generate-data \
         phoenix-start phoenix-stop \
         chromadb-start chromadb-stop chromadb-status \
+        lint lint-fix \
         help

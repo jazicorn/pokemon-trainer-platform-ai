@@ -1,31 +1,31 @@
 """Tests for Trade Advisor agent."""
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock
-from pydantic_ai.models.function import FunctionModel
-from pydantic_ai.messages import ModelResponse, ToolCallPart, ToolReturnPart, ModelRequest, TextPart
 
+import pytest
 from data.models import (
     OwnedPokemon,
     UserCollection,
     UserPreferences,
 )
+from pydantic_ai.messages import ModelRequest, ModelResponse, TextPart, ToolCallPart, ToolReturnPart
+from pydantic_ai.models.function import FunctionModel
+
 from agents.trade_advisor import (
+    SYSTEM_PROMPT,
     AdvisorDependencies,
     trade_advisor,
-    SYSTEM_PROMPT,
 )
-from agents.trade_analytics import TradeAnalytics
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _is_tool_result_in_history(messages) -> bool:
     for msg in messages:
-        if isinstance(msg, ModelRequest):
-            if any(isinstance(part, ToolReturnPart) for part in msg.parts):
-                return True
+        if isinstance(msg, ModelRequest) and any(isinstance(part, ToolReturnPart) for part in msg.parts):
+            return True
     return False
 
 
@@ -173,6 +173,7 @@ class TestTradeAdvisorIntegration:
     async def test_get_pokemon_info_delegates_to_pokedex(self, monkeypatch, sample_collection):
         """get_pokemon_info tool correctly delegates to pokedex_expert.run()."""
         import sys
+
         # Import directly from the submodule to avoid __init__.py name shadowing
         from agents.pokedex_expert import pokedex_expert as pokedex_expert_agent
 
@@ -195,9 +196,7 @@ class TestTradeAdvisorIntegration:
         def mock_model(messages, info):
             if _is_tool_result_in_history(messages):
                 return ModelResponse(parts=[TextPart(content="Turn complete.")])
-            return ModelResponse(parts=[
-                ToolCallPart(tool_name="get_pokemon_info", args={"pokemon": "pikachu"})
-            ])
+            return ModelResponse(parts=[ToolCallPart(tool_name="get_pokemon_info", args={"pokemon": "pikachu"})])
 
         with trade_advisor.override(model=FunctionModel(mock_model)):
             result = await trade_advisor.run("Tell me about Pikachu.", deps=deps)
@@ -209,6 +208,7 @@ class TestTradeAdvisorIntegration:
     async def test_get_market_data_delegates_to_market_analyst(self, monkeypatch, sample_collection):
         """get_market_data tool correctly delegates to trade_market_analyst.run()."""
         import sys
+
         # Import directly from the submodule to avoid __init__.py name shadowing
         from agents.trade_market_analyst import trade_market_analyst as tma_agent
 
@@ -230,9 +230,7 @@ class TestTradeAdvisorIntegration:
         def mock_model(messages, info):
             if _is_tool_result_in_history(messages):
                 return ModelResponse(parts=[TextPart(content="Turn complete.")])
-            return ModelResponse(parts=[
-                ToolCallPart(tool_name="get_market_data", args={"pokemon": "eevee"})
-            ])
+            return ModelResponse(parts=[ToolCallPart(tool_name="get_market_data", args={"pokemon": "eevee"})])
 
         with trade_advisor.override(model=FunctionModel(mock_model)):
             result = await trade_advisor.run("What is the market for Eevee?", deps=deps)
@@ -252,9 +250,7 @@ class TestTradeAdvisorIntegration:
         def mock_model(messages, info):
             if _is_tool_result_in_history(messages):
                 return ModelResponse(parts=[TextPart(content="Turn complete.")])
-            return ModelResponse(parts=[
-                ToolCallPart(tool_name="get_user_context", args={})
-            ])
+            return ModelResponse(parts=[ToolCallPart(tool_name="get_user_context", args={})])
 
         with trade_advisor.override(model=FunctionModel(mock_model)):
             result = await trade_advisor.run("What is my trading goal?", deps=deps)
@@ -274,9 +270,7 @@ class TestTradeAdvisorIntegration:
         def mock_model(messages, info):
             if _is_tool_result_in_history(messages):
                 return ModelResponse(parts=[TextPart(content="Turn complete.")])
-            return ModelResponse(parts=[
-                ToolCallPart(tool_name="get_pokemon_info", args={"pokemon": "pikachu"})
-            ])
+            return ModelResponse(parts=[ToolCallPart(tool_name="get_pokemon_info", args={"pokemon": "pikachu"})])
 
         with trade_advisor.override(model=FunctionModel(mock_model)):
             result = await trade_advisor.run("Tell me about Pikachu.", deps=deps)
@@ -295,9 +289,7 @@ class TestTradeAdvisorIntegration:
         def mock_model(messages, info):
             if _is_tool_result_in_history(messages):
                 return ModelResponse(parts=[TextPart(content="Turn complete.")])
-            return ModelResponse(parts=[
-                ToolCallPart(tool_name="get_market_data", args={"pokemon": "eevee"})
-            ])
+            return ModelResponse(parts=[ToolCallPart(tool_name="get_market_data", args={"pokemon": "eevee"})])
 
         with trade_advisor.override(model=FunctionModel(mock_model)):
             result = await trade_advisor.run("Market data for Eevee?", deps=deps)
@@ -316,9 +308,7 @@ class TestTradeAdvisorIntegration:
         def mock_model(messages, info):
             if _is_tool_result_in_history(messages):
                 return ModelResponse(parts=[TextPart(content="Turn complete.")])
-            return ModelResponse(parts=[
-                ToolCallPart(tool_name="get_user_context", args={})
-            ])
+            return ModelResponse(parts=[ToolCallPart(tool_name="get_user_context", args={})])
 
         with trade_advisor.override(model=FunctionModel(mock_model)):
             result = await trade_advisor.run("What is my context?", deps=deps)

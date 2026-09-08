@@ -115,15 +115,15 @@ def ingest_smogon_data(formats: list[str] | None = None) -> int:
             tier = tier_map.get(name_lower, "Unknown")
             analysis = analyses_by_pokemon.get(pokemon_name)
 
-            doc_text = _build_strategy_document(
-                pokemon_name, sets_data, analysis, tier, format_id
+            doc_text = _build_strategy_document(pokemon_name, sets_data, analysis, tier, format_id)
+            docs.append(
+                StrategyDocument(
+                    id=f"{name_lower}_{format_id}",
+                    text=doc_text,
+                    metadata={"name": name_lower, "format": format_id, "smogon_tier": tier},
+                    embedding=get_embedding(doc_text),
+                )
             )
-            docs.append(StrategyDocument(
-                id=f"{name_lower}_{format_id}",
-                text=doc_text,
-                metadata={"name": name_lower, "format": format_id, "smogon_tier": tier},
-                embedding=get_embedding(doc_text),
-            ))
 
     if not docs:
         logger.warning("No documents to ingest — Smogon data may be unavailable.")

@@ -168,6 +168,8 @@ has spiked to 2.4 (+100% momentum). **Recommendation:** Hold your position; mark
 | `make test-rag`        | Run ChromaDB integration tests                   |
 | `make eval`            | Run trade advisor evaluation                     |
 | `make eval-rag`        | Run RAG vs no-RAG comparison                     |
+| `make lint`            | Check formatting, lint rules, and types          |
+| `make lint-fix`        | Auto-fix formatting and lint issues              |
 | `make ingest`          | Index Pokémon data into ChromaDB                 |
 | `make generate-data`   | Regenerate mock trade and collection data        |
 | `make chromadb-start`  | Start ChromaDB Docker container                  |

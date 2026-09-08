@@ -1,15 +1,13 @@
 """Tests for CLI module."""
 
-import pytest
-
 from cli.commands import (
     CommandType,
     OfferParams,
     ParsedCommand,
     TradeParams,
-    parse_command,
-    _parse_trade,
     _parse_offer,
+    _parse_trade,
+    parse_command,
 )
 
 

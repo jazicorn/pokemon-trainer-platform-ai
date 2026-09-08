@@ -1,10 +1,11 @@
 """Legitimacy & Rarity Guard Agent - Compliance and provenance specialist."""
 
 from __future__ import annotations
+
 from pydantic import BaseModel
 from pydantic_ai import Agent, RunContext
-from config import config
 
+from config import config
 
 # Pokemon that can only exist in specific balls due to their event/game origins.
 # Cherish Ball = official event distribution. Master Ball = in-game legendary catch.
@@ -35,7 +36,7 @@ _LEGAL_BALL_MAP: dict[str, list[str]] = {
     "magearna": ["cherish", "poke"],
     "marshadow": ["cherish", "poke"],
     "zeraora": ["cherish", "poke"],
-    "meltan": ["poke"],        # GO exclusive — only catchable in Pokémon GO
+    "meltan": ["poke"],  # GO exclusive — only catchable in Pokémon GO
     "melmetal": ["poke", "master"],
     # Gen 8 Mythicals
     "zarude": ["cherish", "poke"],
@@ -57,7 +58,7 @@ _LEGAL_BALL_MAP: dict[str, list[str]] = {
     "xerneas": ["master", "cherish", "poke", "ultra"],
     "yveltal": ["master", "cherish", "poke", "ultra"],
     "zygarde": ["master", "cherish", "poke", "ultra"],
-    "cosmog": ["poke"],        # gifted, no catching
+    "cosmog": ["poke"],  # gifted, no catching
     "cosmoem": ["poke"],
     "solgaleo": ["master", "cherish", "poke"],
     "lunala": ["master", "cherish", "poke"],
@@ -71,19 +72,48 @@ _LEGAL_BALL_MAP: dict[str, list[str]] = {
 }
 
 # Pokemon that cannot legitimately be shiny (shiny-locked in all mainstream games).
-_SHINY_LOCKED: frozenset[str] = frozenset({
-    # Most Mythicals are shiny-locked in their primary distributions
-    "mew", "celebi", "jirachi", "deoxys", "phione", "manaphy",
-    "darkrai", "shaymin", "arceus", "victini", "keldeo", "meloetta",
-    "genesect", "diancie", "hoopa", "volcanion", "magearna", "marshadow",
-    "zeraora", "meltan", "melmetal", "zarude", "pecharunt",
-    # Box legendaries that are shiny-locked in their native games
-    "cosmog", "cosmoem", "solgaleo", "lunala",
-    "zacian", "zamazenta", "eternatus", "calyrex",
-    "koraidon", "miraidon",
-    # Starters gifted at the start of a game (shiny-locked)
-    "kubfu", "urshifu",
-})
+_SHINY_LOCKED: frozenset[str] = frozenset(
+    {
+        # Most Mythicals are shiny-locked in their primary distributions
+        "mew",
+        "celebi",
+        "jirachi",
+        "deoxys",
+        "phione",
+        "manaphy",
+        "darkrai",
+        "shaymin",
+        "arceus",
+        "victini",
+        "keldeo",
+        "meloetta",
+        "genesect",
+        "diancie",
+        "hoopa",
+        "volcanion",
+        "magearna",
+        "marshadow",
+        "zeraora",
+        "meltan",
+        "melmetal",
+        "zarude",
+        "pecharunt",
+        # Box legendaries that are shiny-locked in their native games
+        "cosmog",
+        "cosmoem",
+        "solgaleo",
+        "lunala",
+        "zacian",
+        "zamazenta",
+        "eternatus",
+        "calyrex",
+        "koraidon",
+        "miraidon",
+        # Starters gifted at the start of a game (shiny-locked)
+        "kubfu",
+        "urshifu",
+    }
+)
 
 # Valid origin marks by game region (region name → origin mark label).
 _ORIGIN_MARKS: dict[str, str] = {
@@ -104,30 +134,108 @@ _ORIGIN_MARKS: dict[str, str] = {
 }
 
 # Rarity tiers for classification.
-_MYTHICALS: frozenset[str] = frozenset({
-    "mew", "celebi", "jirachi", "deoxys", "phione", "manaphy",
-    "darkrai", "shaymin", "arceus", "victini", "keldeo", "meloetta",
-    "genesect", "diancie", "hoopa", "volcanion", "magearna", "marshadow",
-    "zeraora", "meltan", "melmetal", "zarude", "pecharunt",
-})
+_MYTHICALS: frozenset[str] = frozenset(
+    {
+        "mew",
+        "celebi",
+        "jirachi",
+        "deoxys",
+        "phione",
+        "manaphy",
+        "darkrai",
+        "shaymin",
+        "arceus",
+        "victini",
+        "keldeo",
+        "meloetta",
+        "genesect",
+        "diancie",
+        "hoopa",
+        "volcanion",
+        "magearna",
+        "marshadow",
+        "zeraora",
+        "meltan",
+        "melmetal",
+        "zarude",
+        "pecharunt",
+    }
+)
 
-_LEGENDARIES: frozenset[str] = frozenset({
-    "articuno", "zapdos", "moltres", "mewtwo", "lugia", "ho-oh",
-    "raikou", "entei", "suicune", "regirock", "regice", "registeel",
-    "latias", "latios", "kyogre", "groudon", "rayquaza",
-    "uxie", "mesprit", "azelf", "dialga", "palkia", "heatran",
-    "regigigas", "giratina", "cresselia",
-    "cobalion", "terrakion", "virizion", "tornadus", "thundurus",
-    "reshiram", "zekrom", "landorus", "kyurem",
-    "xerneas", "yveltal", "zygarde",
-    "tapu-koko", "tapu-lele", "tapu-bulu", "tapu-fini",
-    "cosmog", "cosmoem", "solgaleo", "lunala", "necrozma",
-    "zacian", "zamazenta", "eternatus", "kubfu", "urshifu",
-    "regieleki", "regidrago", "glastrier", "spectrier", "calyrex",
-    "wo-chien", "chien-pao", "ting-lu", "chi-yu",
-    "koraidon", "miraidon", "walking-wake", "iron-leaves",
-    "okidogi", "munkidori", "fezandipiti", "ogerpon", "terapagos",
-})
+_LEGENDARIES: frozenset[str] = frozenset(
+    {
+        "articuno",
+        "zapdos",
+        "moltres",
+        "mewtwo",
+        "lugia",
+        "ho-oh",
+        "raikou",
+        "entei",
+        "suicune",
+        "regirock",
+        "regice",
+        "registeel",
+        "latias",
+        "latios",
+        "kyogre",
+        "groudon",
+        "rayquaza",
+        "uxie",
+        "mesprit",
+        "azelf",
+        "dialga",
+        "palkia",
+        "heatran",
+        "regigigas",
+        "giratina",
+        "cresselia",
+        "cobalion",
+        "terrakion",
+        "virizion",
+        "tornadus",
+        "thundurus",
+        "reshiram",
+        "zekrom",
+        "landorus",
+        "kyurem",
+        "xerneas",
+        "yveltal",
+        "zygarde",
+        "tapu-koko",
+        "tapu-lele",
+        "tapu-bulu",
+        "tapu-fini",
+        "cosmog",
+        "cosmoem",
+        "solgaleo",
+        "lunala",
+        "necrozma",
+        "zacian",
+        "zamazenta",
+        "eternatus",
+        "kubfu",
+        "urshifu",
+        "regieleki",
+        "regidrago",
+        "glastrier",
+        "spectrier",
+        "calyrex",
+        "wo-chien",
+        "chien-pao",
+        "ting-lu",
+        "chi-yu",
+        "koraidon",
+        "miraidon",
+        "walking-wake",
+        "iron-leaves",
+        "okidogi",
+        "munkidori",
+        "fezandipiti",
+        "ogerpon",
+        "terapagos",
+    }
+)
 
 # Public aliases for use by other modules (e.g. value_scoring).
 MYTHICALS: frozenset[str] = _MYTHICALS

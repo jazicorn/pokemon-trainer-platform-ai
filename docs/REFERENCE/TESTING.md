@@ -561,3 +561,4 @@ Before committing:
 - [ ] No type errors: `uv run pyright src/`
 - [ ] Code formatted: `uv run ruff format .`
 - [ ] Linting passes: `uv run ruff check .`
+      (or run all three lint/type checks at once with `make lint`)

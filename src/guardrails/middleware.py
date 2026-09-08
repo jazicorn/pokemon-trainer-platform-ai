@@ -62,9 +62,6 @@ def create_safe_input(user_input: str) -> ProcessedInput:
         return ProcessedInput(text=user_input, had_pii=False, warning="")
 
     safe_input = filter_pii(user_input)
-    warning = (
-        "Note: Some personal information was detected and filtered "
-        "for your privacy."
-    )
+    warning = "Note: Some personal information was detected and filtered for your privacy."
 
     return ProcessedInput(text=safe_input, had_pii=True, warning=warning)

@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 
 
-class ModelProvider(str, Enum):
+class ModelProvider(StrEnum):
     """Supported model providers."""
 
     ANTHROPIC = "anthropic"
@@ -22,7 +22,7 @@ class ModelConfig:
 
     provider: ModelProvider
     model_name: str
-    
+
     @property
     def model_id(self) -> str:
         """Get the full model identifier for pydantic-ai."""
@@ -33,26 +33,18 @@ class ModelConfig:
 
 MODELS = {
     "claude-sonnet": ModelConfig(
-        ModelProvider.ANTHROPIC, "claude-sonnet-4-6"  # Latest stable Sonnet as of Feb 2026
+        ModelProvider.ANTHROPIC,
+        "claude-sonnet-4-6",  # Latest stable Sonnet as of Feb 2026
     ),
     "claude-haiku": ModelConfig(
-        ModelProvider.ANTHROPIC, "claude-haiku-4-5"  # Current stable Haiku
+        ModelProvider.ANTHROPIC,
+        "claude-haiku-4-5",  # Current stable Haiku
     ),
-    "gemini-flash": ModelConfig(
-        ModelProvider.GEMINI, "gemini-1.5-flash"
-    ),
-    "gemini-pro": ModelConfig(
-        ModelProvider.GEMINI, "gemini-1.5-pro"
-    ),
-    "gpt-4o": ModelConfig(
-        ModelProvider.OPENAI, "gpt-4o"
-    ),
-    "gpt-4o-mini": ModelConfig(
-        ModelProvider.OPENAI, "gpt-4o-mini"
-    ),
-    "llama": ModelConfig(
-        ModelProvider.OLLAMA, "llama3.2"
-    ),
+    "gemini-flash": ModelConfig(ModelProvider.GEMINI, "gemini-1.5-flash"),
+    "gemini-pro": ModelConfig(ModelProvider.GEMINI, "gemini-1.5-pro"),
+    "gpt-4o": ModelConfig(ModelProvider.OPENAI, "gpt-4o"),
+    "gpt-4o-mini": ModelConfig(ModelProvider.OPENAI, "gpt-4o-mini"),
+    "llama": ModelConfig(ModelProvider.OLLAMA, "llama3.2"),
 }
 
 
@@ -82,19 +74,13 @@ class Config:
     def __post_init__(self) -> None:
         """Validate configuration at instantiation time."""
         if self.default_model not in MODELS:
-            raise ValueError(
-                f"Unknown model '{self.default_model}'. "
-                f"Available: {list(MODELS.keys())}"
-            )
+            raise ValueError(f"Unknown model '{self.default_model}'. Available: {list(MODELS.keys())}")
 
     def get_model(self, name: str | None = None) -> ModelConfig:
         """Get model config by name."""
         model_name = name or self.default_model
         if model_name not in MODELS:
-            raise ValueError(
-                f"Unknown model: {model_name}. "
-                f"Available: {list(MODELS.keys())}"
-            )
+            raise ValueError(f"Unknown model: {model_name}. Available: {list(MODELS.keys())}")
         return MODELS[model_name]
 
     @property

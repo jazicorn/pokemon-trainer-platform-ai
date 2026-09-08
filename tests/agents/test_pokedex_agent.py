@@ -1,14 +1,14 @@
 """Tests for Pokedex Expert agent."""
 
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
+from pydantic_ai.messages import ModelRequest, ModelResponse, TextPart, ToolCallPart, ToolReturnPart
 from pydantic_ai.models.function import FunctionModel
-from pydantic_ai.messages import ModelResponse, ToolCallPart, ToolReturnPart, ModelRequest, TextPart
 
 from agents.pokedex_expert import (
-    PokedexDependencies,
     TYPE_CHART,
-    get_type_effectiveness,
+    PokedexDependencies,
     pokedex_expert,
 )
 
@@ -16,12 +16,12 @@ from agents.pokedex_expert import (
 # Helpers (same pattern as test_legitimacy_guard.py)
 # ---------------------------------------------------------------------------
 
+
 def _is_tool_result_in_history(messages) -> bool:
     """Return True if any message in history contains a ToolReturnPart."""
     for msg in messages:
-        if isinstance(msg, ModelRequest):
-            if any(isinstance(part, ToolReturnPart) for part in msg.parts):
-                return True
+        if isinstance(msg, ModelRequest) and any(isinstance(part, ToolReturnPart) for part in msg.parts):
+            return True
     return False
 
 
@@ -87,17 +87,13 @@ class TestPokedexAgentIntegration:
     async def test_search_pokemon_tool_is_invoked(self):
         """FunctionModel triggers search_pokemon; vector_store.query is called."""
         mock_store = MagicMock()
-        mock_store.query.return_value = [
-            {"document": "Pikachu — Electric type. HP: 35, Attack: 55, Speed: 90."}
-        ]
+        mock_store.query.return_value = [{"document": "Pikachu — Electric type. HP: 35, Attack: 55, Speed: 90."}]
         deps = PokedexDependencies.model_construct(vector_store=mock_store)
 
         def mock_model(messages, info):
             if _is_tool_result_in_history(messages):
                 return ModelResponse(parts=[TextPart(content="Turn complete.")])
-            return ModelResponse(parts=[
-                ToolCallPart(tool_name="search_pokemon", args={"query": "pikachu"})
-            ])
+            return ModelResponse(parts=[ToolCallPart(tool_name="search_pokemon", args={"query": "pikachu"})])
 
         with pokedex_expert.override(model=FunctionModel(mock_model)):
             result = await pokedex_expert.run("Tell me about Pikachu.", deps=deps)
@@ -113,9 +109,7 @@ class TestPokedexAgentIntegration:
         def mock_model(messages, info):
             if _is_tool_result_in_history(messages):
                 return ModelResponse(parts=[TextPart(content="Turn complete.")])
-            return ModelResponse(parts=[
-                ToolCallPart(tool_name="search_pokemon", args={"query": "pikachu"})
-            ])
+            return ModelResponse(parts=[ToolCallPart(tool_name="search_pokemon", args={"query": "pikachu"})])
 
         with pokedex_expert.override(model=FunctionModel(mock_model)):
             result = await pokedex_expert.run("Tell me about Pikachu.", deps=deps)
@@ -130,17 +124,17 @@ class TestPokedexAgentIntegration:
         def mock_model(messages, info):
             if _is_tool_result_in_history(messages):
                 return ModelResponse(parts=[TextPart(content="Turn complete.")])
-            return ModelResponse(parts=[
-                ToolCallPart(
-                    tool_name="get_type_effectiveness",
-                    args={"attacking_type": "fire", "defending_type": "grass"},
-                )
-            ])
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        tool_name="get_type_effectiveness",
+                        args={"attacking_type": "fire", "defending_type": "grass"},
+                    )
+                ]
+            )
 
         with pokedex_expert.override(model=FunctionModel(mock_model)):
-            result = await pokedex_expert.run(
-                "How effective is Fire vs Grass?", deps=deps
-            )
+            result = await pokedex_expert.run("How effective is Fire vs Grass?", deps=deps)
 
         tool_outputs = _get_tool_returns(result)
         assert any("super effective" in out.lower() for out in tool_outputs)
@@ -152,17 +146,17 @@ class TestPokedexAgentIntegration:
         def mock_model(messages, info):
             if _is_tool_result_in_history(messages):
                 return ModelResponse(parts=[TextPart(content="Turn complete.")])
-            return ModelResponse(parts=[
-                ToolCallPart(
-                    tool_name="get_type_effectiveness",
-                    args={"attacking_type": "normal", "defending_type": "normal"},
-                )
-            ])
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        tool_name="get_type_effectiveness",
+                        args={"attacking_type": "normal", "defending_type": "normal"},
+                    )
+                ]
+            )
 
         with pokedex_expert.override(model=FunctionModel(mock_model)):
-            result = await pokedex_expert.run(
-                "How effective is Normal vs Normal?", deps=deps
-            )
+            result = await pokedex_expert.run("How effective is Normal vs Normal?", deps=deps)
 
         tool_outputs = _get_tool_returns(result)
         assert any("1x" in out or "normal" in out.lower() for out in tool_outputs)
@@ -174,12 +168,14 @@ class TestPokedexAgentIntegration:
         def mock_model(messages, info):
             if _is_tool_result_in_history(messages):
                 return ModelResponse(parts=[TextPart(content="Turn complete.")])
-            return ModelResponse(parts=[
-                ToolCallPart(
-                    tool_name="get_type_effectiveness",
-                    args={"attacking_type": "water", "defending_type": "fire"},
-                )
-            ])
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        tool_name="get_type_effectiveness",
+                        args={"attacking_type": "water", "defending_type": "fire"},
+                    )
+                ]
+            )
 
         with pokedex_expert.override(model=FunctionModel(mock_model)):
             result = await pokedex_expert.run("Water vs Fire?", deps=deps)

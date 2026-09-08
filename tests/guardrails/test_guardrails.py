@@ -2,19 +2,17 @@
 
 import pytest
 
-from guardrails.pii_filter import (
-    PIIFilter,
-    PIIMatch,
-    PIIPatterns,
-    POKEMON_NAMES,
-    detect_pii,
-    filter_pii,
-    has_pii,
-)
 from guardrails.middleware import (
     GuardrailMiddleware,
     ProcessedInput,
     create_safe_input,
+)
+from guardrails.pii_filter import (
+    POKEMON_NAMES,
+    PIIFilter,
+    PIIPatterns,
+    filter_pii,
+    has_pii,
 )
 
 
@@ -200,4 +198,3 @@ class TestCreateSafeInput:
         assert "[EMAIL]" in result.text
         assert result.had_pii is True
         assert "privacy" in result.warning.lower()
-        

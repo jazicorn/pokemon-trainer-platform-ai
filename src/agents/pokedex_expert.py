@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from data.loader import load_user_collection
 from pydantic import BaseModel
 from pydantic_ai import Agent, RunContext
 
-from rag.vector_store import PokemonVectorStore
-from data.loader import load_user_collection
 from config import config
+from rag.vector_store import PokemonVectorStore
 
 if TYPE_CHECKING:
     pass
@@ -49,7 +49,7 @@ TYPE_CHART: dict[tuple[str, str], str] = {
 SYSTEM_PROMPT = """You are a Pokemon expert with deep knowledge of all Pokemon
 species, their stats, types, abilities, and competitive viability.
 
-You also have access to the user's personal collection. When asked about "my pokemon" 
+You also have access to the user's personal collection. When asked about "my pokemon"
 or "what I have", use the get_my_collection tool.
 
 When answering questions:
@@ -114,8 +114,8 @@ async def get_my_collection(ctx: RunContext[PokedexDependencies]) -> str:
 
     return (
         f"User '{ctx.deps.user_id}' has {len(pkmn_strings)} Pokemon in their collection:\n"
-        + "\n".join(pkmn_strings) +
-        f"\n\nCurrent Goal: {goal}"
+        + "\n".join(pkmn_strings)
+        + f"\n\nCurrent Goal: {goal}"
         f"\nCurrently Seeking: {seeking}"
     )
 
@@ -130,4 +130,3 @@ async def query_pokedex(question: str, user_id: str = "user_001") -> str:
         return str(result.output)
     finally:
         store.close()
-        

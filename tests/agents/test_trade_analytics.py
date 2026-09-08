@@ -1,13 +1,13 @@
 """Tests for trade analytics."""
 
-import pytest
 from datetime import datetime
 
-from data.models import Trade, PlatformTrades, TradeStatus
+import pytest
+from data.models import PlatformTrades, Trade, TradeStatus
+
 from agents.trade_analytics import (
-    TradeAnalytics,
-    DemandThresholds,
     DEMAND_THRESHOLDS,
+    TradeAnalytics,
 )
 
 
@@ -123,14 +123,16 @@ class TestMarketAnalystAgent:
 
     def test_agent_has_system_prompt(self):
         from agents.trade_market_analyst import trade_market_analyst
+
         assert trade_market_analyst.system_prompt is not None
 
     def test_agent_model_configured(self):
         from agents.trade_market_analyst import trade_market_analyst
+
         assert trade_market_analyst.model is not None
 
     def test_market_dependencies_allows_none(self):
         from agents.trade_market_analyst import MarketDependencies
+
         deps = MarketDependencies(analytics=None)
         assert deps.analytics is None
-        

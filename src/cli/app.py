@@ -9,21 +9,19 @@ import re
 import time
 from dataclasses import dataclass, field
 
-from agents import evaluate_trade, get_pending_offers, get_trade_suggestions, query_pokedex, send_trade_offer
-from agents.trade_market_analyst import query_market
-from memory import TradeOffersManager
-from data.loader import load_user_collection
-from guardrails import create_safe_input
-from memory import ConversationMemory, UserPreferencesManager
-
 # Rich imports for high-quality UI and loading indicators
 import httpx
-
+from data.loader import load_user_collection
 from rich.console import Console
-from rich.panel import Panel
 from rich.markdown import Markdown
+from rich.panel import Panel
 from rich.prompt import Prompt
 from rich.table import Table
+
+from agents import evaluate_trade, get_pending_offers, get_trade_suggestions, query_pokedex, send_trade_offer
+from agents.trade_market_analyst import query_market
+from guardrails import create_safe_input
+from memory import ConversationMemory, TradeOffersManager, UserPreferencesManager
 
 from .commands import CommandType, OfferParams, ParsedCommand, parse_command
 
@@ -43,10 +41,20 @@ class PendingConfirmation:
 
 
 # Words that confirm a pending action when typed as the first word of input
-_AFFIRMATIONS: frozenset[str] = frozenset({
-    "yes", "yeah", "yep", "ok", "okay", "sure", "confirm",
-    "go", "proceed", "do",
-})
+_AFFIRMATIONS: frozenset[str] = frozenset(
+    {
+        "yes",
+        "yeah",
+        "yep",
+        "ok",
+        "okay",
+        "sure",
+        "confirm",
+        "go",
+        "proceed",
+        "do",
+    }
+)
 
 # Initialize Rich console
 console = Console(force_terminal=True)
@@ -80,16 +88,20 @@ HEADER = """[bold cyan]=========================================================
 ABOUT_TEXT = """
 # About Pokemon Trainer's Second Brain
 
-This project is a **Hierarchical Multi-Agent System** designed to give you a competitive edge in Pokemon trading.
+This project is a **Hierarchical Multi-Agent System** designed to give you a competitive edge
+in Pokemon trading.
 
 ### How it Works
-When you ask a question or propose a trade, the **Trade Advisor** orchestrates the workflow by delegating specialized tasks to worker agents:
+When you ask a question or propose a trade, the **Trade Advisor** orchestrates the workflow
+by delegating specialized tasks to worker agents:
 * **Pokedex Expert**: Pulls real stats and type data from a ChromaDB vector database.
 * **Market Analyst**: Scans platform trades to calculate real-time supply and demand ratios.
 
 ### Market Simulation
-By analyzing platform-wide trade data, the system simulates a stock market environment, identifying "Bullish" (high demand) and "Bearish" (oversupply) trends based on demand ratios.
+By analyzing platform-wide trade data, the system simulates a stock market environment,
+identifying "Bullish" (high demand) and "Bearish" (oversupply) trends based on demand ratios.
 """
+
 
 class TradeCLI:
     """Command-line interface for the Trade Advisor."""
@@ -207,7 +219,10 @@ class TradeCLI:
     async def handle_offer_send(self, params: OfferParams | None) -> None:
         """Pre-screen and send a trade offer."""
         if not params:
-            console.print("[yellow]💡 Try:[/yellow] offer [italic]{your-pokemon}[/] to [italic]{user}[/] for [italic]{their-pokemon}[/]")
+            console.print(
+                "[yellow]💡 Try:[/yellow] offer [italic]{your-pokemon}[/] to [italic]{user}[/] "
+                "for [italic]{their-pokemon}[/]"
+            )
             return
 
         self.conversation.add_message(
@@ -218,9 +233,7 @@ class TradeCLI:
             f"[bold green]Evaluating offer: {params.offered} → {params.recipient}...",
             spinner="dots",
         ):
-            result = await send_trade_offer(
-                self.user_id, params.recipient, params.offered, params.requested
-            )
+            result = await send_trade_offer(self.user_id, params.recipient, params.offered, params.requested)
         self._print_result(result)
         self.conversation.add_message("assistant", str(result))
 
@@ -259,7 +272,10 @@ class TradeCLI:
         if mgr.update_status(offer_id, "accepted"):
             self._print_result(f"**Offer #{offer_id} accepted.** Well traded!")
         else:
-            console.print(f"[yellow]Offer #{offer_id} wasn't found — it may already have been responded to. Type [bold cyan]offers[/bold cyan] to see pending offers.[/yellow]")
+            console.print(
+                f"[yellow]Offer #{offer_id} wasn't found — it may already have been responded to. "
+                "Type [bold cyan]offers[/bold cyan] to see pending offers.[/yellow]"
+            )
 
     async def handle_offer_decline(self, offer_id_str: str) -> None:
         """Decline a pending offer by ID."""
@@ -282,28 +298,31 @@ class TradeCLI:
         if mgr.update_status(offer_id, "declined"):
             self._print_result(f"**Offer #{offer_id} declined.**")
         else:
-            console.print(f"[yellow]Offer #{offer_id} wasn't found — it may already have been responded to. Type [bold cyan]offers[/bold cyan] to see pending offers.[/yellow]")
+            console.print(
+                f"[yellow]Offer #{offer_id} wasn't found — it may already have been responded to. "
+                "Type [bold cyan]offers[/bold cyan] to see pending offers.[/yellow]"
+            )
 
     async def handle_market(self, query: str) -> None:
         """Handle market queries or general trends report."""
         is_trends = not query.strip() or "trend" in query.lower()
-        
+
         title = "[bold blue]📈 Live Poké-Market Trends[/]" if is_trends else f"[bold yellow]Market Analysis: {query}[/]"
         prompt = "Provide a high-level report on trending Pokemon and current market demand." if is_trends else query
-        
+
         # UPDATED: Using universal 'dots' spinner
         spinner = "dots"
 
         self.conversation.add_message("user", f"Market Query: {query}")
 
-        with console.status(f"[bold yellow]Accessing trading floor data...", spinner=spinner):
+        with console.status("[bold yellow]Accessing trading floor data...", spinner=spinner):
             result = await query_market(prompt)
 
         print()
         md = Markdown(str(result))
         console.print(Panel(md, title=title, border_style="blue", padding=(1, 2)))
         print()
-        
+
         self.conversation.add_message("assistant", str(result))
 
     async def handle_prefs(self) -> None:
@@ -316,11 +335,11 @@ class TradeCLI:
             table.add_column("Field", style="dim", width=18)
             table.add_column("Value", style="white")
 
-            table.add_row("[bold white]Goal[/]",           f"[yellow]{p.goal or 'Not set'}[/]")
-            table.add_row("[bold white]Seeking[/]",        f"[blue]{', '.join(p.seeking) or 'None'}[/]")
-            table.add_row("[bold white]Never trade[/]",    f"[red]{', '.join(p.never_trade) or 'None'}[/]")
-            table.add_row("[bold white]Fav types[/]",      f"[magenta]{', '.join(p.favorite_types) or 'None'}[/]")
-            table.add_row("[bold white]Trading style[/]",  f"[cyan]{p.trading_style or 'Not set'}[/]")
+            table.add_row("[bold white]Goal[/]", f"[yellow]{p.goal or 'Not set'}[/]")
+            table.add_row("[bold white]Seeking[/]", f"[blue]{', '.join(p.seeking) or 'None'}[/]")
+            table.add_row("[bold white]Never trade[/]", f"[red]{', '.join(p.never_trade) or 'None'}[/]")
+            table.add_row("[bold white]Fav types[/]", f"[magenta]{', '.join(p.favorite_types) or 'None'}[/]")
+            table.add_row("[bold white]Trading style[/]", f"[cyan]{p.trading_style or 'Not set'}[/]")
 
             console.print("[bold cyan]" + "=" * 60 + "[/]")
             console.print("[bold white]  Trading Preferences[/]")
@@ -333,7 +352,7 @@ class TradeCLI:
     def _print_result(self, result: str) -> None:
         """Print a formatted result using Rich."""
         content = result
-        
+
         print()
         md = Markdown(content)
         console.print(Panel(md, title="[bold blue]Advisor Response[/]", border_style="blue", padding=(1, 2)))
@@ -360,7 +379,7 @@ class TradeCLI:
             case CommandType.ABOUT:
                 self.print_about()
             case CommandType.CLEAR:
-                os.system('cls' if os.name == 'nt' else 'clear')
+                os.system("cls" if os.name == "nt" else "clear")
                 self.print_header()
                 self.print_user_context()
             case CommandType.HISTORY:
@@ -412,6 +431,7 @@ class TradeCLI:
                         context = self.conversation.get_context_string()
                         with console.status("[bold green]Sending offers...", spinner="dots"):
                             from agents.trade_advisor import evaluate_trade
+
                             result = await evaluate_trade(
                                 user_id=self.user_id,
                                 raw_query=(
@@ -436,7 +456,10 @@ class TradeCLI:
 
                 with console.status(status_msg, spinner="dots"):
                     from agents.trade_advisor import evaluate_trade
-                    result = await evaluate_trade(user_id=self.user_id, raw_query=cmd.args, conversation_context=context)
+
+                    result = await evaluate_trade(
+                        user_id=self.user_id, raw_query=cmd.args, conversation_context=context
+                    )
 
                 self._print_result(result)
                 self.conversation.add_message("assistant", str(result))
@@ -444,9 +467,7 @@ class TradeCLI:
                 # Detect pending confirmation from the LLM response.
                 # Regex matches the exact phrasing mandated in the system prompt,
                 # preventing false positives from descriptive text like "you could accept Offer #3".
-                accept_match = re.search(
-                    r"Shall I go ahead and accept Offer #(\d+)", result, re.IGNORECASE
-                )
+                accept_match = re.search(r"Shall I go ahead and accept Offer #(\d+)", result, re.IGNORECASE)
                 if accept_match:
                     self._pending_confirmation = PendingConfirmation(
                         action_type="accept_offer", offer_id=int(accept_match.group(1))
@@ -475,6 +496,7 @@ class TradeCLI:
             except Exception as e:
                 console.print(f"[bold red]Error:[/] {e}")
 
+
 async def main() -> None:
     """Main entry point."""
     parser = argparse.ArgumentParser(description="Pokemon Trainer's Second Brain")
@@ -482,6 +504,6 @@ async def main() -> None:
     args = parser.parse_args()
     await TradeCLI(user_id=args.user).run()
 
+
 if __name__ == "__main__":
     asyncio.run(main())
-    

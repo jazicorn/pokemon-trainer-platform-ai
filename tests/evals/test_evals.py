@@ -2,8 +2,8 @@
 
 import pytest
 
-from evals.cases import TRADE_CASES, KNOWLEDGE_CASES, TradeCase, KnowledgeCase
-from evals.scoring import score_keywords, score_trade_recommendation, ScoreResult
+from evals.cases import KNOWLEDGE_CASES, TRADE_CASES
+from evals.scoring import ScoreResult, score_keywords, score_trade_recommendation
 
 
 class TestEvalCases:
@@ -53,7 +53,7 @@ class TestScoreKeywords:
         response = "Charizard is a fire type"
         result = score_keywords(response, ("fire", "flying", "dragon"))
 
-        assert result.score == pytest.approx(1/3)
+        assert result.score == pytest.approx(1 / 3)
         assert result.passed is False
         assert "fire" in result.matched
         assert "flying" in result.missing
@@ -139,4 +139,3 @@ class TestScoreResult:
         )
 
         assert result.match_rate == 0.0
-        

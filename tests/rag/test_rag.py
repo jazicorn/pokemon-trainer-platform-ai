@@ -1,9 +1,11 @@
 """Tests for RAG components."""
 
+import contextlib
+
 import pytest
 
 from rag.pokeapi_fetcher import extract_pokemon_info
-from rag.vector_store import get_simple_embedding, PokemonVectorStore
+from rag.vector_store import PokemonVectorStore, get_simple_embedding
 
 # Assign custom marks to typed module-level constants so strict type checkers
 # that don't resolve MarkGenerator.__getattr__ can see the concrete type.
@@ -47,9 +49,7 @@ class TestExtractPokemonInfo:
             "is_legendary": True,
             "is_mythical": False,
             "generation": {"name": "generation-i"},
-            "flavor_text_entries": [
-                {"flavor_text": "Test description", "language": {"name": "en"}}
-            ],
+            "flavor_text_entries": [{"flavor_text": "Test description", "language": {"name": "en"}}],
         }
 
         result = extract_pokemon_info(pokemon_data, species_data)
@@ -84,9 +84,8 @@ class TestEmbedding:
 
 # --- Docker Helper Module (extract to src/testing/docker_helper.py) ---
 
-def get_docker_start_command(
-    platform: str, choice: str = "1"
-) -> tuple[list[str], str]:
+
+def get_docker_start_command(platform: str, choice: str = "1") -> tuple[list[str], str]:
     """Get the command to start Docker based on platform.
 
     Args:
@@ -115,10 +114,15 @@ def get_docker_start_command(
 def get_chromadb_docker_command() -> list[str]:
     """Get the command to start ChromaDB container."""
     return [
-        "docker", "run", "-d",
-        "--name", "chromadb-test",
-        "-p", "8000:8000",
-        "-e", "ANONYMIZED_TELEMETRY=false",
+        "docker",
+        "run",
+        "-d",
+        "--name",
+        "chromadb-test",
+        "-p",
+        "8000:8000",
+        "-e",
+        "ANONYMIZED_TELEMETRY=false",
         "chromadb/chroma:latest",
     ]
 
@@ -326,10 +330,9 @@ class TestPokemonVectorStore:
                 return False
 
             print_status(desc)
-            try:
+            # May return before Docker is ready
+            with contextlib.suppress(subprocess.CalledProcessError, subprocess.TimeoutExpired):
                 run_command(cmd, check=True, timeout=30)
-            except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
-                pass  # May return before Docker is ready
 
             print_status("Waiting for Docker to start (may take a minute)...")
             return wait_for_docker(60)
@@ -403,10 +406,8 @@ class TestPokemonVectorStore:
             assert "flying" in doc
             assert "hp: 100" in doc
         finally:
-            try:
+            with contextlib.suppress(Exception):
                 store.delete_collection()
-            except Exception:
-                pass
             store.close()
 
     def test_add_and_query_pokemon(self, sample_pokemon, ensure_chromadb):
@@ -417,9 +418,6 @@ class TestPokemonVectorStore:
             assert len(results) >= 1
             assert "testmon" in results[0]["document"]
         finally:
-            try:
+            with contextlib.suppress(Exception):
                 store.delete_collection()
-            except Exception:
-                pass
             store.close()
-            

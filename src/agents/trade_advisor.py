@@ -10,7 +10,6 @@ Import from this module for full backward compatibility.
 
 from __future__ import annotations
 
-from .trade_advisor_core import AdvisorDependencies, SYSTEM_PROMPT, trade_advisor
 from .trade_advisor_api import (
     _build_advisor_deps,  # pyright: ignore[reportPrivateUsage]
     evaluate_trade,
@@ -18,9 +17,10 @@ from .trade_advisor_api import (
     get_trade_suggestions,
     send_trade_offer,
 )
+from .trade_advisor_core import SYSTEM_PROMPT, AdvisorDependencies, trade_advisor
 
 # Re-export tool functions so agents/__init__.py can import them directly.
-from .trade_advisor_tools import get_pokemon_info, get_market_data
+from .trade_advisor_tools import get_market_data, get_pokemon_info
 
 __all__ = [
     "AdvisorDependencies",

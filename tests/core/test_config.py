@@ -1,10 +1,11 @@
 """Tests for src/config.py — Config dataclass, env var overrides, and validation."""
 
 import importlib
+
 import pytest
 
 import config as cfg_module
-from config import Config, ModelConfig, ModelProvider, MODELS
+from config import MODELS, Config, ModelConfig, ModelProvider
 
 
 class TestModelConfig:
@@ -32,9 +33,12 @@ class TestModelsDict:
 
     def test_all_expected_keys_present(self):
         expected = {
-            "claude-sonnet", "claude-haiku",
-            "gpt-4o", "gpt-4o-mini",
-            "gemini-flash", "gemini-pro",
+            "claude-sonnet",
+            "claude-haiku",
+            "gpt-4o",
+            "gpt-4o-mini",
+            "gemini-flash",
+            "gemini-pro",
             "llama",
         }
         assert expected == set(MODELS.keys())

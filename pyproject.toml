@@ -50,3 +50,26 @@ reportMissingTypeStubs = false
 reportUnknownMemberType = false
 reportUnknownVariableType = false
 
+[tool.ruff]
+target-version = "py313"
+line-length = 120
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort (import sorting)
+    "B",   # flake8-bugbear (likely bugs / design smells)
+    "C4",  # flake8-comprehensions
+    "SIM", # flake8-simplify
+    "UP",  # pyupgrade (modern syntax)
+    "PLE", # pylint errors
+]
+
+[tool.ruff.lint.per-file-ignores]
+# HEADER in this file is a hand-aligned Rich console banner — its rows are
+# padded to line up visually and can't be wrapped without breaking the layout.
+"src/cli/app.py" = ["E501"]
+

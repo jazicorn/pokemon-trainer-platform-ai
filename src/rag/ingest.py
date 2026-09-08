@@ -5,14 +5,46 @@ from .smogon_fetcher import get_tier_map
 from .vector_store import PokemonVectorStore
 
 POKEMON_TO_INDEX = [
-    "pikachu", "charizard", "blastoise", "venusaur", "dragonite",
-    "alakazam", "machamp", "gengar", "gyarados", "lapras",
-    "snorlax", "eevee", "vaporeon", "jolteon", "flareon",
-    "mewtwo", "mew", "articuno", "zapdos", "moltres",
-    "tyranitar", "salamence", "metagross", "garchomp", "lucario",
-    "absol", "gardevoir", "aggron", "flygon", "milotic",
-    "geodude", "machop", "abra", "gastly", "magikarp",
-    "dratini", "larvitar", "bagon", "beldum", "gible",
+    "pikachu",
+    "charizard",
+    "blastoise",
+    "venusaur",
+    "dragonite",
+    "alakazam",
+    "machamp",
+    "gengar",
+    "gyarados",
+    "lapras",
+    "snorlax",
+    "eevee",
+    "vaporeon",
+    "jolteon",
+    "flareon",
+    "mewtwo",
+    "mew",
+    "articuno",
+    "zapdos",
+    "moltres",
+    "tyranitar",
+    "salamence",
+    "metagross",
+    "garchomp",
+    "lucario",
+    "absol",
+    "gardevoir",
+    "aggron",
+    "flygon",
+    "milotic",
+    "geodude",
+    "machop",
+    "abra",
+    "gastly",
+    "magikarp",
+    "dratini",
+    "larvitar",
+    "bagon",
+    "beldum",
+    "gible",
 ]
 
 
@@ -54,4 +86,3 @@ def ingest_pokemon_data() -> int:
 
 if __name__ == "__main__":
     ingest_pokemon_data()
-    

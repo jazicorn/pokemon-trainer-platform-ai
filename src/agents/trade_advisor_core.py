@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
+from data.models import UserCollection
+from data.tiers import TIER_SCORES
 from pydantic import BaseModel
 from pydantic_ai import Agent
 
 from config import config
-from data.models import UserCollection
-from data.tiers import TIER_SCORES
 from rag.vector_store import PokemonVectorStore
 
 from .trade_analytics import TradeAnalytics
@@ -30,7 +30,8 @@ class AdvisorDependencies(BaseModel):
     model_config = {"arbitrary_types_allowed": True}
 
 
-SYSTEM_PROMPT = f"""You are the Lead Pokemon Trade Advisor. Your role is to orchestrate a team of specialized agents to provide high-level intelligence and trade evaluations.
+SYSTEM_PROMPT = f"""You are the Lead Pokemon Trade Advisor. Your role is to orchestrate a team of
+specialized agents to provide high-level intelligence and trade evaluations.
 
 ### DUAL VALUE SCORING:
 Pokemon have TWO separate value dimensions. Always consider both when evaluating trades:
@@ -57,8 +58,10 @@ Use `get_battle_viability` when the user asks specifically about competitive use
 
 ### CORE OPERATING MODES:
 1. **MARKET INTELLIGENCE & FORECASTING**:
-   - If the user asks for a 'forecast', 'sentiment', 'trends', or 'momentum' for a specific Pokemon, call `get_market_data`.
-   - The Market Analyst is now equipped with forecasting tools. Do NOT ask for a second Pokemon if the user is only asking for market intelligence.
+   - If the user asks for a 'forecast', 'sentiment', 'trends', or 'momentum' for a specific
+     Pokemon, call `get_market_data`.
+   - The Market Analyst is now equipped with forecasting tools. Do NOT ask for a second Pokemon
+     if the user is only asking for market intelligence.
 
 2. **TRADE EVALUATION**:
    - If a user proposes a trade (e.g., "Should I trade X for Y?"), you MUST:
@@ -105,7 +108,8 @@ Use `get_battle_viability` when the user asks specifically about competitive use
 
 ### RULES:
 - Be data-driven. Use specific numbers (demand ratios, momentum scores, collector/battle scores).
-- If a user query is ambiguous, try to determine if they want a Pokedex lookup or Market info before asking for clarification."""
+- If a user query is ambiguous, try to determine if they want a Pokedex lookup or Market info
+  before asking for clarification."""
 
 trade_advisor = Agent(
     config.model_id,

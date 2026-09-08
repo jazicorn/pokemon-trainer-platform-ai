@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from pydantic_ai import Agent, RunContext
 
 from config import config
+
 from .trade_analytics import TradeAnalytics
 
 
@@ -26,7 +27,7 @@ When answering questions:
 3. Provide actionable insights: tell traders whether to Buy/Hold or Sell based on forecasts.
 4. Consider trade success rates when evaluating value.
 
-A demand ratio > 1 means high demand. 
+A demand ratio > 1 means high demand.
 Positive momentum (> 15%) indicates a rising trend (Bullish).
 Negative momentum (< -15%) indicates a declining trend (Bearish).
 
@@ -112,11 +113,7 @@ async def get_trending(
 
     lines = [f"Trending Pokemon (last {days} days):"]
     for i, p in enumerate(trending, 1):
-        lines.append(
-            f"{i}. {p['pokemon'].title()} - "
-            f"{p['trade_mentions']} mentions, "
-            f"demand: {p['demand_level']}"
-        )
+        lines.append(f"{i}. {p['pokemon'].title()} - {p['trade_mentions']} mentions, demand: {p['demand_level']}")
 
     return "\n".join(lines)
 
@@ -161,9 +158,7 @@ async def get_high_demand_pokemon(
     for i, p in enumerate(most_requested, 1):
         demand = ctx.deps.analytics.get_demand_ratio(p["pokemon"])
         lines.append(
-            f"{i}. {p['pokemon'].title()} - "
-            f"{p['request_count']} requests, "
-            f"demand ratio: {demand['demand_ratio']}"
+            f"{i}. {p['pokemon'].title()} - {p['request_count']} requests, demand ratio: {demand['demand_ratio']}"
         )
 
     return "\n".join(lines)

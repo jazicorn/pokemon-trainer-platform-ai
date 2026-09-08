@@ -37,20 +37,23 @@ class UserPreferencesManager:
 
         with get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT OR REPLACE INTO user_preferences
                 (user_id, favorite_types, goal, trading_style, never_trade,
                  seeking, updated_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, (
-                self.user_id,
-                json.dumps(data["favorite_types"]),
-                data["goal"],
-                data["trading_style"],
-                json.dumps(data["never_trade"]),
-                json.dumps(data["seeking"]),
-                datetime.now().isoformat(),
-            ))
+            """,
+                (
+                    self.user_id,
+                    json.dumps(data["favorite_types"]),
+                    data["goal"],
+                    data["trading_style"],
+                    json.dumps(data["never_trade"]),
+                    json.dumps(data["seeking"]),
+                    datetime.now().isoformat(),
+                ),
+            )
             conn.commit()
 
     def get_preferences(self) -> dict[str, Any]:
@@ -97,4 +100,3 @@ class UserPreferencesManager:
             never_trade.discard(pokemon)
 
         self.save_preferences(never_trade=list(never_trade))
-        

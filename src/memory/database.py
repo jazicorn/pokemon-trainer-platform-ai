@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import sqlite3
+from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Iterator
-
+from typing import Any
 
 DB_NAME = "memory.db"
 
@@ -164,10 +164,7 @@ class TradeOffersManager:
                 """INSERT INTO trade_offers
                    (sender_id, recipient_id, offered_pokemon, requested_pokemon)
                    VALUES (?, ?, ?, ?)""",
-                [
-                    (sender, self.user_id, offered, requested)
-                    for sender, offered, requested in _MOCK_OFFERS
-                ],
+                [(sender, self.user_id, offered, requested) for sender, offered, requested in _MOCK_OFFERS],
             )
             conn.commit()
 
@@ -182,9 +179,7 @@ class TradeOffersManager:
 
         db = get_platform_db()
         if db is not None:
-            return db.create_offer(
-                self.user_id, recipient_id, offered_pokemon, requested_pokemon
-            )
+            return db.create_offer(self.user_id, recipient_id, offered_pokemon, requested_pokemon)
 
         with get_connection() as conn:
             cursor = conn.cursor()

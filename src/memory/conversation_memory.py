@@ -19,10 +19,13 @@ class ConversationMemory:
         """Add a message to conversation history."""
         with get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO conversation_history (user_id, role, content)
                 VALUES (?, ?, ?)
-            """, (self.user_id, role, content))
+            """,
+                (self.user_id, role, content),
+            )
             conn.commit()
 
         self._trim_history()
@@ -33,13 +36,16 @@ class ConversationMemory:
 
         with get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT role, content, created_at
                 FROM conversation_history
                 WHERE user_id = ?
                 ORDER BY created_at DESC
                 LIMIT ?
-            """, (self.user_id, limit))
+            """,
+                (self.user_id, limit),
+            )
             rows = cursor.fetchall()
 
         return [
@@ -72,7 +78,8 @@ class ConversationMemory:
         """Remove old messages beyond max_history."""
         with get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 DELETE FROM conversation_history
                 WHERE user_id = ? AND id NOT IN (
                     SELECT id FROM conversation_history
@@ -80,7 +87,9 @@ class ConversationMemory:
                     ORDER BY created_at DESC
                     LIMIT ?
                 )
-            """, (self.user_id, self.user_id, self.max_history))
+            """,
+                (self.user_id, self.user_id, self.max_history),
+            )
             conn.commit()
 
     def clear(self) -> None:
@@ -111,18 +120,21 @@ class RecommendationMemory:
         """Save a trade recommendation."""
         with get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO recommendations
                 (user_id, offered_pokemon, requested_pokemon, recommendation,
                  reasoning)
                 VALUES (?, ?, ?, ?, ?)
-            """, (
-                self.user_id,
-                offered_pokemon,
-                requested_pokemon,
-                recommendation,
-                reasoning,
-            ))
+            """,
+                (
+                    self.user_id,
+                    offered_pokemon,
+                    requested_pokemon,
+                    recommendation,
+                    reasoning,
+                ),
+            )
             conn.commit()
             return cursor.lastrowid or 0
 
@@ -135,24 +147,29 @@ class RecommendationMemory:
         """Record user feedback on a recommendation."""
         with get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 UPDATE recommendations
                 SET user_followed = ?, user_feedback = ?
                 WHERE id = ?
-            """, (1 if followed else 0, feedback, recommendation_id))
+            """,
+                (1 if followed else 0, feedback, recommendation_id),
+            )
             conn.commit()
 
     def get_past_recommendations(self, limit: int = 10) -> list[dict[str, Any]]:
         """Get past recommendations for this user."""
         with get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT * FROM recommendations
                 WHERE user_id = ?
                 ORDER BY created_at DESC
                 LIMIT ?
-            """, (self.user_id, limit))
+            """,
+                (self.user_id, limit),
+            )
             rows = cursor.fetchall()
 
         return [dict(row) for row in rows]
-    

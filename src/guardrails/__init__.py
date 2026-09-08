@@ -2,10 +2,10 @@
 
 from .middleware import GuardrailMiddleware, ProcessedInput, create_safe_input
 from .pii_filter import (
+    POKEMON_NAMES,
     PIIFilter,
     PIIMatch,
     PIIPatterns,
-    POKEMON_NAMES,
     detect_pii,
     filter_pii,
     get_pii_report,

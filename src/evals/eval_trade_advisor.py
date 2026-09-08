@@ -6,10 +6,11 @@ import asyncio
 import time
 from dataclasses import dataclass
 
-from pydantic_evals import Dataset, Case
+from pydantic_evals import Case, Dataset
 from pydantic_evals.evaluators import Evaluator, EvaluatorContext
 
 from agents import evaluate_trade
+
 from .cases import TRADE_CASES, TradeCase
 from .scoring import score_keywords, score_trade_recommendation
 
@@ -17,24 +18,39 @@ from .scoring import score_keywords, score_trade_recommendation
 # pydantic-evals: Inputs, Evaluators, Dataset
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class TradeInputs:
     """Inputs for a trade evaluation case."""
+
     offered: str
     requested: str
 
 
-_POSITIVE_INDICATORS: frozenset[str] = frozenset({
-    "accept", "recommend", "good trade", "fair trade", "go for it",
-})
-_NEGATIVE_INDICATORS: frozenset[str] = frozenset({
-    "decline", "against", "bad trade", "don't trade", "wouldn't recommend",
-})
+_POSITIVE_INDICATORS: frozenset[str] = frozenset(
+    {
+        "accept",
+        "recommend",
+        "good trade",
+        "fair trade",
+        "go for it",
+    }
+)
+_NEGATIVE_INDICATORS: frozenset[str] = frozenset(
+    {
+        "decline",
+        "against",
+        "bad trade",
+        "don't trade",
+        "wouldn't recommend",
+    }
+)
 
 
 @dataclass
 class KeywordEvaluator(Evaluator):
     """Score response based on presence of expected keywords."""
+
     keywords: tuple[str, ...]
 
     def evaluate(self, ctx: EvaluatorContext) -> dict[str, float]:
@@ -47,6 +63,7 @@ class KeywordEvaluator(Evaluator):
 @dataclass
 class RecommendationEvaluator(Evaluator):
     """Score whether the recommendation direction is correct."""
+
     is_good_trade: bool | None
 
     def evaluate(self, ctx: EvaluatorContext) -> dict[str, float]:
@@ -55,7 +72,9 @@ class RecommendationEvaluator(Evaluator):
         response_lower = ctx.output.lower()
         has_positive = any(ind in response_lower for ind in _POSITIVE_INDICATORS)
         has_negative = any(ind in response_lower for ind in _NEGATIVE_INDICATORS)
-        if self.is_good_trade:
+        # if/else kept over a ternary here — the single-line form reads as an
+        # ambiguous chain of boolean ops, not an improvement.
+        if self.is_good_trade:  # noqa: SIM108
             correct = has_positive and not has_negative
         else:
             correct = has_negative and not has_positive
@@ -201,4 +220,3 @@ async def main() -> None:
 
 if __name__ == "__main__":
     asyncio.run(main())
-    

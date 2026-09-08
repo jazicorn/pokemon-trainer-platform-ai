@@ -89,13 +89,15 @@ class PokemonVectorStore:
             name = cast(str, pokemon["name"])
             types = cast(list[str], pokemon["types"])
             documents.append(doc_text)
-            metadatas.append({
-                "name": name,
-                "types": ",".join(types),
-                "is_legendary": str(pokemon.get("is_legendary", False)),
-                "is_mythical": str(pokemon.get("is_mythical", False)),
-                "smogon_tier": str(pokemon.get("smogon_tier", "Unknown")),
-            })
+            metadatas.append(
+                {
+                    "name": name,
+                    "types": ",".join(types),
+                    "is_legendary": str(pokemon.get("is_legendary", False)),
+                    "is_mythical": str(pokemon.get("is_mythical", False)),
+                    "smogon_tier": str(pokemon.get("smogon_tier", "Unknown")),
+                }
+            )
             ids.append(name)
             embeddings.append(get_embedding(doc_text))
 
@@ -182,21 +184,20 @@ class PokemonVectorStore:
         results: list[dict[str, Any]] = []
         if data.get("documents") and data["documents"][0]:
             for i, doc in enumerate(data["documents"][0]):
-                results.append({
-                    "document": doc,
-                    "metadata": data.get("metadatas", [[]])[0][i] or {},
-                    "distance": data.get("distances", [[]])[0][i] or 0,
-                })
+                results.append(
+                    {
+                        "document": doc,
+                        "metadata": data.get("metadatas", [[]])[0][i] or {},
+                        "distance": data.get("distances", [[]])[0][i] or 0,
+                    }
+                )
         return results
 
     def delete_collection(self) -> None:
         """Delete the collection by name."""
-        response = self.client.delete(
-            f"{self._api_base}/collections/{self.collection_name}"
-        )
+        response = self.client.delete(f"{self._api_base}/collections/{self.collection_name}")
         response.raise_for_status()
 
     def close(self) -> None:
         """Close the HTTP client."""
         self.client.close()
-        

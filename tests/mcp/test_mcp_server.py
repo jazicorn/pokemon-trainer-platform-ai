@@ -1,7 +1,5 @@
 """Tests for MCP server."""
 
-import pytest
-
 from mcp_server.tools import (
     TOOL_EVALUATE_TRADE,
     TOOL_MARKET,
@@ -77,9 +75,7 @@ class TestToolSchemas:
 
     def test_suggestions_has_optional_user_id(self):
         tools = get_tools()
-        suggestions_tool = next(
-            t for t in tools if t.name == "get_trade_suggestions"
-        )
+        suggestions_tool = next(t for t in tools if t.name == "get_trade_suggestions")
 
         required = suggestions_tool.inputSchema.get("required", [])
         assert "user_id" not in required
@@ -97,4 +93,3 @@ class TestToolSchemas:
 
         props = pokedex_tool.inputSchema.get("properties", {})
         assert "user_id" in props
-        

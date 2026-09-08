@@ -79,26 +79,17 @@ def get_tools() -> tuple[Tool, ...]:
         ),
         Tool(
             name="get_trade_suggestions",
-            description=(
-                "Get proactive trade suggestions based on the user's "
-                "collection and goals."
-            ),
+            description=("Get proactive trade suggestions based on the user's collection and goals."),
             inputSchema=SUGGESTIONS_SCHEMA,
         ),
         Tool(
             name="query_pokedex",
-            description=(
-                "Query Pokemon information including stats, types, "
-                "abilities, and competitive analysis."
-            ),
+            description=("Query Pokemon information including stats, types, abilities, and competitive analysis."),
             inputSchema=POKEDEX_QUERY_SCHEMA,
         ),
         Tool(
             name="query_market",
-            description=(
-                "Get market information including demand ratios, "
-                "trending Pokemon, and trade success rates."
-            ),
+            description=("Get market information including demand ratios, trending Pokemon, and trade success rates."),
             inputSchema=QUERY_SCHEMA,
         ),
     )
@@ -110,9 +101,11 @@ TOOL_SUGGESTIONS = "get_trade_suggestions"
 TOOL_POKEDEX = "query_pokedex"
 TOOL_MARKET = "query_market"
 
-VALID_TOOLS: frozenset[str] = frozenset({
-    TOOL_EVALUATE_TRADE,
-    TOOL_SUGGESTIONS,
-    TOOL_POKEDEX,
-    TOOL_MARKET,
-})
+VALID_TOOLS: frozenset[str] = frozenset(
+    {
+        TOOL_EVALUATE_TRADE,
+        TOOL_SUGGESTIONS,
+        TOOL_POKEDEX,
+        TOOL_MARKET,
+    }
+)

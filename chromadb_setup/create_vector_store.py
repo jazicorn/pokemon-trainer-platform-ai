@@ -66,7 +66,7 @@ class DocumentLoader:
                 print(f"⚠️  Warning: Could not read {filepath.name}: {e}")
         return documents
 
-    def _find_documents(self) -> Generator[Path, None, None]:
+    def _find_documents(self) -> Generator[Path]:
         """Generator that yields paths to supported documents."""
         for ext in self.SUPPORTED_EXTENSIONS:
             yield from self.docs_dir.rglob(f"*{ext}")
@@ -114,8 +114,7 @@ class TextChunker:
         words = text.split()
         step = self.chunk_size - self.overlap
         return [
-            chunk for i in range(0, len(words), step)
-            if (chunk := " ".join(words[i:i + self.chunk_size])).strip()
+            chunk for i in range(0, len(words), step) if (chunk := " ".join(words[i : i + self.chunk_size])).strip()
         ]
 
 
@@ -161,6 +160,7 @@ class OllamaEmbeddings(EmbeddingProvider):
         Note: the Ollama /api/embeddings endpoint accepts one text at a time,
         so requests are made sequentially.
         """
+
         def _embed_one(text: str) -> list[float]:
             r = httpx.post(
                 f"{self.base_url}/api/embeddings",
@@ -363,9 +363,7 @@ class VectorStoreManager:
 
     def delete_collection(self) -> None:
         """Delete this manager's collection from the server."""
-        httpx.delete(
-            f"{self._base_url}/collections/{self.collection_name}", timeout=10
-        ).raise_for_status()
+        httpx.delete(f"{self._base_url}/collections/{self.collection_name}", timeout=10).raise_for_status()
 
     def count(self) -> int:
         """Return the number of documents currently stored in the collection."""
@@ -432,4 +430,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-    

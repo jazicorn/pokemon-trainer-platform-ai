@@ -1,30 +1,28 @@
 """Tests for memory system."""
 
 import pytest
-import os
 
-from memory.database import (
-    init_database,
-    get_connection,
-    get_db_path,
-)
-from utils import is_chromadb_running
-from memory.user_preferences import UserPreferencesManager
 from memory.conversation_memory import ConversationMemory, RecommendationMemory
+from memory.database import (
+    get_connection,
+    init_database,
+)
+from memory.user_preferences import UserPreferencesManager
+from utils import is_chromadb_running
 
 
 @pytest.fixture(autouse=True)
 def setup_test_db(tmp_path, monkeypatch):
     """Use a temporary database for tests."""
     test_db = tmp_path / "test_memory.db"
-    
+
     # Patch the DB_NAME constant so get_db_path returns test path
     monkeypatch.setattr("memory.database.DB_NAME", str(test_db))
     monkeypatch.setattr("memory.database.get_db_path", lambda: test_db)
-    
+
     init_database()
     yield test_db
-    
+
     # Cleanup
     if test_db.exists():
         test_db.unlink()
@@ -57,6 +55,7 @@ class TestChromaDBCheck:
 
     def test_is_chromadb_running_when_available(self, monkeypatch):
         """Test when ChromaDB is available."""
+
         class MockResponse:
             status_code = 200
 
@@ -213,4 +212,3 @@ class TestRecommendationMemory:
 
         recs = memory.get_past_recommendations(limit=5)
         assert len(recs) == 2
-        

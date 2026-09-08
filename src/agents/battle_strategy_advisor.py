@@ -57,9 +57,7 @@ async def get_competitive_moveset(
     if ctx.deps.strategy_store is None:
         return "Strategy data not available."
 
-    results = ctx.deps.strategy_store.query(
-        f"competitive moveset for {pokemon_name}", n_results=3
-    )
+    results = ctx.deps.strategy_store.query(f"competitive moveset for {pokemon_name}", n_results=3)
     if not results:
         # Fall back to cached sets JSON if vector store has no match
         sets = get_sets(format_id)

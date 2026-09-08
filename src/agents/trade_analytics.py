@@ -66,11 +66,10 @@ class TradeAnalytics:
     def get_demand_ratio(self, pokemon: str, days: int | None = None) -> dict[str, Any]:
         """Calculate demand ratio, optionally filtered by recent days."""
         name = pokemon.lower()
-        
+
         if days:
             cutoff = datetime.now() - timedelta(days=days)
-            trades = [t for t in self._trades_by_pokemon.get(name, []) 
-                     if self._parse_timestamp(t.timestamp) > cutoff]
+            trades = [t for t in self._trades_by_pokemon.get(name, []) if self._parse_timestamp(t.timestamp) > cutoff]
             requested = sum(1 for t in trades if t.requested_pokemon.lower() == name)
             offered = sum(1 for t in trades if t.offered_pokemon.lower() == name)
         else:
@@ -117,7 +116,11 @@ class TradeAnalytics:
             "sentiment": sentiment,
             "short_term_ratio": short_term["demand_ratio"],
             "long_term_ratio": long_term["demand_ratio"],
-            "recommendation": "Hold/Buy" if sentiment == "Bullish (Rapidly Rising)" else "Sell/Trade Away" if sentiment == "Bearish (Declining)" else "Neutral"
+            "recommendation": "Hold/Buy"
+            if sentiment == "Bullish (Rapidly Rising)"
+            else "Sell/Trade Away"
+            if sentiment == "Bearish (Declining)"
+            else "Neutral",
         }
 
     def get_trade_success_rate(self, pokemon: str) -> dict[str, Any]:
@@ -222,4 +225,3 @@ class TradeAnalytics:
         if ratio_b > ratio_a * threshold:
             return f"{name_b} is more valuable"
         return "approximately equal value"
-    

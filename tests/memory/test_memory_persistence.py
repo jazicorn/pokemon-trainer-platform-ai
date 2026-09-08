@@ -7,8 +7,8 @@ the fundamental guarantee of persistent storage.
 
 import pytest
 
-from memory.database import init_database
 from memory.conversation_memory import ConversationMemory, RecommendationMemory
+from memory.database import init_database
 from memory.user_preferences import UserPreferencesManager
 
 
@@ -24,6 +24,7 @@ def isolated_db(tmp_path, monkeypatch):
 # ---------------------------------------------------------------------------
 # ConversationMemory
 # ---------------------------------------------------------------------------
+
 
 class TestConversationPersistence:
     """ConversationMemory writes must survive creating a new instance."""
@@ -88,6 +89,7 @@ class TestConversationPersistence:
 # UserPreferencesManager
 # ---------------------------------------------------------------------------
 
+
 class TestPreferencesPersistence:
     """UserPreferencesManager writes must survive creating a new instance."""
 
@@ -147,6 +149,7 @@ class TestPreferencesPersistence:
 # ---------------------------------------------------------------------------
 # RecommendationMemory
 # ---------------------------------------------------------------------------
+
 
 class TestRecommendationPersistence:
     """RecommendationMemory writes must survive creating a new instance."""

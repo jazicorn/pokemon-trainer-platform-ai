@@ -3,8 +3,8 @@
 from rich.console import Console
 from rich.prompt import Confirm
 
-from observability.observability import is_phoenix_running, setup
 from config import config
+from observability.observability import is_phoenix_running, setup
 
 _console: Console = Console(force_terminal=True)
 
@@ -27,8 +27,7 @@ def prompt_and_setup(auto_start_phoenix: bool = True) -> bool:
         return True
 
     enabled = Confirm.ask(
-        "[bold cyan]Enable telemetry?[/] "
-        f"(Phoenix tracing at [dim]{config.phoenix_url}[/])",
+        f"[bold cyan]Enable telemetry?[/] (Phoenix tracing at [dim]{config.phoenix_url}[/])",
         default=False,
     )
 

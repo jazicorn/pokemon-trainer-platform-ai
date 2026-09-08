@@ -21,8 +21,11 @@ formatting/linting.
 # Type check source
 uv run pyright src/
 
-# Or via make (if configured)
+# Or run everything (ruff format check, ruff lint, pyright) via make
 make lint
+
+# Auto-fix formatting and lint issues where possible
+make lint-fix
 ```
 
 ---
@@ -91,6 +94,51 @@ reportUnknownVariableType = false
 The disabled checks are suppressed because third-party packages (`rich`, `httpx`, `pydantic-ai`)
 don't always expose complete type information in pyright strict mode. All first-party code
 is fully typed.
+
+---
+
+## Ruff Configuration
+
+The full active config (ruff reads `[tool.ruff]`):
+
+```toml
+[tool.ruff]
+target-version = "py313"
+line-length = 120
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort (import sorting)
+    "B",   # flake8-bugbear (likely bugs / design smells)
+    "C4",  # flake8-comprehensions
+    "SIM", # flake8-simplify
+    "UP",  # pyupgrade (modern syntax)
+    "PLE", # pylint errors
+]
+```
+
+This rule set covers the same ground a standalone `pylint` install would (bug-prone
+patterns, needless complexity, outdated syntax, import hygiene) at a fraction of the
+runtime, since pyright already handles the type-checking side. We deliberately don't
+enable the `PLR`/`PLC`/`PLW` (pylint refactor/convention/warning) groups — those are
+mostly style opinions that would need per-project threshold tuning, versus `PLE`
+(pylint errors), which flags things that are close to genuine bugs.
+
+```bash
+# Check formatting, lint, and types without changing anything
+make lint
+
+# Auto-fix formatting and lint issues where possible
+make lint-fix
+```
+
+`make lint-fix` won't fix everything — anything requiring a judgment call (e.g. a long
+line inside an agent system prompt, `zip()` without an explicit `strict=`) is left for a
+human to resolve.
 
 ---
 

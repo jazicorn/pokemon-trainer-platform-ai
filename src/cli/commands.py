@@ -70,7 +70,7 @@ _SIMPLE_COMMANDS: dict[str, CommandType] = {
 _PREFIX_COMMANDS: tuple[tuple[str, CommandType, int], ...] = (
     ("pokedex", CommandType.POKEDEX, 7),
     ("market", CommandType.MARKET, 6),
-    ("offers", CommandType.OFFERS, 6),   # "offers sent" → args="sent"
+    ("offers", CommandType.OFFERS, 6),  # "offers sent" → args="sent"
 )
 # accept/decline require a numeric ID or "all" — anything else goes to the LLM
 _ACCEPT_ARGS: frozenset[str] = frozenset({"all"})
@@ -153,7 +153,7 @@ def _parse_trade(text: str) -> TradeParams | None:
 def _parse_offer(text: str) -> OfferParams | None:
     """Parse 'offer <pokemon> to <user> for <their_pokemon>' into OfferParams."""
     # Strip leading "offer " keyword
-    body = text[len("offer "):].strip()
+    body = text[len("offer ") :].strip()
 
     if " to " not in body or " for " not in body:
         return None

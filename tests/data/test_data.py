@@ -1,23 +1,23 @@
 """Tests for data models, generator, and loader."""
 
 from collections.abc import Iterator
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
+from data.generator import (
+    RARITY,
+    generate_platform_trades,
+    generate_user_collection,
+)
 
 from data import (
-    load_platform_trades,
-    load_user_collection,
     PlatformTrades,
     Trade,
     TradeStatus,
     UserCollection,
-)
-from data.generator import (
-    generate_platform_trades,
-    generate_user_collection,
-    RARITY,
+    load_platform_trades,
+    load_user_collection,
 )
 
 
@@ -131,30 +131,22 @@ class TestDataLoader:
     def setup(self, tmp_path: Path) -> None:
         """Generate test data before each test."""
         from data.generator import save_mock_data
+
         self.data_dir = tmp_path / "data"
         save_mock_data(self.data_dir)
 
     def test_load_platform_trades_returns_model(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setattr(
-            "data.loader.get_data_dir",
-            lambda: self.data_dir
-        )
+        monkeypatch.setattr("data.loader.get_data_dir", lambda: self.data_dir)
         result = load_platform_trades()
         assert isinstance(result, PlatformTrades)
 
     def test_load_user_collection_returns_model(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setattr(
-            "data.loader.get_data_dir",
-            lambda: self.data_dir
-        )
+        monkeypatch.setattr("data.loader.get_data_dir", lambda: self.data_dir)
         result = load_user_collection("user_001")
         assert isinstance(result, UserCollection)
 
     def test_load_user_collection_wrong_id_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setattr(
-            "data.loader.get_data_dir",
-            lambda: self.data_dir
-        )
+        monkeypatch.setattr("data.loader.get_data_dir", lambda: self.data_dir)
         with pytest.raises(ValueError, match="not found"):
             load_user_collection("nonexistent_user")
 
@@ -169,7 +161,7 @@ class TestPydanticModels:
     def test_trade_model_validates(self):
         trade = Trade(
             trade_id="t001",
-            timestamp=datetime(2024, 1, 1, tzinfo=timezone.utc),
+            timestamp=datetime(2024, 1, 1, tzinfo=UTC),
             offered_pokemon="pikachu",
             requested_pokemon="eevee",
             status=TradeStatus.COMPLETED,
@@ -178,4 +170,3 @@ class TestPydanticModels:
         )
         assert trade.trade_id == "t001"
         assert trade.status == TradeStatus.COMPLETED
-        

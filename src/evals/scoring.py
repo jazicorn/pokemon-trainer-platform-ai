@@ -61,12 +61,24 @@ def score_keywords(
 
 
 # Pre-compiled indicator sets for O(1) lookup
-_POSITIVE_INDICATORS: frozenset[str] = frozenset({
-    "accept", "recommend", "good trade", "fair trade", "go for it",
-})
-_NEGATIVE_INDICATORS: frozenset[str] = frozenset({
-    "decline", "against", "bad trade", "don't trade", "wouldn't recommend",
-})
+_POSITIVE_INDICATORS: frozenset[str] = frozenset(
+    {
+        "accept",
+        "recommend",
+        "good trade",
+        "fair trade",
+        "go for it",
+    }
+)
+_NEGATIVE_INDICATORS: frozenset[str] = frozenset(
+    {
+        "decline",
+        "against",
+        "bad trade",
+        "don't trade",
+        "wouldn't recommend",
+    }
+)
 
 
 def score_trade_recommendation(

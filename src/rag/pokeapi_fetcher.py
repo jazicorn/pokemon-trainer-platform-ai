@@ -99,9 +99,7 @@ def extract_pokemon_info(
 
     if species_data:
         flavor_texts = [
-            ft["flavor_text"]
-            for ft in species_data.get("flavor_text_entries", [])
-            if ft["language"]["name"] == "en"
+            ft["flavor_text"] for ft in species_data.get("flavor_text_entries", []) if ft["language"]["name"] == "en"
         ]
         if flavor_texts:
             info["description"] = flavor_texts[0].replace("\n", " ")

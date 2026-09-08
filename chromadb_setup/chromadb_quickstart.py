@@ -27,7 +27,6 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-
 from typing import Any
 
 import httpx
@@ -41,12 +40,13 @@ BASE = f"{BASE_URL}/api/v2/tenants/{TENANT}/databases/{DATABASE}"
 EMBEDDING_DIM = 384  # must match whatever model you use; 384 = all-MiniLM-L6-v2
 
 _DOCKER_SCRIPT = Path("./chromadb-docker.sh")
-_STARTUP_WAIT = 8   # seconds to poll for ChromaDB readiness after launch
+_STARTUP_WAIT = 8  # seconds to poll for ChromaDB readiness after launch
 
 
 # ─── Simple deterministic embedding for testing ───────────────────────────────
 # Not semantically meaningful — just valid floats so the API accepts the payload.
 # Replace with a real model (e.g. OpenAI, Ollama) for actual similarity search.
+
 
 def dummy_embedding(text: str) -> list[float]:
     """Deterministic hash-based unit-vector. Good enough for API testing."""
@@ -61,6 +61,7 @@ def dummy_embeddings(texts: list[str]) -> list[list[float]]:
 
 # ─── Low-level HTTP helpers ───────────────────────────────────────────────────
 
+
 def _post(path: str, body: dict[str, Any]) -> dict[str, Any]:
     r = httpx.post(f"{BASE}{path}", json=body, timeout=30)
     r.raise_for_status()
@@ -72,6 +73,7 @@ def _delete(path: str) -> None:
 
 
 # ─── ChromaDB API wrappers ────────────────────────────────────────────────────
+
 
 def heartbeat() -> bool:
     """Returns True if the ChromaDB server is reachable, False otherwise."""
@@ -134,13 +136,17 @@ def query_collection(
     if query_embeddings is None and query_texts is None:
         raise ValueError("Provide either query_texts or query_embeddings.")
     embeddings = query_embeddings if query_embeddings is not None else dummy_embeddings(query_texts)  # type: ignore[arg-type]
-    return _post(f"/collections/{collection_id}/query", {
-        "query_embeddings": embeddings,
-        "n_results": n_results,
-    })
+    return _post(
+        f"/collections/{collection_id}/query",
+        {
+            "query_embeddings": embeddings,
+            "n_results": n_results,
+        },
+    )
 
 
 # ─── Server startup helpers ───────────────────────────────────────────────────
+
 
 def _ensure_executable() -> bool:
     """Check if chromadb-docker.sh is executable; offer to fix it if not.
@@ -230,6 +236,7 @@ def connect() -> None:
 
 # ─── Tests ────────────────────────────────────────────────────────────────────
 
+
 def test_basic_operations() -> bool:
     print("=" * 60)
     print("Test 1: Basic Operations")
@@ -264,9 +271,7 @@ def test_persistent_storage() -> bool:
     try:
         cid = get_or_create_collection("persistent_test")
 
-        add_documents(cid,
-                      documents=["Data persists on the Docker server"],
-                      ids=["persist1"])
+        add_documents(cid, documents=["Data persists on the Docker server"], ids=["persist1"])
         print("✅ Added document")
 
         result = get_documents(cid, ids=["persist1"])
@@ -301,26 +306,26 @@ def create_sample_database() -> bool:
             "APIs allow different software systems to communicate",
         ]
         metadatas = [
-            {"topic": "OOP",             "difficulty": "intermediate"},
-            {"topic": "FP",              "difficulty": "intermediate"},
+            {"topic": "OOP", "difficulty": "intermediate"},
+            {"topic": "FP", "difficulty": "intermediate"},
             {"topic": "Data Structures", "difficulty": "beginner"},
-            {"topic": "Algorithms",      "difficulty": "beginner"},
-            {"topic": "Databases",       "difficulty": "intermediate"},
-            {"topic": "ML",              "difficulty": "advanced"},
-            {"topic": "Git",             "difficulty": "beginner"},
-            {"topic": "APIs",            "difficulty": "intermediate"},
+            {"topic": "Algorithms", "difficulty": "beginner"},
+            {"topic": "Databases", "difficulty": "intermediate"},
+            {"topic": "ML", "difficulty": "advanced"},
+            {"topic": "Git", "difficulty": "beginner"},
+            {"topic": "APIs", "difficulty": "intermediate"},
         ]
 
-        add_documents(cid, documents=documents,
-                      ids=[f"concept_{i}" for i, _ in enumerate(documents)],
-                      metadatas=metadatas)
+        add_documents(
+            cid, documents=documents, ids=[f"concept_{i}" for i, _ in enumerate(documents)], metadatas=metadatas
+        )
         print(f"✅ Added {len(documents)} programming concepts")
 
         results = query_collection(cid, query_texts=["How do computers learn?"], n_results=2)
         print("\n📊 Sample query: 'How do computers learn?'")
         print(f"   Result 1: {results['documents'][0][0]}")
         print(f"   Result 2: {results['documents'][0][1]}")
-        print(f"\n✅ Collection 'programming_concepts' is live on the server")
+        print("\n✅ Collection 'programming_concepts' is live on the server")
         print("   Note: using dummy embeddings — swap in a real model for semantic search\n")
         return True
     except Exception as e:
@@ -329,6 +334,7 @@ def create_sample_database() -> bool:
 
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
+
 
 def main() -> int:
     print("\n" + "=" * 60)
@@ -367,4 +373,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     main()
-    

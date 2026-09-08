@@ -8,14 +8,14 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import httpx
+from data.tiers import TIER_FORMATS
 
-logger = logging.getLogger(__name__)
+from config import config
 
 if TYPE_CHECKING:
     from typing import Any
 
-from config import config
-from data.tiers import TIER_FORMATS
+logger = logging.getLogger(__name__)
 
 SMOGON_BASE: str = config.smogon_url
 SMOGON_FETCH_TIMEOUT_S: float = 15.0

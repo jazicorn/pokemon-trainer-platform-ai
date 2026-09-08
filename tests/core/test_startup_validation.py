@@ -13,10 +13,13 @@ class TestValidateEnvironment:
 
         # Re-import config with the patched env so default_model is correct
         import importlib
+
         import config as cfg_module
+
         importlib.reload(cfg_module)
 
         from startup import validate_environment
+
         # Should not raise
         validate_environment()
 
@@ -26,10 +29,13 @@ class TestValidateEnvironment:
         monkeypatch.setenv("POKEMON_MODEL", "claude-sonnet")
 
         import importlib
+
         import config as cfg_module
+
         importlib.reload(cfg_module)
 
         from startup import validate_environment
+
         with pytest.raises(EnvironmentError) as exc_info:
             validate_environment()
 
@@ -41,10 +47,13 @@ class TestValidateEnvironment:
         monkeypatch.setenv("POKEMON_MODEL", "gpt-4o")
 
         import importlib
+
         import config as cfg_module
+
         importlib.reload(cfg_module)
 
         from startup import validate_environment
+
         with pytest.raises(EnvironmentError) as exc_info:
             validate_environment()
 
@@ -58,10 +67,13 @@ class TestValidateEnvironment:
         monkeypatch.setenv("POKEMON_MODEL", "llama")
 
         import importlib
+
         import config as cfg_module
+
         importlib.reload(cfg_module)
 
         from startup import validate_environment
+
         # Should not raise
         validate_environment()
 
@@ -71,10 +83,13 @@ class TestValidateEnvironment:
         monkeypatch.setenv("POKEMON_MODEL", "claude-haiku")
 
         import importlib
+
         import config as cfg_module
+
         importlib.reload(cfg_module)
 
         from startup import validate_environment
+
         with pytest.raises(EnvironmentError) as exc_info:
             validate_environment()
 

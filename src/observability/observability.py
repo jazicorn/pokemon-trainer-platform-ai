@@ -33,10 +33,13 @@ def is_phoenix_running() -> bool:
 
 def _is_docker_running() -> bool:
     """Return True if the Docker daemon is reachable."""
-    return subprocess.run(
-        ["docker", "info"],
-        capture_output=True,
-    ).returncode == 0
+    return (
+        subprocess.run(
+            ["docker", "info"],
+            capture_output=True,
+        ).returncode
+        == 0
+    )
 
 
 def _start_colima() -> bool:
@@ -46,18 +49,12 @@ def _start_colima() -> bool:
     """
     if not shutil.which("colima"):
         _console.print(
-            "[yellow]⚠[/] Colima is not installed. "
-            "Install it with [dim]brew install colima[/] to use Docker."
+            "[yellow]⚠[/] Colima is not installed. Install it with [dim]brew install colima[/] to use Docker."
         )
         return False
 
-    if not Confirm.ask(
-        "\nDocker is not running. Start Colima now?", default=False
-    ):
-        _console.print(
-            "[yellow]⚠[/] Skipping Phoenix startup. "
-            "Run [dim]make phoenix-start[/] after starting Colima."
-        )
+    if not Confirm.ask("\nDocker is not running. Start Colima now?", default=False):
+        _console.print("[yellow]⚠[/] Skipping Phoenix startup. Run [dim]make phoenix-start[/] after starting Colima.")
         return False
 
     with _console.status("[bold green]Starting Colima...[/]", spinner="dots"):
@@ -77,13 +74,11 @@ def _start_colima() -> bool:
 
 def start_phoenix_docker() -> bool:
     """Start Phoenix server via Docker."""
-    if not _is_docker_running():
-        if not _start_colima():
-            return False
+    if not _is_docker_running() and not _start_colima():
+        return False
 
     result = subprocess.run(
-        ["docker", "ps", "-a", "--filter", f"name={PHOENIX_CONTAINER}",
-         "--format", "{{.Names}}"],
+        ["docker", "ps", "-a", "--filter", f"name={PHOENIX_CONTAINER}", "--format", "{{.Names}}"],
         capture_output=True,
         text=True,
     )
@@ -100,19 +95,25 @@ def start_phoenix_docker() -> bool:
             return False
     else:
         _console.print("[bold]Starting Phoenix in Docker...[/]")
-        proc = subprocess.run([
-            "docker", "run", "-d",
-            "--name", PHOENIX_CONTAINER,
-            "-p", "6006:6006",
-            "arizephoenix/phoenix:latest",
-        ], capture_output=True, text=True)
+        proc = subprocess.run(
+            [
+                "docker",
+                "run",
+                "-d",
+                "--name",
+                PHOENIX_CONTAINER,
+                "-p",
+                "6006:6006",
+                "arizephoenix/phoenix:latest",
+            ],
+            capture_output=True,
+            text=True,
+        )
         if proc.returncode != 0:
             _console.print(f"[red]✗[/] docker run failed: {proc.stderr.strip()}")
             return False
 
-    with _console.status(
-        "[bold green]Waiting for Phoenix to respond...[/]", spinner="dots"
-    ):
+    with _console.status("[bold green]Waiting for Phoenix to respond...[/]", spinner="dots"):
         for _ in range(60):
             time.sleep(0.5)
             if is_phoenix_running():
@@ -141,4 +142,3 @@ def setup(auto_start_phoenix: bool = True) -> None:
         init_telemetry(project_name=config.project_name)
     else:
         _console.print("[yellow]Skipping telemetry — Phoenix is not running[/]")
-    

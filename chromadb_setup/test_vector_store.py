@@ -5,6 +5,7 @@ Demonstrates improved testability through class-based design.
 Tests use Docker-based ChromaDB server.
 """
 
+import contextlib
 import shutil
 import tempfile
 from collections.abc import Generator
@@ -13,7 +14,6 @@ from typing import Any
 
 import httpx
 import pytest
-
 from create_vector_store import (
     Document,
     DocumentLoader,
@@ -44,19 +44,19 @@ skip_if_no_server = pytest.mark.skipif(
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
+
 def _make_manager(collection_name: str) -> VectorStoreManager:
     return VectorStoreManager(host=_CHROMA_HOST, port=_CHROMA_PORT, collection_name=collection_name)
 
 
 def _cleanup(manager: VectorStoreManager) -> None:
     """Best-effort collection cleanup — ignore errors so tests don't fail on teardown."""
-    try:
+    with contextlib.suppress(httpx.HTTPError):
         manager.delete_collection()
-    except httpx.HTTPError:
-        pass
 
 
 # ─── Document ─────────────────────────────────────────────────────────────────
+
 
 class TestDocument:
     """Tests for the Document dataclass."""
@@ -74,11 +74,12 @@ class TestDocument:
 
 # ─── DocumentLoader ───────────────────────────────────────────────────────────
 
+
 class TestDocumentLoader:
     """Tests for the DocumentLoader class."""
 
     @pytest.fixture
-    def temp_docs_dir(self) -> Generator[str, None, None]:
+    def temp_docs_dir(self) -> Generator[str]:
         """Create a temporary directory with test documents."""
         temp_dir = tempfile.mkdtemp()
         test_files = {
@@ -130,6 +131,7 @@ class TestDocumentLoader:
 
 # ─── TextChunker ──────────────────────────────────────────────────────────────
 
+
 class TestTextChunker:
     """Tests for the TextChunker class."""
 
@@ -143,9 +145,7 @@ class TestTextChunker:
             TextChunker(chunk_size=10, overlap=20)
 
     def test_chunk_text_basic(self) -> None:
-        chunks = TextChunker(chunk_size=5, overlap=2).chunk_text(
-            "one two three four five six seven eight nine ten"
-        )
+        chunks = TextChunker(chunk_size=5, overlap=2).chunk_text("one two three four five six seven eight nine ten")
         assert len(chunks) > 1
         for chunk in chunks:
             assert chunk.strip()
@@ -169,6 +169,7 @@ class TestTextChunker:
 
 
 # ─── VectorStoreManager ───────────────────────────────────────────────────────
+
 
 @skip_if_no_server
 class TestVectorStoreManager:
@@ -236,12 +237,13 @@ class TestVectorStoreManager:
 
 # ─── End-to-end ───────────────────────────────────────────────────────────────
 
+
 @skip_if_no_server
 class TestEndToEnd:
     """End-to-end integration tests."""
 
     @pytest.fixture
-    def test_environment(self) -> Generator[dict[str, str], None, None]:
+    def test_environment(self) -> Generator[dict[str, str]]:
         docs_dir = tempfile.mkdtemp()
         test_docs = {
             "doc1.md": "# Machine Learning\n\nMachine learning is a subset of AI.",
@@ -275,6 +277,7 @@ class TestEndToEnd:
 
 # ─── Performance ──────────────────────────────────────────────────────────────
 
+
 class TestPerformance:
     """Performance benchmarking tests."""
 
@@ -293,6 +296,7 @@ class TestPerformance:
 
 
 # ─── Server availability smoke test ───────────────────────────────────────────
+
 
 def test_chromadb_server_available() -> None:
     """Smoke test: verify the ChromaDB server responds to a heartbeat."""

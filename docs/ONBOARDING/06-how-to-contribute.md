@@ -160,12 +160,12 @@ The project uses `pyright` for type checking and `ruff` for formatting
 and linting. Run before committing:
 
 ```bash
-uv run pyright src/
-uv run ruff check src/
+make lint       # ruff format --check, ruff check, pyright — no changes made
+make lint-fix   # auto-fix formatting and lint issues where possible
 ```
 
 See [`docs/REFERENCE/PYRIGHT.md`](../REFERENCE/PYRIGHT.md) for the full setup, VS Code
-integration, and which checks are disabled and why.
+integration, the active ruff rule set, and which checks are disabled and why.
 
 ---
 
