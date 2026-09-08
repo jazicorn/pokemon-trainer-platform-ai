@@ -80,7 +80,8 @@ cd pokemon-trainer-platform-ai
 uv sync
 ```
 
-This creates or updates the project's virtual environment and installs the dependencies defined by the project.
+This creates or updates the project's virtual environment and installs the dependencies
+defined by the project.
 
 This installs all required packages including:
 
@@ -161,6 +162,12 @@ Verify ChromaDB is running:
 curl http://localhost:8000/api/v2/heartbeat
 # Should return: {"nanosecond heartbeat": ...}
 ```
+
+**Alternative — Docker Compose:** `make docker-run` builds the app image and starts it
+alongside ChromaDB in one step (add `PROFILES="--profile observability"` for Phoenix, or
+`PROFILES="--profile platform-db"` for local PostgreSQL). This replaces step 4 and the
+`make run` step below with a single command — see the "Docker Compose" section in the
+[README](../README.md) or [`docker-compose.yml`](../docker-compose.yml) directly.
 
 ### 5. Initialize Data
 

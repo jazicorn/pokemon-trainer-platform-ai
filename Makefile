@@ -63,6 +63,17 @@ chromadb-stop: ## Stop ChromaDB Docker container
 chromadb-status: ## Show ChromaDB container and server status
 	./chromadb_setup/chromadb-docker.sh status
 
+# ── Docker Compose ────────────────────────────────────────────────────────────
+
+docker-build: ## Build the app image
+	docker compose build app
+
+docker-run: ## Run the CLI in Docker (+ ChromaDB). Add profiles: make docker-run PROFILES="--profile observability"
+	docker compose $(PROFILES) run --rm app
+
+docker-down: ## Stop and remove all Docker Compose services and networks
+	docker compose --profile observability --profile platform-db down
+
 # ── Database ──────────────────────────────────────────────────────────────────
 
 reset-db: ## Delete the local SQLite database (recreated automatically on next run)
@@ -114,4 +125,5 @@ help: ## Show this help
         chromadb-start chromadb-stop chromadb-status \
         lint lint-fix \
         hooks-install commit \
+        docker-build docker-run docker-down \
         help

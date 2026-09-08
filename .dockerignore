@@ -1,0 +1,26 @@
+.git
+.github
+.githooks
+.venv
+.vscode
+.pytest_cache
+.ruff_cache
+__pycache__
+**/__pycache__
+*.pyc
+.DS_Store
+
+# Generated/runtime data — never bake into the image
+data/
+chromadb_setup/chroma_data/
+
+# Not needed inside the app container (helper scripts for the host,
+# --no-install-project skips packaging chromadb_setup entirely)
+chromadb_setup/
+
+# Docs, tests, and local-only files not needed at runtime
+docs/
+tests/
+*.md
+.env
+.env.op

@@ -74,6 +74,21 @@ Run `make help` to see all available commands.
 > conversation history are wiped clean on the next `make run`. Useful when re-testing the
 > offers inbox or starting a fresh session.
 
+### 🐳 Or: Docker Compose (no local Python/uv setup needed)
+
+```bash
+cp .env.example .env   # fill in at least one LLM API key
+
+make docker-run                                       # CLI + ChromaDB
+make docker-run PROFILES="--profile observability"    # + Phoenix tracing
+make docker-run PROFILES="--profile platform-db"      # + local PostgreSQL
+```
+
+ChromaDB starts automatically as a dependency (with a health check gating the app's
+start). See [`docker-compose.yml`](docker-compose.yml) for the full service list and
+[`docs/REFERENCE/PLATFORM_DB.md`](docs/REFERENCE/PLATFORM_DB.md) for the `platform-db`
+profile's schema.
+
 ---
 
 ## 🏛️ System Architecture: Hierarchical Delegation
@@ -190,6 +205,9 @@ has spiked to 2.4 (+100% momentum). **Recommendation:** Hold your position; mark
 | `make lint-fix`        | Auto-fix formatting and lint issues              |
 | `make hooks-install`   | One-time setup: enable this repo's git hooks     |
 | `make commit`          | Guided Conventional Commits prompt (Commitizen)  |
+| `make docker-build`    | Build the app's Docker image                     |
+| `make docker-run`      | Run the CLI in Docker (+ ChromaDB)               |
+| `make docker-down`     | Stop and remove all Docker Compose services      |
 | `make ingest`          | Index Pokémon data into ChromaDB                 |
 | `make generate-data`   | Regenerate mock trade and collection data        |
 | `make chromadb-start`  | Start ChromaDB Docker container                  |

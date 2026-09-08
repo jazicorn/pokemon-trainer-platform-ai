@@ -1,0 +1,85 @@
+# Local dev stack for the Pokemon Trainer's Second Brain.
+#
+# Replaces the ad hoc `docker run` commands in chromadb_setup/chromadb-docker.sh
+# and `make phoenix-start` with one composed stack. Those Makefile targets and
+# scripts still work standalone for host-based (non-Docker) runs of the CLI —
+# this file is for running the whole thing, app included, inside Docker.
+#
+# Usage:
+#   docker compose run --rm app              # CLI + ChromaDB only (default)
+#   docker compose --profile observability run --rm app   # + Phoenix tracing
+#   docker compose --profile platform-db run --rm app     # + local PostgreSQL
+#
+# `run` (not `up`) is used for the app service because the CLI is an
+# interactive REPL, not a long-running server — `run --rm` attaches a TTY
+# and cleans up the container on exit. ChromaDB/Phoenix/Postgres are ordinary
+# long-running services and come up automatically as dependencies.
+#
+# API keys and model selection come from a root .env file (see .env.example) —
+# docker compose reads it automatically for the ${VAR} substitutions below.
+
+services:
+  chromadb:
+    image: chromadb/chroma:latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./chromadb_setup/chroma_data:/chroma/chroma
+    environment:
+      ANONYMIZED_TELEMETRY: "false"
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v2/heartbeat')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+  phoenix:
+    image: arizephoenix/phoenix:latest
+    ports:
+      - "6006:6006"
+    profiles: [observability]
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${PLATFORM_DB_USER:-trainer}
+      POSTGRES_PASSWORD: ${PLATFORM_DB_PASSWORD:-secret}
+      POSTGRES_DB: ${PLATFORM_DB_NAME:-pokemon_platform}
+    volumes:
+      - platform_db_data:/var/lib/postgresql/data
+    profiles: [platform-db]
+    restart: unless-stopped
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      chromadb:
+        condition: service_healthy
+    environment:
+      # Model selection and API keys — from the root .env file.
+      POKEMON_MODEL: ${POKEMON_MODEL:-claude-sonnet}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      OLLAMA_HOST: ${OLLAMA_HOST:-}
+      # Override host-oriented defaults with compose's internal DNS names —
+      # these are NOT the same as the localhost URLs in .env.example.
+      CHROMADB_URL: http://chromadb:8000
+      PHOENIX_URL: http://phoenix:6006
+      # Only takes effect with --profile platform-db; otherwise unset, so
+      # the app falls back to local mock data exactly as it does on a host run.
+      PLATFORM_DB_URL: ${PLATFORM_DB_URL:-}
+    volumes:
+      - ./data:/app/data
+    stdin_open: true
+    tty: true
+
+volumes:
+  platform_db_data:
