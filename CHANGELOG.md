@@ -1,3 +1,13 @@
+## v0.6.0 (2026-09-09)
+
+### ✨ Features
+
+- **api**: add core trade endpoints (Roadmap Phase 4)
+
+### 📝 Documentation
+
+- **roadmap**: fix Phase 3's misleading verification, add real auth checks to Phase 4
+
 ## v0.5.0 (2026-09-09)
 
 ### ✨ Features
