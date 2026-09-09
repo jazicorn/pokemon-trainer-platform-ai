@@ -130,27 +130,29 @@ Phase 10) once this foundation exists and is trusted.
 
 **Verification:**
 
+No route protected by `require_api_key` exists yet — that's Phase 4. A `curl` against
+`/trade/suggestions` here would 404 before ever reaching auth, which isn't a
+meaningful check of anything and would look like a bug when it isn't one. What's
+actually verifiable at the end of *this* phase:
+
 ```bash
-# Provision a tenant, capture the printed key once
+# Provision a real tenant, capture the printed key once
 uv run python scripts/provision_tenant.py "test-tenant" "postgresql://user:pass@host/db"
 # → API key (shown once): <generated-key>
 
-# Missing key → 401
-curl -i http://localhost:8080/trade/suggestions
-# → HTTP/1.1 401
+# The real, permanent test suite — not a forward-reference to an endpoint that
+# doesn't exist yet — proves the 401/403/200 behavior against an isolated test
+# app (see tests/api/test_auth.py):
+uv run pytest tests/api/ -v
+# → 16 passed
 
-# Wrong/unknown key → 403
-curl -i -H "X-API-Key: wrong" http://localhost:8080/trade/suggestions
-# → HTTP/1.1 403
-
-# Correct key → 200, reasoning over THAT tenant's own platform_db_url
-curl -H "X-API-Key: <generated-key>" http://localhost:8080/trade/suggestions
-# → {"result": "...", "status": "ok"}
-
-# Health always passes without a key
+# Health, the one route that exists so far, still works without a key:
 curl http://localhost:8080/health
 # → {"status": "ok", "chromadb": true}
 ```
+
+Once Phase 4 adds real routes, this same 401/403/200 behavior becomes directly
+`curl`-able against them too — see Phase 4's own verification section.
 
 ---
 
@@ -174,6 +176,26 @@ curl http://localhost:8080/health
 **Endpoints added this phase:** 3 (total: 4 with `/health`)
 
 **Verification:**
+
+This is the first phase where Phase 3's `require_api_key` actually guards a real route —
+confirm the full 401/403/200 behavior against one of them (all three share the identical
+dependency, so once is representative, not three repetitions of the same check):
+
+```bash
+# Missing key → 401
+curl -i http://localhost:8080/trade/suggestions
+# → HTTP/1.1 401
+
+# Wrong/unknown key → 403
+curl -i -H "X-API-Key: wrong" http://localhost:8080/trade/suggestions
+# → HTTP/1.1 403
+
+# Correct key → 200, reasoning over THAT tenant's own platform_db_url
+curl -H "X-API-Key: $API_KEY" \
+  "http://localhost:8080/trade/suggestions?user_id=user_001"
+```
+
+And the actual functionality across all three new routes:
 
 ```bash
 curl -X POST http://localhost:8080/chat \
