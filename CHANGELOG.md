@@ -1,3 +1,54 @@
+## v0.3.0 (2026-09-09)
+
+
+- docs(roadmap): redesign for multi-tenant public API, add phases 9-12
+- The API was originally scoped as a private, single-tenant backend
+(one static API_KEY, one global PLATFORM_DB_URL) for a single sister
+platform. It's now meant to be a genuinely public API where different
+callers each bring their own database, which changes the auth design
+itself, not just the deployment story.
+- - Phase 3 (was "API Key Authentication"): rewritten from a single
+  shared API_KEY to per-tenant accounts — a new data/tenants.db,
+  admin-provisioned for now (scripts/provision_tenant.py) with
+  self-serve deferred to Phase 10, Fernet-encrypted per-tenant
+  platform_db_url, and require_api_key resolving a per-request
+  TenantContext instead of reading one global env var. The CLI's own
+  PLATFORM_DB_URL/config.platform_db_url is untouched.
+- Phase 9 (Deployment): reframed from a private/network-isolated
+  backend-to-backend link to a genuinely public service — real
+  TLS/reverse-proxy now required, plus a callout that data/tenants.db
+  needs a persistent volume across redeploys.
+- Phase 10 (new): self-serve POST /accounts/register, validating a
+  submitted platform_db_url against the schema contract before
+  storing it, plus key rotation/revocation.
+- Phase 11 (new): a local admin web UI (not a CLI) for managing
+  tenants — list/create/deactivate/rotate keys — bound to 127.0.0.1
+  and deliberately kept off the public reverse proxy, gated by its
+  own ADMIN_TOKEN separate from tenant keys and
+  TENANT_DB_ENCRYPTION_KEY.
+- Phase 12 (new): a GitHub Pages docs/landing site via MkDocs +
+  Material, rendering the existing README/docs/ROADMAP/HISTORY
+  markdown as-is. Independent of the API phases — can be done any
+  time.
+- feat(api): add FastAPI dependencies and entry point (Roadmap Phase 1)
+- Ships a runnable FastAPI server with a health check, per ROADMAP.md
+Phase 1 — the foundation the later phases (auth, trade endpoints,
+observability, tests) build on.
+- - pyproject.toml: add fastapi>=0.115.0, uvicorn[standard]>=0.34.0
+- src/api/__init__.py, src/api/app.py: FastAPI `app` with a `lifespan`
+  that runs the same startup() sequence the CLI uses (phoenix=False —
+  the API runs unattended, no interactive telemetry prompt needed
+  until Phase 6 wires real request tracing through). GET /health is
+  unauthenticated, per Phase 3's plan to exempt it from API-key auth.
+- api_server.py: root entry point mirroring app.py's own sys.path
+  setup, launches uvicorn against api.app:app.
+- Makefile: add run-api target.
+- Verified: pyright/ruff clean, full `make test` suite (271 tests)
+unaffected. The /health handler was exercised directly (bypassing
+startup()'s live Docker/telemetry side effects, consistent with how
+startup() itself hasn't been run directly in this session) and
+returned a real {"status": "ok", "chromadb": true}.
+
 ## v0.2.2 (2026-09-09)
 
 
