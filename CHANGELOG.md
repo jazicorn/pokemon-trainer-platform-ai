@@ -1,3 +1,9 @@
+## v0.4.0 (2026-09-09)
+
+### ✨ Features
+
+- **api**: add Pydantic request/response models (Roadmap Phase 2)
+
 ## v0.3.3 (2026-09-09)
 
 ### 🐛 Fixes
