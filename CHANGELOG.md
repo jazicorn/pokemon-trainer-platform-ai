@@ -1,3 +1,9 @@
+## v0.3.2 (2026-09-09)
+
+### 🐛 Fixes
+
+- **ci**: wait for CI before releasing, ship real release notes
+
 ## v0.3.1 (2026-09-09)
 
 ### 🐛 Fixes
