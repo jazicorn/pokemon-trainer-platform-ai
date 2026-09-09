@@ -116,6 +116,14 @@ class Config:
     # Platform PostgreSQL (optional) — set PLATFORM_DB_URL to enable live data
     platform_db_url: str | None = None
 
+    # HTTP API tenant store (Phase 3) — Fernet key encrypting each tenant's
+    # own platform_db_url at rest in data/tenants.db. Required for any tenant
+    # operation (api.tenants); unused by the CLI. Generate with:
+    #   uv run python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+    # Back it up outside the deployment — losing it makes every stored
+    # platform_db_url permanently unrecoverable, not just hard to find.
+    tenant_db_encryption_key: str | None = None
+
     def __post_init__(self) -> None:
         """Validate configuration at instantiation time."""
         if self.default_model not in MODELS:
@@ -154,6 +162,7 @@ config = Config(
     smogon_url=os.getenv("SMOGON_URL", "https://pkmn.github.io/smogon/data"),
     project_name=os.getenv("PROJECT_NAME", "pokemon-trade-advisor"),
     platform_db_url=os.getenv("PLATFORM_DB_URL") or None,
+    tenant_db_encryption_key=os.getenv("TENANT_DB_ENCRYPTION_KEY") or None,
 )
 
 # pydantic-ai's OllamaProvider reads OLLAMA_BASE_URL (not this project's own

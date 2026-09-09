@@ -558,6 +558,63 @@ subprocess.TimeoutExpired: Command '['docker', 'info']' timed out
 **Solution:** Docker Desktop may still be starting. Wait and retry, or
 increase timeout in the fixture.
 
+## Testing a FastAPI Dependency Before Any Real Route Uses It
+
+**There is no manual-verification step in this project's workflow.** A feature isn't
+verified by curling it once or running a disposable script and deleting it — it's verified
+by the automated test that stays behind in `tests/` to catch the next regression too. See
+ROADMAP.md's testing policy: a phase isn't done until its own tests exist and pass, written
+as part of that phase, not after it.
+
+This comes up concretely for something like `api.auth.require_api_key` — a FastAPI
+dependency every future route will use, written in a phase before any real route exists
+yet to `curl`. The answer isn't a throwaway script; it's a real, permanent test file using
+an isolated test app, exactly like `tests/api/test_auth.py`:
+
+```python
+# tests/api/test_auth.py — a real, committed test file, not a scratch script
+from fastapi import Depends, FastAPI
+from fastapi.testclient import TestClient
+from api.auth import require_api_key
+
+@pytest.fixture
+def client() -> TestClient:
+    """A minimal, isolated FastAPI app exercising require_api_key — not the
+    real app.py singleton, so this test can't leak a stray route into it or
+    depend on other routes existing yet."""
+    test_app = FastAPI()
+
+    @test_app.get("/protected")
+    async def protected(tenant=Depends(require_api_key)) -> dict[str, str]:
+        return {"tenant_id": tenant.tenant_id}
+
+    return TestClient(test_app)
+
+
+class TestRequireApiKey:
+    def test_missing_key_is_401(self, client: TestClient) -> None:
+        assert client.get("/protected").status_code == 401
+
+    def test_wrong_key_is_403(self, client: TestClient) -> None:
+        assert client.get("/protected", headers={"X-API-Key": "wrong"}).status_code == 403
+```
+
+The isolated `FastAPI()` instance is what makes this a real test and not a disguised
+manual check: it's self-contained, runs under `pytest`/`make test` forever, and never
+touches the real `app`/`protected_router` singletons in `api.app` — so it can't leak
+state into other tests or depend on routes that don't exist yet.
+
+`TestClient` doesn't run the app's `lifespan` unless used as a context manager
+(`with TestClient(app) as client:`) — fine for auth-only checks, but note it if the
+feature under test depends on startup-time state.
+
+If the feature involves real local state (e.g. a provisioned tenant in
+`data/tenants.db`), create it for real via the actual code path in a `pytest` fixture
+(`create_tenant()`, not a hand-inserted row), isolated to a `tmp_path` — see
+`tests/api/test_tenants.py`'s `isolated_tenants_db` fixture for the pattern. That proves
+the whole path works, not just the part that got mocked, and it's still a real test that
+runs every time, not a one-off.
+
 ## Test Checklist
 
 Before committing:

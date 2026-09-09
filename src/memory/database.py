@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import sqlite3
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
@@ -19,7 +19,7 @@ def get_db_path() -> Path:
 
 
 @contextmanager
-def get_connection() -> Iterator[sqlite3.Connection]:
+def get_connection() -> Generator[sqlite3.Connection]:
     """Get a database connection as context manager."""
     conn = sqlite3.connect(get_db_path())
     conn.row_factory = sqlite3.Row

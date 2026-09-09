@@ -1,7 +1,8 @@
 """FastAPI application — HTTP surface for the Pokemon Trade Advisor.
 
 See ROADMAP.md for the phased build-out plan. This module currently covers
-Phase 1: app instance, startup lifecycle, and an unauthenticated health check.
+Phase 1 (app instance, startup lifecycle, health check) and Phase 3 (the
+protected router every future route mounts onto).
 """
 
 from __future__ import annotations
@@ -9,8 +10,9 @@ from __future__ import annotations
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import APIRouter, Depends, FastAPI
 
+from api.auth import require_api_key
 from startup import startup
 from utils import is_chromadb_running
 
@@ -34,8 +36,16 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
 
 app = FastAPI(title="Pokemon Trade Advisor API", lifespan=lifespan)
 
+# Every route Phase 4/5 add mounts onto this router, not `app` directly, so
+# they automatically require a valid X-API-Key — `/health` is the one route
+# that stays on `app` itself, deliberately outside this dependency.
+protected_router = APIRouter(dependencies=[Depends(require_api_key)])
+
 
 @app.get("/health")
 async def health() -> dict[str, object]:
     """Unauthenticated liveness/readiness check."""
     return {"status": "ok", "chromadb": is_chromadb_running()}
+
+
+app.include_router(protected_router)

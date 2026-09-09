@@ -13,6 +13,11 @@ disk or in your shell history.
 `validate_environment()` in `startup.py` detects the `op` CLI and gives
 1Password-specific guidance when a key is missing or unresolved.
 
+The same mechanism also covers secrets that aren't vendor API keys — e.g. the
+Web API's `TENANT_DB_ENCRYPTION_KEY` (see [Other Secrets](#other-secrets)
+below). Anything with an `op://` reference in `.env.op` works the same way,
+regardless of where the value originally came from.
+
 ## Approaches
 
 ### Option A — `.env.op` file (Recommended)
@@ -110,6 +115,31 @@ op run --env-file .env.op -- uv run python app.py
 # Or if using .zshrc op read: just open a fresh terminal
 # The key is loaded automatically on shell startup
 ```
+
+## Other Secrets
+
+Not every secret in this project is a vendor-issued API key. `TENANT_DB_ENCRYPTION_KEY`
+(Web API, `make run-api`) is one you generate yourself locally — 1Password just
+stores it the same way as the others once it exists:
+
+```bash
+# 1. Generate the key
+uv run python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+
+# 2. Create an item for it in your Private vault named TENANT_DB_ENCRYPTION_KEY,
+#    with the generated value as its "credential" field — matching the op://
+#    reference path .env.op already expects:
+#    op://Private/TENANT_DB_ENCRYPTION_KEY/credential
+
+# 3. Uncomment its line in .env.op
+```
+
+**Back this one up somewhere outside 1Password too, not just inside it** — see
+`.env.op`'s and `src/config.py`'s comments on this key: losing it makes every
+tenant's stored `platform_db_url` permanently unrecoverable, not just hard to
+find. 1Password itself has its own recovery mechanisms, but treat this key
+with the same "if this is gone, it's really gone" seriousness regardless of
+where it's stored.
 
 ## Troubleshooting
 

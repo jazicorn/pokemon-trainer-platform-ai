@@ -3,6 +3,14 @@
 Convert the Pokemon Trainer Platform from a CLI + MCP server into a full HTTP web API using
 FastAPI, while keeping the existing CLI and MCP interfaces intact.
 
+**Testing policy — applies to every phase below:** a phase isn't done until its own
+automated tests exist in `tests/` and pass, written as part of implementing that phase, not
+after it. There is no "manually verify with curl or a throwaway script" step in this
+project's workflow — if code needs verifying, write the real `pytest`/`TestClient` test for
+it; that test *is* how it gets verified, and it's what stays behind to catch the next
+regression. This replaced an earlier, weaker version of this policy — see HISTORY.md /
+git log for the Phase 3 auth work that prompted the change.
+
 ---
 
 ## Phase 1 — Dependencies & Entry Point
@@ -115,6 +123,10 @@ Phase 10) once this foundation exists and is trusted.
   existing singleton the CLI uses
 - Apply `Depends(require_api_key)` as a router-level or app-level dependency, excluding
   `/health`
+- Write `tests/api/test_tenants.py` and `tests/api/test_auth.py` as part of *this* phase, not
+  deferred to Phase 7 — every other module in this project (agents, cli, memory, ...) has tests
+  written alongside its own code, and API auth logic shouldn't be the one exception. Phase 7 is
+  gap-filling and integration coverage across phases, not the sole place tests get written.
 
 **Verification:**
 
@@ -155,6 +167,9 @@ curl http://localhost:8080/health
   - `GET /trade/suggestions` (query param: `user_id`) → `get_trade_suggestions(user_id)`
 - All handlers are `async def` and wrapped in `try/except Exception` → HTTP 500 on failure
 - All routes protected by `require_api_key` dependency from Phase 3
+- Write `tests/api/test_trade_endpoints.py` for these three routes as part of this phase
+  (`TestClient`, mocked `evaluate_trade`/`get_trade_suggestions` — same mocking pattern already
+  used throughout `tests/agents/`), not deferred to Phase 7
 
 **Endpoints added this phase:** 3 (total: 4 with `/health`)
 
@@ -190,6 +205,8 @@ curl -H "X-API-Key: $API_KEY" \
     `send_trade_offer(sender_id, recipient_id, offered_pokemon, requested_pokemon)`
   - `POST /pokedex/query` → `query_pokedex(question, user_id)` from `agents`
   - `POST /market/query` → `query_market(question)` from `agents.trade_market_analyst`
+- Write `tests/api/test_offers_endpoints.py` and `tests/api/test_query_endpoints.py` for these
+  four routes as part of this phase, same reasoning as Phase 4
 
 **Endpoints added this phase:** 4 (total: 8)
 
@@ -222,22 +239,48 @@ open http://localhost:8080/docs
 
 ## Phase 6 — Observability & Request Logging
 
-**Goal:** Wire HTTP request tracing into the existing Logfire + OpenTelemetry stack so
-every API call appears in the Phoenix dashboard alongside agent spans.
+**Do this right after Phase 3, before Phase 4/5 — earlier than its number suggests.**
+Technically it only needs the FastAPI `app` object, which has existed since Phase 1; there's
+no hard dependency on the trade endpoints existing first. Phase 3 is exactly the kind of logic
+— tenant lookup, 401/403 auth failures, encrypt/decrypt round-trips — worth having structured
+logging in place *while* debugging it, not retrofitted after three more phases of building
+blind. Same reasoning as Phase 12/18 already being flagged as earlier-than-numbered.
+
+**Goal:** Wire HTTP request tracing into the existing Logfire + OpenTelemetry stack so every
+API call appears in the Phoenix dashboard alongside agent spans — plus dedicated error
+tracking, which tracing alone doesn't give you.
 
 **Why:** The project already instruments agent calls via `openinference-instrumentation-pydantic-ai`
 and exports traces to Phoenix (`src/observability/`). Without this phase, HTTP-level context
-(method, path, status, latency) is invisible in those traces.
+(method, path, status, latency) is invisible in those traces. Separately, Phoenix/Logfire show
+you trace *spans* — what a request did — not a dedicated, alertable view of *new* unhandled
+exceptions, which is a different job.
+
+**Tooling, chosen for free/low-cost tiers, not just defaults:**
+
+- **Logfire** — already free-tier-friendly for this project's volume, and ships FastAPI
+  instrumentation out of the box (no new dependency).
+- **Phoenix** — self-hosted, fully open-source, genuinely free regardless of volume (already
+  running via `docker-compose.yml`'s `observability` profile).
+- **Sentry** (new to this phase) — dedicated error tracking and alerting on *new* exception
+  types, which trace viewers don't really do. Checked its current pricing directly rather than
+  assuming: the free "Developer" tier gives 5,000 errors/month, 5M trace spans, and even **1
+  free uptime monitor** — small enough overlap with Phase 26 that it's worth checking whether
+  Sentry's free monitor covers that need before also paying for a separate uptime tool.
 
 **Tasks:**
 
 - Add `logfire.instrument_fastapi(app)` in `src/api/app.py` after the app is created
-  — Logfire ships FastAPI instrumentation out of the box, no new dependency needed
 - Add a lightweight logging middleware to `src/api/app.py` that writes one structured
   line per request: method, path, status code, and duration in ms
   - Use Python's stdlib `logging` (already used throughout the project)
   - Format: `POST /chat 200 342ms`
-- Verify traces appear in Phoenix at `http://localhost:6006` when `ENABLE_PHOENIX=true`
+- Add Sentry's Python SDK, initialized in `src/api/app.py`'s lifespan, scoped to the free tier's
+  limits (single project, no need for its paid integrations yet)
+- Verify traces appear in Phoenix at `http://localhost:6006` when `ENABLE_PHOENIX=true`, and a
+  deliberately-raised test exception appears in Sentry
+- Write a small `tests/api/test_logging_middleware.py` for the request-logging middleware
+  itself (method/path/status/duration line gets written) as part of this phase
 
 **Verification:**
 
@@ -251,44 +294,39 @@ curl -H "X-API-Key: $API_KEY" \
 
 # Check server logs show the request line
 # Check Phoenix at http://localhost:6006 shows the trace with agent sub-spans
+# Trigger a deliberate error and confirm it appears in the Sentry dashboard
 ```
 
 ---
 
-## Phase 7 — API Tests
+## Phase 7 — API Test Gaps & Integration Coverage
 
-**Goal:** Extend the existing pytest suite with tests for all new API routes, consistent
-with the project's mocked-LLM testing pattern (`make test`).
+**Originally scoped as "write all the API tests here" — that was the wrong design, not
+just a Phase 3 oversight.** Every other module in this project (agents, cli, memory, ...) has
+tests written alongside its own code, not batched into one dedicated testing phase at the end.
+Phases 3–6 now each write their own tests as part of that phase (`tests/api/test_tenants.py`,
+`test_auth.py`, `test_trade_endpoints.py`, `test_offers_endpoints.py`, `test_query_endpoints.py`,
+`test_logging_middleware.py`). This phase is what's left *after* that: gaps and
+integration-level coverage that don't naturally belong to any single phase.
 
-**Why:** The project has a strong testing culture with `pytest`, `pytest-asyncio`, and
-mocked LLMs. The new API layer needs the same coverage, and FastAPI's `TestClient` makes
-this straightforward without spinning up a real server.
+**Goal:** Full-stack integration tests exercising multiple phases together, plus anything the
+per-phase tests reasonably left out.
 
 **Tasks:**
 
-- Create `tests/api/__init__.py` (matches every other test subdirectory's mirroring of `src/`)
-- Create `tests/api/test_api.py` using FastAPI's `TestClient` (synchronous, no server needed)
-- Mock the agent functions (`evaluate_trade`, `get_trade_suggestions`, etc.) using
-  `unittest.mock.patch` — same pattern as existing agent tests
-- Set `API_KEY=test-key` in test fixtures via `monkeypatch`
-- Test cases to cover:
-  - `GET /health` → 200 with no key
-  - `POST /chat` with valid key → 200, result string in body
-  - `POST /trade/evaluate` with valid key → 200
-  - `GET /trade/suggestions` with valid key → 200
-  - `GET /offers` with valid key → 200
-  - `POST /offers/send` with valid key → 200
-  - `POST /pokedex/query` with valid key → 200
-  - `POST /market/query` with valid key → 200
-  - Any protected route without key → 401
-  - Any protected route with wrong key → 403
-- Run with `make test` (no live APIs, no API costs)
+- An end-to-end test hitting a realistic sequence across routes — e.g. provision a tenant,
+  send an offer, fetch it back via `GET /offers`, confirm the AI analysis is present —
+  something no single phase's own tests would naturally cover in isolation
+- Audit `tests/api/` against the endpoint table in Phase 8 — confirm every route has at least
+  one test, and file gaps here rather than assuming
+- Any cross-cutting auth edge cases not covered by Phase 3's own tests (e.g. a tenant's key
+  working correctly across *every* route type, not just the one Phase 3 tested it against)
 
 **Verification:**
 
 ```bash
 make test
-# → tests/api/test_api.py ... passed (10+ new tests)
+# → tests/api/ tests all pass, full suite still green
 ```
 
 ---
@@ -559,6 +597,27 @@ tenant-overridable given the same disclosure either way: `analytics_opt_in` defa
 managed tenants (matching the stated intent of that option), `false` for self-hosted ones
 (matching the more private-by-default posture of bringing your own database).
 
+**Migrate `TENANT_DB_ENCRYPTION_KEY` to envelope encryption via cloud KMS here, not later.**
+Phase 3's single static Fernet key is a reasonable pre-launch starting point, but it's a real
+single point of failure: one leak decrypts every tenant's `platform_db_url` at once, one loss
+destroys every tenant's at once, and there's no way to rotate it without a risky decrypt-and-
+re-encrypt-everything operation. This phase is the natural point to fix that — you're standing
+up real cloud infrastructure for managed Postgres anyway, so adopting that same provider's KMS
+(AWS KMS, GCP Cloud KMS, or Vault) is a small incremental step, not a separate project:
+
+- Each tenant's `platform_db_url` gets its own randomly-generated Data Encryption Key (DEK).
+  The KMS's master key never leaves the KMS — it's used only to "wrap" (encrypt) each tenant's
+  DEK, and it's the *wrapped* DEK that gets stored in `tenants.db`, not a key that can decrypt
+  everyone at once.
+- Decrypting a tenant's URL means asking the KMS to unwrap that one DEK — an authenticated,
+  logged API call, not a local operation — so you also get a real audit trail ("who/what
+  decrypted tenant X's credentials, and when") that the current design has no equivalent of.
+- Key rotation becomes tractable: rotate the KMS master key and re-wrap the (small) DEKs,
+  instead of decrypting and re-encrypting every tenant's actual data by hand.
+- `_get_fernet()` (Phase 3) gets replaced by an envelope-encryption equivalent in
+  `api/tenants.py`; existing rows need a one-time migration (decrypt with the old static key,
+  re-encrypt via the new per-tenant DEK path) rather than a schema change.
+
 **Design:**
 
 - One Postgres **server**, one **database per tenant** (not a shared database with a
@@ -592,6 +651,10 @@ managed tenants (matching the stated intent of that option), `false` for self-ho
 - Add a database-per-tenant quota/cleanup story for deactivated tenants (Phase 11's
   deactivate action) — decide whether a deactivated tenant's managed database is dropped,
   retained, or archived
+- Migrate `TENANT_DB_ENCRYPTION_KEY` to KMS-backed envelope encryption: set up the KMS master
+  key, implement per-tenant DEK generation/wrapping, migrate existing `tenants.db` rows from
+  the Phase 3 static-key scheme, and write down the actual rotation procedure (not just that
+  one should exist)
 
 **Verification:**
 
@@ -604,6 +667,13 @@ curl -X POST https://<your-public-domain>/accounts/register \
 # Confirm the provisioned database actually has the full schema:
 psql "<the provisioned connection string>" -c "\dt"
 # → trades, user_pokemon, user_preferences, user_trade_history, trade_offers
+
+# Confirm envelope encryption is actually in effect post-migration — no single
+# key in tenants.db (or anywhere in app config) can decrypt more than one tenant:
+sqlite3 data/tenants.db "SELECT platform_db_url_encrypted FROM tenants LIMIT 2"
+# → each row's wrapped DEK differs; decrypting one via the KMS doesn't yield the other
+
+# Rotate the KMS master key and confirm existing tenants still resolve correctly afterward
 ```
 
 ---
@@ -1197,6 +1267,36 @@ policy, not building new retry logic.
 ```bash
 # Simulate primary provider failure (e.g. temporarily invalid ANTHROPIC_API_KEY in a test env)
 # and confirm a paid-tier request still succeeds via the fallback provider.
+```
+
+---
+
+## Phase 28 — Support Tooling
+
+**Set this up before Phase 10 ships, not after.** Self-serve registration means strangers can
+become tenants without you ever touching the process — the first one who hits a problem
+shouldn't be the reason you're scrambling to set up a support inbox that day.
+
+**Goal:** A working support channel ready before self-serve signup goes live, sized to actual
+early-stage volume rather than to what a support team would eventually need.
+
+**Tool: Plain (joinplain.com).** Built specifically for B2B/API companies talking to technical
+users — Slack-based triage, issue-linking — which fits this audience (developers integrating
+against an API) better than a general-purpose shared inbox. Help Scout remains the fallback if
+Plain's workflow ends up being more than needed day one: simpler, more generic, also cheap.
+
+**Tasks:**
+
+- Set up a Plain account and connect the support address (e.g. `support@<your-domain>`)
+- Link it from Phase 16's marketing site and Phase 18's interim landing page
+- Revisit around Phase 15 (paid tiers) — billing questions (refunds, disputes, "why was I
+  charged") raise support expectations; re-evaluate whether Plain still fits or whether it's
+  time to consider a heavier tool, rather than assuming the day-one choice holds forever
+
+**Verification:**
+
+```bash
+# Send a real test email to the support address and confirm it lands in the shared inbox
 ```
 
 ---

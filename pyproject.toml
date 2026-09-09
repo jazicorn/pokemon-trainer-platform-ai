@@ -25,6 +25,7 @@ dependencies = [
   "openinference-instrumentation-pydantic-ai>=0.1.12",
   "fastapi>=0.115.0",
   "uvicorn[standard]>=0.34.0",
+  "cryptography>=43.0.0",
 ]
 
 [project.scripts]
@@ -98,6 +99,14 @@ select = [
     "UP",  # pyupgrade (modern syntax)
     "PLE", # pylint errors
 ]
+
+[tool.ruff.lint.flake8-bugbear]
+# B008 ("no function calls in argument defaults") is a real bug detector in
+# general, but FastAPI's entire dependency-injection system is built on this
+# exact pattern (`param: Foo = Depends(get_foo)`) — every protected route
+# from Phase 3 onward writes `Depends(require_api_key)` as a default, so
+# without this, every single one would need a per-line noqa.
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "fastapi.Path", "fastapi.Body"]
 
 [tool.ruff.lint.per-file-ignores]
 # HEADER in this file is a hand-aligned Rich console banner — its rows are

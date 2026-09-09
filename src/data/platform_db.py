@@ -15,6 +15,7 @@ import importlib.util
 import os
 import warnings
 from datetime import date
+from functools import lru_cache
 from typing import Any
 
 from data.models import (
@@ -270,3 +271,24 @@ def get_platform_db() -> PlatformDBClient | None:
 
     _platform_db = client
     return _platform_db
+
+
+@lru_cache(maxsize=128)
+def get_platform_db_for(dsn: str) -> PlatformDBClient:
+    """Return a cached PlatformDBClient for an explicit DSN.
+
+    The per-request, multi-tenant counterpart to ``get_platform_db()``'s
+    single env-var-configured singleton. Used by the HTTP API (Phase 3+),
+    which routes each request to *that tenant's own* ``platform_db_url``
+    (resolved by ``api.auth.require_api_key``) rather than one process-wide
+    database — the CLI's global ``PLATFORM_DB_URL`` singleton above is
+    untouched and keeps working exactly as it does today.
+
+    Unlike ``get_platform_db()``, this does not verify connectivity up front
+    or fall back to ``None`` on failure: a bad DSN here should surface as a
+    real error to that one tenant's request, not silently degrade to shared
+    mock data — which would be actively misleading for a paying tenant
+    reasoning about their own real collection, unlike the CLI's single-user
+    fallback where mock data is a reasonable degraded experience.
+    """
+    return PlatformDBClient(dsn)
