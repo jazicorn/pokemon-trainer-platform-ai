@@ -25,6 +25,16 @@ schema = '<type>(<scope>): <subject>'
 # Use TOML literal string to avoid backslash escaping issues.
 schema_pattern = '(feat|fix|docs|style|refactor|perf|test|build|ci|chore)(\([\w\-.]+\))?(!)?:\s.+'
 
+# Without these three, cz_customize falls back to BaseCommitizen's defaults
+# (match-everything, no type grouping) — which also match each paragraph of
+# a commit *body*, shredding multi-paragraph commit messages into unrelated
+# top-level bullets. commit_parser's alternation covers every type in
+# schema_pattern above (not just bump-worthy ones — that's bump_map's job
+# below, a separate concern from what's *shown* here), so every real commit
+# still gets a changelog entry, just grouped and no longer shredded.
+commit_parser = '^((?P<change_type>feat|fix|docs|style|refactor|perf|test|build|ci|chore|BREAKING CHANGE)(?:\((?P<scope>[^()\r\n]*)\)|\()?(?P<breaking>!)?|\w+!):\s(?P<message>.*)?'
+changelog_pattern = '^((BREAKING[\-\ ]CHANGE|\w+)(\(.+\))?!?):'
+change_type_map = { feat = "✨ Features", fix = "🐛 Fixes", refactor = "♻️ Refactoring", perf = "⚡ Performance", docs = "📝 Documentation", style = "💄 Style", test = "✅ Tests", build = "📦 Build", ci = "👷 CI", chore = "🔧 Chores" }
 
 # Version bump rules (Phase 0 safe: only feat/fix/perf bump)
 bump_map = { feat = "MINOR", fix = "PATCH", perf = "PATCH" }

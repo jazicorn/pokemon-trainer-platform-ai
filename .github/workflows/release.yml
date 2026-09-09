@@ -130,3 +130,20 @@ jobs:
         run: |
           git push origin HEAD:${{ github.ref_name }}
           git push origin "${{ steps.cz.outputs.tag }}"
+
+      - name: Create GitHub Release
+        # A pushed tag is just a git ref — GitHub Releases are a separate
+        # object (its own page, notes, source archives) that nothing here
+        # creates on its own. image-publish.yml's GHCR packages exist without
+        # a matching Release for the same reason: it triggers off the tag
+        # push, not off a Release. `--generate-notes` uses GitHub's own
+        # commit-based summary; swap for `--notes-file` pointing at the
+        # matching CHANGELOG.md section if you'd rather ship the Commitizen
+        # changelog text verbatim instead.
+        if: steps.cz.outputs.released == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          gh release create "${{ steps.cz.outputs.tag }}" \
+            --title "${{ steps.cz.outputs.tag }}" \
+            --generate-notes
