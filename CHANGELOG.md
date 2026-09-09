@@ -1,3 +1,29 @@
+## v0.2.2 (2026-09-09)
+
+
+- fix(ci): stop release.yml self-retrigger, fix tag orphaned by amend
+- Two compounding bugs, both surfaced by trying to release 0.2.1:
+- 1. release.yml triggers on every push to main, including its own bump
+   commit (deliberately, via the App token, so the tag push can trigger
+   image-publish.yml downstream). Pushing "chore(release): bump ...
+   0.2.0 → 0.2.1" immediately kicked off a second run that tried to
+   bump again on top of it (0.2.1 → 0.3.0), which then failed outright.
+   Guard the job to skip runs whose own head commit is a release bump.
+- 2. The "Sync uv.lock" step recomputed the tag name via
+   `git describe --tags --abbrev=0` *after* amending the bump commit.
+   Amending creates a new commit SHA, orphaning the tag `cz bump` had
+   just created (it still points at the pre-amend commit, no longer an
+   ancestor of HEAD) — so `git describe` silently fell back to the
+   *previous* release's tag instead. That force-moved the already-
+   pushed v0.2.0 tag onto the new 0.2.1 commit locally, and the
+   subsequent (correctly non-force) push was rejected because remote
+   v0.2.0 already pointed elsewhere. The real v0.2.1 tag was created
+   but never pushed.
+-    Fix: capture the tag name once, in the same step that creates it,
+   before any amend can orphan it, and reuse that fixed string in every
+   later step instead of ever recomputing it.
+- chore(release): bump version 0.2.0 → 0.2.1
+
 ## v0.2.1 (2026-09-08)
 
 
