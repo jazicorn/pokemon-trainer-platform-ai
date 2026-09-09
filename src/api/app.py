@@ -2,8 +2,8 @@
 
 See ROADMAP.md for the phased build-out plan. This module currently covers
 Phase 1 (app instance, startup lifecycle, health check), Phase 3 (the
-protected router every route mounts onto), and Phase 4 (the core trade
-endpoints).
+protected router every route mounts onto), Phase 4 (the core trade
+endpoints), and Phase 5 (offers + query endpoints).
 """
 
 from __future__ import annotations
@@ -13,9 +13,11 @@ from contextlib import asynccontextmanager
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query
 
-from agents.trade_advisor_api import evaluate_trade, get_trade_suggestions
+from agents import query_pokedex
+from agents.trade_advisor_api import evaluate_trade, get_pending_offers, get_trade_suggestions, send_trade_offer
+from agents.trade_market_analyst import query_market
 from api.auth import require_api_key
-from api.models import ApiResponse, ChatRequest, EvaluateTradeRequest
+from api.models import ApiResponse, ChatRequest, EvaluateTradeRequest, QueryRequest, SendOfferRequest
 from startup import startup
 from utils import is_chromadb_running
 
@@ -85,6 +87,51 @@ async def trade_suggestions(user_id: str = Query(default="user_001")) -> ApiResp
     """Proactive trade suggestions based on the caller's collection and goals."""
     try:
         result = await get_trade_suggestions(user_id=user_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    return ApiResponse(result=result)
+
+
+@protected_router.get("/offers")
+async def offers(user_id: str = Query(default="user_001")) -> ApiResponse:
+    """Pending trade offer inbox, each with an AI evaluation."""
+    try:
+        result = await get_pending_offers(user_id=user_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    return ApiResponse(result=result)
+
+
+@protected_router.post("/offers/send")
+async def offers_send(request: SendOfferRequest) -> ApiResponse:
+    """Propose a trade to another user, pre-screened by the AI."""
+    try:
+        result = await send_trade_offer(
+            sender_id=request.sender_id,
+            recipient_id=request.recipient_id,
+            offered_pokemon=request.offered_pokemon,
+            requested_pokemon=request.requested_pokemon,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    return ApiResponse(result=result)
+
+
+@protected_router.post("/pokedex/query")
+async def pokedex_query(request: QueryRequest) -> ApiResponse:
+    """Pokedex knowledge question, personalized against the caller's collection."""
+    try:
+        result = await query_pokedex(question=request.question, user_id=request.user_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    return ApiResponse(result=result)
+
+
+@protected_router.post("/market/query")
+async def market_query(request: QueryRequest) -> ApiResponse:
+    """Market demand & trend query — no per-user state, user_id is ignored."""
+    try:
+        result = await query_market(question=request.question)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
     return ApiResponse(result=result)

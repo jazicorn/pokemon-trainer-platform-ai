@@ -240,8 +240,8 @@ curl -H "X-API-Key: $API_KEY" "http://localhost:8080/offers?user_id=user_001"
 curl -X POST http://localhost:8080/offers/send \
   -H "X-API-Key: $API_KEY" \
   -H "Content-Type: application/json" \
-  -d `{"sender_id":"user_001","recipient_id":"user_002",
-       "offered_pokemon":"Eevee","requested_pokemon":"Vaporeon"}`
+  -d '{"sender_id":"user_001","recipient_id":"user_002",
+       "offered_pokemon":"Eevee","requested_pokemon":"Vaporeon"}'
 
 curl -X POST http://localhost:8080/pokedex/query \
   -H "X-API-Key: $API_KEY" \
