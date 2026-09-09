@@ -25,7 +25,16 @@ jobs:
   release:
     name: cz bump (version + tag)
     runs-on: ubuntu-latest
-    if: github.repository == 'jazicorn/pokemon-trainer-platform-ai'
+    # The App token above (deliberately) lets this workflow's own pushes
+    # trigger other workflows — but `push: branches: [main]` then also
+    # retriggers *this* workflow on its own bump commit. Without this guard,
+    # pushing "chore(release): bump ... 0.2.0 → 0.2.1" immediately kicks off
+    # a second run that tries to bump again on top of it (0.2.1 → 0.3.0),
+    # racing the first run's own tag push. Skip runs whose own push is one
+    # of these bump commits.
+    if: |
+      github.repository == 'jazicorn/pokemon-trainer-platform-ai' &&
+      !startsWith(github.event.head_commit.message, 'chore(release):')
 
     steps:
       - name: Generate release bot token
@@ -70,6 +79,15 @@ jobs:
           case $status in
             0)
               echo "released=true" >> "$GITHUB_OUTPUT"
+              # Capture the tag name now, the instant it's created. It must
+              # NOT be recomputed later via `git describe` — the next step
+              # amends this commit, which orphans this exact tag object (it
+              # still points at the pre-amend SHA, no longer an ancestor of
+              # HEAD), so `git describe --tags --abbrev=0` after the amend
+              # silently falls back to the previous release's tag instead.
+              # That bug is what force-moved v0.2.0 onto the 0.2.1 commit
+              # and left the real v0.2.1 tag orphaned and never pushed.
+              echo "tag=$(git describe --tags --abbrev=0)" >> "$GITHUB_OUTPUT"
               ;;
             3|21)
               # 3  = NoCommitsFoundError (no commits since the last tag)
@@ -97,8 +115,7 @@ jobs:
           if ! git diff --quiet -- uv.lock; then
             git add uv.lock
             git commit --amend --no-edit
-            tag=$(git describe --tags --abbrev=0)
-            git tag -f "$tag" HEAD
+            git tag -f "${{ steps.cz.outputs.tag }}" HEAD
           fi
 
       - name: Push version commit and tag
@@ -111,6 +128,5 @@ jobs:
         # Push the branch and the tag explicitly by name instead.
         if: steps.cz.outputs.released == 'true'
         run: |
-          tag=$(git describe --tags --abbrev=0)
           git push origin HEAD:${{ github.ref_name }}
-          git push origin "$tag"
+          git push origin "${{ steps.cz.outputs.tag }}"
