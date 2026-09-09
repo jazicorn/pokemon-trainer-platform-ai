@@ -1,8 +1,9 @@
 """FastAPI application — HTTP surface for the Pokemon Trade Advisor.
 
 See ROADMAP.md for the phased build-out plan. This module currently covers
-Phase 1 (app instance, startup lifecycle, health check) and Phase 3 (the
-protected router every future route mounts onto).
+Phase 1 (app instance, startup lifecycle, health check), Phase 3 (the
+protected router every route mounts onto), and Phase 4 (the core trade
+endpoints).
 """
 
 from __future__ import annotations
@@ -10,9 +11,11 @@ from __future__ import annotations
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
-from fastapi import APIRouter, Depends, FastAPI
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query
 
+from agents.trade_advisor_api import evaluate_trade, get_trade_suggestions
 from api.auth import require_api_key
+from api.models import ApiResponse, ChatRequest, EvaluateTradeRequest
 from startup import startup
 from utils import is_chromadb_running
 
@@ -46,6 +49,45 @@ protected_router = APIRouter(dependencies=[Depends(require_api_key)])
 async def health() -> dict[str, object]:
     """Unauthenticated liveness/readiness check."""
     return {"status": "ok", "chromadb": is_chromadb_running()}
+
+
+@protected_router.post("/chat")
+async def chat(request: ChatRequest) -> ApiResponse:
+    """Free-text natural language agent query."""
+    try:
+        result = await evaluate_trade(
+            raw_query=request.message,
+            user_id=request.user_id,
+            conversation_context=request.conversation_context,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    return ApiResponse(result=result)
+
+
+@protected_router.post("/trade/evaluate")
+async def trade_evaluate(request: EvaluateTradeRequest) -> ApiResponse:
+    """Structured trade evaluation: named offered/requested Pokemon."""
+    try:
+        result = await evaluate_trade(
+            offered_pokemon=request.offered_pokemon,
+            requested_pokemon=request.requested_pokemon,
+            user_id=request.user_id,
+            conversation_context=request.conversation_context,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    return ApiResponse(result=result)
+
+
+@protected_router.get("/trade/suggestions")
+async def trade_suggestions(user_id: str = Query(default="user_001")) -> ApiResponse:
+    """Proactive trade suggestions based on the caller's collection and goals."""
+    try:
+        result = await get_trade_suggestions(user_id=user_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    return ApiResponse(result=result)
 
 
 app.include_router(protected_router)
