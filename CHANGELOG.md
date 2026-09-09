@@ -1,3 +1,9 @@
+## v0.5.0 (2026-09-09)
+
+### ✨ Features
+
+- **api**: add tenant accounts and API key auth (Roadmap Phase 3)
+
 ## v0.4.0 (2026-09-09)
 
 ### ✨ Features
