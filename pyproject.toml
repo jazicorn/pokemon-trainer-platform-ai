@@ -23,6 +23,8 @@ dependencies = [
   "opentelemetry-sdk>=1.39.1",
   "opentelemetry-exporter-otlp>=1.39.1",
   "openinference-instrumentation-pydantic-ai>=0.1.12",
+  "fastapi>=0.115.0",
+  "uvicorn[standard]>=0.34.0",
 ]
 
 [project.scripts]
