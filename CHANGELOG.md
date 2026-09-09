@@ -1,3 +1,9 @@
+## v0.3.1 (2026-09-09)
+
+### 🐛 Fixes
+
+- **ci**: create GitHub Releases on tag push, fix mangled CHANGELOG.md
+
 ## v0.3.0 (2026-09-09)
 
 ### ✨ Features
