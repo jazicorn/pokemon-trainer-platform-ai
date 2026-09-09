@@ -1,3 +1,13 @@
+## v0.3.3 (2026-09-09)
+
+### 🐛 Fixes
+
+- unblock make run-api (1Password key, non-interactive telemetry)
+
+### 📝 Documentation
+
+- **roadmap**: add phases 13-27, decouple hosting from analytics consent
+
 ## v0.3.2 (2026-09-09)
 
 ### 🐛 Fixes
