@@ -1,3 +1,9 @@
+## v0.7.0 (2026-09-09)
+
+### ✨ Features
+
+- **api**: add offers and query endpoints (Roadmap Phase 5)
+
 ## v0.6.0 (2026-09-09)
 
 ### ✨ Features
