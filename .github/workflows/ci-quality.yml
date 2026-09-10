@@ -11,7 +11,9 @@ permissions:
 
 concurrency:
   group: ci-quality-${{ github.ref }}
-  cancel-in-progress: true
+  # Off by default. Opt in via a repo variable: Settings > Secrets and
+  # variables > Actions > Variables > CANCEL_CI_ON_PUSH = true.
+  cancel-in-progress: ${{ vars.CANCEL_CI_ON_PUSH == 'true' }}
 
 jobs:
   quality:
