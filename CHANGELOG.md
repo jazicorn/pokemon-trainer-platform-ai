@@ -1,3 +1,9 @@
+## v0.8.0 (2026-09-10)
+
+### ✨ Features
+
+- **api**: add observability - tracing, logging, error tracking (Roadmap Phase 6)
+
 ## v0.7.1 (2026-09-10)
 
 ### 🐛 Fixes
