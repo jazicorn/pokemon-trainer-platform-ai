@@ -93,6 +93,51 @@ profile's schema.
 
 ---
 
+## 🌐 Web API
+
+The same multi-agent system is also available over HTTP — every route requires a per-tenant
+API key, each mapped server-side to that tenant's own Postgres database (see
+[`docs/REFERENCE/PLATFORM_DB.md`](docs/REFERENCE/PLATFORM_DB.md)'s schema contract).
+
+```bash
+# 1. Set TENANT_DB_ENCRYPTION_KEY (see docs/1PASSWORD.md's "Other Secrets" section)
+export TENANT_DB_ENCRYPTION_KEY=$(uv run python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())")
+
+# 2. Provision a tenant — prints a real API key once, store it now
+uv run python scripts/provision_tenant.py "my-tenant" "postgresql://user:pass@host/db"
+
+# 3. Start the API
+make run-api
+```
+
+| Method | Path                 | Auth | Description                            |
+| ------ | -------------------- | ---- | -------------------------------------- |
+| GET    | `/health`            | No   | Service health check                   |
+| POST   | `/chat`              | Yes  | Free-text natural language agent query |
+| POST   | `/trade/evaluate`    | Yes  | Structured trade evaluation            |
+| GET    | `/trade/suggestions` | Yes  | Proactive trade suggestions            |
+| GET    | `/offers`            | Yes  | Pending trade offer inbox              |
+| POST   | `/offers/send`       | Yes  | Send a trade offer                     |
+| POST   | `/pokedex/query`     | Yes  | Pokedex knowledge question             |
+| POST   | `/market/query`      | Yes  | Market demand & trend query            |
+
+```bash
+curl http://localhost:8080/health
+
+curl -X POST http://localhost:8080/trade/evaluate \
+  -H "X-API-Key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"offered_pokemon": "Pikachu", "requested_pokemon": "Charizard"}'
+
+curl -H "X-API-Key: $API_KEY" "http://localhost:8080/trade/suggestions?user_id=user_001"
+```
+
+Swagger UI is available at `http://localhost:8080/docs` (set your key via its Authorize
+button). See [`ROADMAP.md`](ROADMAP.md) for the phased build-out plan this API followed, and
+[`ROADMAP_PLATFORM.md`](ROADMAP_PLATFORM.md) for what comes after it.
+
+---
+
 ## 🏛️ System Architecture: Hierarchical Delegation
 
 Unlike "flat" agent systems, this project uses a **Master-Worker pattern**. The **Trade Advisor**
@@ -219,6 +264,7 @@ has spiked to 2.4 (+100% momentum). **Recommendation:** Hold your position; mark
 | `make run-ollama` | Launch CLI with local Ollama (no API key needed) |
 | `make run-ollama-cloud` | Ollama Cloud via local daemon proxy |
 | `make run-ollama-cloud-direct` | Ollama Cloud direct API — no local ollama install |
+| `make run-api` | Launch the HTTP API (see [Web API](#web-api) above) |
 | `make test` | Run all tests with mocked LLM |
 | `make test-live` | Run tests against live APIs |
 | `make test-rag` | Run ChromaDB integration tests |
