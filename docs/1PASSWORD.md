@@ -141,6 +141,19 @@ find. 1Password itself has its own recovery mechanisms, but treat this key
 with the same "if this is gone, it's really gone" seriousness regardless of
 where it's stored.
 
+`SENTRY_DSN` (Web API error tracking, see ROADMAP.md Phase 6) follows the same
+pattern, minus the generation step — it comes from Sentry itself, not something
+you create locally:
+
+1. In your Sentry project: **Settings → Projects → [project] → Client Keys (DSN)**
+2. Create an item for it in your Private vault named `SENTRY_DSN`, with that
+   value as its "credential" field
+3. Uncomment its line in `.env.op`
+
+Unlike `TENANT_DB_ENCRYPTION_KEY`, losing this one isn't a disaster — it's not
+encrypting anything, it's just where errors get sent. Regenerate a new DSN from
+the same Sentry project if it ever leaks or needs rotating.
+
 ## Troubleshooting
 
 See [TROUBLESHOOTING/1password.md](TROUBLESHOOTING/1password.md).

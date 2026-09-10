@@ -46,11 +46,16 @@ class TestChat:
             conversation_context=None,
         )
 
-    def test_agent_failure_is_500(self, authenticated_client: TestClient) -> None:
-        with patch("api.app.evaluate_trade", new=AsyncMock(side_effect=RuntimeError("boom"))):
+    def test_agent_failure_is_500_and_reported_to_sentry(self, authenticated_client: TestClient) -> None:
+        error = RuntimeError("boom")
+        with (
+            patch("api.app.evaluate_trade", new=AsyncMock(side_effect=error)),
+            patch("api.app.sentry_sdk.capture_exception") as mock_capture,
+        ):
             response = authenticated_client.post("/chat", json={"message": "hi"})
 
         assert response.status_code == 500
+        mock_capture.assert_called_once_with(error)
 
 
 class TestTradeEvaluate:

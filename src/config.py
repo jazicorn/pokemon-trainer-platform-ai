@@ -124,6 +124,22 @@ class Config:
     # platform_db_url permanently unrecoverable, not just hard to find.
     tenant_db_encryption_key: str | None = None
 
+    # HTTP API observability (Phase 6). Both optional — the API runs fine
+    # with neither set, just without tracing/error-reporting wired up.
+    #
+    # ENABLE_PHOENIX opts the API into the *same* Phoenix/OTEL pipeline the
+    # CLI uses (src/observability/observability.py's init_telemetry()), but
+    # via setup(auto_start_phoenix=False) — never auto-starting Phoenix via
+    # Docker/Colima the way the CLI's interactive startup does. If Phoenix
+    # isn't already reachable, tracing is silently skipped rather than
+    # trying to launch infrastructure from an unattended server process.
+    enable_phoenix: bool = False
+
+    # Sentry DSN for dedicated error tracking (free "Developer" tier: 5,000
+    # errors/month — see ROADMAP.md Phase 6). sentry_sdk.init(dsn=None) is
+    # documented as a safe no-op, so this is fine unset for local dev.
+    sentry_dsn: str | None = None
+
     def __post_init__(self) -> None:
         """Validate configuration at instantiation time."""
         if self.default_model not in MODELS:
@@ -163,6 +179,8 @@ config = Config(
     project_name=os.getenv("PROJECT_NAME", "pokemon-trade-advisor"),
     platform_db_url=os.getenv("PLATFORM_DB_URL") or None,
     tenant_db_encryption_key=os.getenv("TENANT_DB_ENCRYPTION_KEY") or None,
+    enable_phoenix=os.getenv("ENABLE_PHOENIX", "").lower() == "true",
+    sentry_dsn=os.getenv("SENTRY_DSN") or None,
 )
 
 # pydantic-ai's OllamaProvider reads OLLAMA_BASE_URL (not this project's own
