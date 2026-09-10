@@ -1,3 +1,17 @@
+## v0.7.1 (2026-09-10)
+
+### 🐛 Fixes
+
+- **docker**: run container as non-root
+
+### 👷 CI
+
+- make cancel-in-progress opt-in via a repo variable, off by default
+
+### 📝 Documentation
+
+- **roadmap**: split ROADMAP.md, move security items to their natural phases
+
 ## v0.7.0 (2026-09-09)
 
 ### ✨ Features
