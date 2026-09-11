@@ -2118,7 +2118,7 @@ wheels = [
 
 [[package]]
 name = "pokemon-trainer-platform-ai"
-version = "0.13.0"
+version = "0.13.1"
 source = { editable = "." }
 dependencies = [
     { name = "anthropic" },

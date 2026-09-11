@@ -1,3 +1,9 @@
+## v0.13.1 (2026-09-11)
+
+### 🐛 Fixes
+
+- **docs**: fix base-path 404s, dedupe content, disambiguate phase numbers
+
 ## v0.13.0 (2026-09-11)
 
 ### ✨ Features
