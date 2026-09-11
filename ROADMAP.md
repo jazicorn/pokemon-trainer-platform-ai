@@ -843,19 +843,22 @@ entirely, so it deliberately stays out of `api_server.py`'s public surface:
 
 **Tasks:**
 
-- Add `jinja2` dependency
-- Extend `src/api/tenants.py` with `list_tenants()`, `deactivate_tenant(id)`,
-  `rotate_tenant_key(id)` — Phase 3 only needed `create_tenant`/`get_tenant_by_key_hash`;
-  this phase is what needs the rest of the CRUD surface
-- Create `src/admin/app.py`, `src/admin/templates/*.html`, and a `GET/POST /login` page
-- Create `admin_server.py`
-- Add `ADMIN_TOKEN` to `src/config.py`'s accepted env vars; `POST /login` checks it and sets
-  a `Secure`, `HttpOnly`, `SameSite=Strict` session cookie — never a raw comparison against a
-  header on every request
-- Add CSRF protection on every state-changing route (`POST /tenants/new`, `/deactivate`,
-  `/rotate-key`) — a hidden per-session token in each form, checked server-side, matching the
-  OWASP CSRF cheat sheet's synchronizer-token pattern
-- Add a `run-admin` Makefile target
+- ~~Add `jinja2` dependency~~ **done**
+- ~~Extend `src/api/tenants.py` with `list_tenants()`, `deactivate_tenant(id)`,
+  `rotate_tenant_key(id)`~~ **done** — `deactivate_tenant`/`rotate_api_key` already existed
+  (Phase 15); added `list_tenants()` and `get_tenant_by_id()`, plus an `api_key_last4` column
+  (migrated onto an existing `tenants.db` via `PRAGMA table_info`, not a schema replacement) so
+  the list/detail pages have something to show without ever storing the raw key
+- ~~Create `src/admin/app.py`, `src/admin/templates/*.html`, and a `GET/POST /login` page~~
+  **done**
+- ~~Create `admin_server.py`~~ **done**
+- ~~Add `ADMIN_TOKEN` to `src/config.py`'s accepted env vars; `POST /login` checks it and sets
+  a `Secure`, `HttpOnly`, `SameSite=Strict` session cookie~~ **done** — sessions are in-memory
+  (`src/admin/sessions.py`), matching this app's local/single-operator scope; a restart just
+  means logging back in
+- ~~Add CSRF protection on every state-changing route~~ **done** — a per-session token
+  (`src/admin/sessions.py`), embedded as a hidden field in every form, checked server-side
+- ~~Add a `run-admin` Makefile target~~ **done**
 
 **Verification:**
 

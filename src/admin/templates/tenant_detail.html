@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ tenant.name }}{% endblock %}
+{% block body %}
+  <header>
+    <h1>{{ tenant.name }}</h1>
+    <form class="inline" method="post" action="/logout"><button type="submit">Log out</button></form>
+  </header>
+
+  <p><a href="/">&larr; All tenants</a></p>
+
+  {% if reveal_error %}<p class="error">{{ reveal_error }}</p>{% endif %}
+
+  <table>
+    <tr><th>Tenant ID</th><td>{{ tenant.tenant_id }}</td></tr>
+    <tr><th>Created</th><td>{{ tenant.created_at }}</td></tr>
+    <tr>
+      <th>Status</th>
+      <td>
+        {% if tenant.is_active %}
+          <span class="badge badge-active">active</span>
+        {% else %}
+          <span class="badge badge-inactive">inactive</span>
+        {% endif %}
+      </td>
+    </tr>
+    <tr><th>API key</th><td>{% if tenant.api_key_last4 %}&hellip;{{ tenant.api_key_last4 }}{% else %}&mdash;{% endif %}</td></tr>
+    <tr>
+      <th>Platform DB URL</th>
+      <td>
+        {% if revealed_db_url %}
+          <span class="warning">{{ revealed_db_url }}</span>
+        {% else %}
+          {{ masked_db_url }}
+        {% endif %}
+      </td>
+    </tr>
+  </table>
+
+  {% if not revealed_db_url %}
+  <fieldset>
+    <legend>Reveal full connection string</legend>
+    <form method="post" action="/tenants/{{ tenant.tenant_id }}/reveal">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <label for="admin_token">Re-enter admin token</label>
+      <input id="admin_token" name="admin_token" type="password" required>
+      <p><button type="submit">Reveal</button></p>
+    </form>
+  </fieldset>
+  {% endif %}
+
+  <p>
+    <form class="inline" method="post" action="/tenants/{{ tenant.tenant_id }}/rotate-key"
+          onsubmit="return confirm('Rotate this tenant\'s API key? The current key stops working immediately.');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button type="submit">Rotate key</button>
+    </form>
+    {% if tenant.is_active %}
+    <form class="inline" method="post" action="/tenants/{{ tenant.tenant_id }}/deactivate"
+          onsubmit="return confirm('Deactivate this tenant? Its API key will stop working immediately.');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button type="submit">Deactivate</button>
+    </form>
+    {% endif %}
+  </p>
+{% endblock %}

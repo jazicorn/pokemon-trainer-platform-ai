@@ -41,6 +41,9 @@ run-ollama-cloud-direct: ## Ollama Cloud direct API — no local ollama install 
 run-api: ## Run the HTTP API (FastAPI + uvicorn) via 1Password — see ROADMAP.md
 	op run --env-file .env.op -- uv run python api_server.py
 
+run-admin: ## Run the local admin web UI (tenant management) via 1Password — see ROADMAP.md Phase 16
+	op run --env-file .env.op -- uv run python admin_server.py
+
 # ── Tests ─────────────────────────────────────────────────────────────────────
 
 test: ## Run all unit/integration tests with mocked LLM (no live keys needed)
@@ -160,7 +163,7 @@ help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*##' $(MAKEFILE_LIST) \
 		| awk 'BEGIN {FS = ":.*##"}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: run run-gemini run-openai run-ollama run-ollama-cloud run-ollama-cloud-direct run-api \
+.PHONY: run run-gemini run-openai run-ollama run-ollama-cloud run-ollama-cloud-direct run-api run-admin \
         test test-live test-rag \
         eval eval-rag \
         reset-db \

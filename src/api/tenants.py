@@ -47,7 +47,9 @@ def get_connection() -> Generator[sqlite3.Connection]:
 
 
 def init_tenants_db() -> None:
-    """Create the tenants table if it doesn't already exist."""
+    """Create the tenants table if it doesn't already exist, and apply any
+    schema migrations an existing database is missing.
+    """
     with get_connection() as conn:
         conn.execute(
             """
@@ -61,7 +63,19 @@ def init_tenants_db() -> None:
             )
             """
         )
+        _add_column_if_missing(conn, "tenants", "api_key_last4", "TEXT")
         conn.commit()
+
+
+def _add_column_if_missing(conn: sqlite3.Connection, table: str, column: str, sql_type: str) -> None:
+    """SQLite has no `ADD COLUMN IF NOT EXISTS`, so check `PRAGMA table_info`
+    first. Nullable — a tenant row created before this migration has no
+    recoverable last-4 to backfill (Phase 3 never stored the raw key), so
+    `api_key_last4` is None for tenants until they next rotate.
+    """
+    existing_columns = {row[1] for row in conn.execute(f"PRAGMA table_info({table})").fetchall()}
+    if column not in existing_columns:
+        conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {sql_type}")
 
 
 def _get_fernet() -> Fernet:
@@ -101,6 +115,35 @@ class TenantContext:
     platform_db_url: str
 
 
+@dataclass
+class TenantSummary:
+    """One row of the admin UI's tenant list (Phase 16) — never the
+    decrypted `platform_db_url`, matching that page's own design note.
+    """
+
+    tenant_id: str
+    name: str
+    created_at: str
+    is_active: bool
+    api_key_last4: str | None
+
+
+@dataclass
+class TenantDetail:
+    """The admin UI's tenant detail view (Phase 16) — includes the decrypted
+    `platform_db_url`, unlike `TenantSummary`; the admin app itself decides
+    how much of it to actually render (masked by default, full DSN only
+    after a "reveal" re-checks ADMIN_TOKEN).
+    """
+
+    tenant_id: str
+    name: str
+    created_at: str
+    is_active: bool
+    api_key_last4: str | None
+    platform_db_url: str
+
+
 def create_tenant(name: str, platform_db_url: str) -> tuple[str, str]:
     """Provision a new tenant: generate a key, encrypt the DB URL, insert the row.
 
@@ -123,10 +166,10 @@ def create_tenant(name: str, platform_db_url: str) -> tuple[str, str]:
     with get_connection() as conn:
         conn.execute(
             """
-            INSERT INTO tenants (id, name, api_key_hash, platform_db_url_encrypted, is_active)
-            VALUES (?, ?, ?, ?, 1)
+            INSERT INTO tenants (id, name, api_key_hash, platform_db_url_encrypted, is_active, api_key_last4)
+            VALUES (?, ?, ?, ?, 1, ?)
             """,
-            (tenant_id, name, key_hash, encrypted_url),
+            (tenant_id, name, key_hash, encrypted_url, raw_key[-4:]),
         )
         conn.commit()
 
@@ -144,7 +187,10 @@ def rotate_api_key(tenant_id: str) -> str:
     key_hash = hash_api_key(raw_key)
 
     with get_connection() as conn:
-        conn.execute("UPDATE tenants SET api_key_hash = ? WHERE id = ?", (key_hash, tenant_id))
+        conn.execute(
+            "UPDATE tenants SET api_key_hash = ?, api_key_last4 = ? WHERE id = ?",
+            (key_hash, raw_key[-4:], tenant_id),
+        )
         conn.commit()
 
     return raw_key
@@ -183,3 +229,59 @@ def get_tenant_by_key_hash(key_hash: str) -> TenantContext | None:
 
     decrypted_url = _get_fernet().decrypt(row["platform_db_url_encrypted"].encode()).decode()
     return TenantContext(tenant_id=row["id"], platform_db_url=decrypted_url)
+
+
+def list_tenants() -> list[TenantSummary]:
+    """Every tenant, most recently created first — for the admin UI's list
+    page (Phase 16). Never touches `platform_db_url_encrypted` at all, let
+    alone decrypts it — that page deliberately never shows it.
+    """
+    init_tenants_db()
+
+    with get_connection() as conn:
+        rows = conn.execute(
+            # rowid DESC as a tiebreaker: created_at has only second-level
+            # resolution, so two tenants created within the same second
+            # would otherwise sort arbitrarily against each other.
+            "SELECT id, name, created_at, is_active, api_key_last4 FROM tenants ORDER BY created_at DESC, rowid DESC"
+        ).fetchall()
+
+    return [
+        TenantSummary(
+            tenant_id=row["id"],
+            name=row["name"],
+            created_at=row["created_at"],
+            is_active=bool(row["is_active"]),
+            api_key_last4=row["api_key_last4"],
+        )
+        for row in rows
+    ]
+
+
+def get_tenant_by_id(tenant_id: str) -> TenantDetail | None:
+    """One tenant's full detail, decrypted `platform_db_url` included — for
+    the admin UI's detail page (Phase 16). Unlike `get_tenant_by_key_hash`,
+    this returns an inactive tenant too (an operator managing tenants needs
+    to see deactivated ones, not just active ones an API caller can reach).
+    """
+    init_tenants_db()
+
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT id, name, created_at, is_active, api_key_last4, platform_db_url_encrypted "
+            "FROM tenants WHERE id = ?",
+            (tenant_id,),
+        ).fetchone()
+
+    if row is None:
+        return None
+
+    decrypted_url = _get_fernet().decrypt(row["platform_db_url_encrypted"].encode()).decode()
+    return TenantDetail(
+        tenant_id=row["id"],
+        name=row["name"],
+        created_at=row["created_at"],
+        is_active=bool(row["is_active"]),
+        api_key_last4=row["api_key_last4"],
+        platform_db_url=decrypted_url,
+    )

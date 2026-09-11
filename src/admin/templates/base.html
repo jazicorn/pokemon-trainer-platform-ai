@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}Tenant Admin{% endblock %} — Pokemon Trade Advisor</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; color: #1a1a1a; }
+    header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 0.75rem; margin-bottom: 1.5rem; }
+    header h1 { font-size: 1.25rem; margin: 0; }
+    table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+    th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee; }
+    .badge { padding: 0.1rem 0.5rem; border-radius: 3px; font-size: 0.85rem; }
+    .badge-active { background: #e3f8e3; color: #1a7a1a; }
+    .badge-inactive { background: #f8e3e3; color: #a01a1a; }
+    .key-box { background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; padding: 1rem; font-family: monospace; word-break: break-all; }
+    .warning { color: #a01a1a; }
+    .error { color: #a01a1a; background: #f8e3e3; padding: 0.5rem 0.75rem; border-radius: 4px; }
+    form.inline { display: inline; }
+    input[type=text], input[type=password] { padding: 0.4rem; width: 100%; box-sizing: border-box; }
+    button { padding: 0.4rem 0.9rem; cursor: pointer; }
+    fieldset { border: 1px solid #ddd; border-radius: 4px; margin: 1rem 0; }
+    label { display: block; margin: 0.5rem 0 0.15rem; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  {% block body %}{% endblock %}
+</body>
+</html>

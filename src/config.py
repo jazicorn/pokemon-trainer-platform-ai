@@ -124,6 +124,12 @@ class Config:
     # platform_db_url permanently unrecoverable, not just hard to find.
     tenant_db_encryption_key: str | None = None
 
+    # Local admin web UI (Phase 16) — gates admin_server.py's login page. A
+    # separate secret from any tenant's API key and from
+    # tenant_db_encryption_key; generate with:
+    #   uv run python -c "import secrets; print(secrets.token_urlsafe(32))"
+    admin_token: str | None = None
+
     # HTTP API observability (Phase 4). Both optional — the API runs fine
     # with neither set, just without tracing/error-reporting wired up.
     #
@@ -205,6 +211,7 @@ config = Config(
     project_name=os.getenv("PROJECT_NAME", "pokemon-trade-advisor"),
     platform_db_url=os.getenv("PLATFORM_DB_URL") or None,
     tenant_db_encryption_key=os.getenv("TENANT_DB_ENCRYPTION_KEY") or None,
+    admin_token=os.getenv("ADMIN_TOKEN") or None,
     enable_phoenix=os.getenv("ENABLE_PHOENIX", "").lower() == "true",
     sentry_dsn=os.getenv("SENTRY_DSN") or None,
     rate_limit_storage_uri=os.getenv("RATE_LIMIT_STORAGE_URI") or None,

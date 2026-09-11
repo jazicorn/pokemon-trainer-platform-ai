@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Tenants{% endblock %}
+{% block body %}
+  <header>
+    <h1>Tenants</h1>
+    <form class="inline" method="post" action="/logout"><button type="submit">Log out</button></form>
+  </header>
+
+  {% if error %}<p class="error">{{ error }}</p>{% endif %}
+
+  <table>
+    <thead>
+      <tr><th>Name</th><th>Created</th><th>Status</th><th>Key</th></tr>
+    </thead>
+    <tbody>
+      {% for tenant in tenants %}
+      <tr>
+        <td><a href="/tenants/{{ tenant.tenant_id }}">{{ tenant.name }}</a></td>
+        <td>{{ tenant.created_at }}</td>
+        <td>
+          {% if tenant.is_active %}
+            <span class="badge badge-active">active</span>
+          {% else %}
+            <span class="badge badge-inactive">inactive</span>
+          {% endif %}
+        </td>
+        <td>{% if tenant.api_key_last4 %}&hellip;{{ tenant.api_key_last4 }}{% else %}&mdash;{% endif %}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4">No tenants yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <fieldset>
+    <legend>New tenant</legend>
+    <form method="post" action="/tenants/new">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <label for="name">Name</label>
+      <input id="name" name="name" type="text" required>
+      <label for="platform_db_url">Platform DB URL</label>
+      <input id="platform_db_url" name="platform_db_url" type="text"
+             placeholder="postgresql://user:pass@host/db" required>
+      <p><button type="submit">Create tenant</button></p>
+    </form>
+  </fieldset>
+{% endblock %}

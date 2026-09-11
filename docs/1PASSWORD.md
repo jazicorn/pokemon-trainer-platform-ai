@@ -166,6 +166,24 @@ generated locally:
 Like `SENTRY_DSN`, losing these isn't a disaster — nothing is encrypted with
 them. Rotate the API key from the same Chroma Cloud project if it ever leaks.
 
+`ADMIN_TOKEN` (local admin web UI, `make run-admin`, see ROADMAP.md Phase 16)
+follows the same locally-generated pattern as `TENANT_DB_ENCRYPTION_KEY`:
+
+```bash
+# 1. Generate the token
+uv run python -c "import secrets; print(secrets.token_urlsafe(32))"
+
+# 2. Create an item for it in your Private vault named ADMIN_TOKEN,
+#    with the generated value as its "credential" field:
+#    op://Private/ADMIN_TOKEN/credential
+
+# 3. Uncomment its line in .env.op
+```
+
+Like `SENTRY_DSN`, losing this isn't a disaster — nothing is encrypted with
+it, it just gates a login page. Generate a new one and update `.env.op` if it
+ever leaks; nothing else needs to change.
+
 ## Troubleshooting
 
 See [TROUBLESHOOTING/1password.md](TROUBLESHOOTING/1password.md).
