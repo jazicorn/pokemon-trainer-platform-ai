@@ -21,7 +21,10 @@ ENV PYTHONUNBUFFERED=1 \
 # itself (chromadb_setup's console script isn't needed inside this image —
 # the CLI is launched directly via `uv run python app.py`).
 COPY pyproject.toml uv.lock ./
-RUN uv sync --locked --no-dev --no-install-project
+# platform-db: psycopg, needed by the API server for every tenant's own
+# Postgres connection (Phase 3+), and by self-serve registration's
+# connectivity check (Phase 15) before a tenant is even stored.
+RUN uv sync --locked --no-dev --no-install-project --group platform-db
 
 # Now add the application source.
 COPY app.py api_server.py ./

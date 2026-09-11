@@ -54,3 +54,17 @@ class ApiResponse(BaseModel):
 
     result: str
     status: str = "ok"
+
+
+class RegisterRequest(BaseModel):
+    """Body for `POST /accounts/register` — self-serve tenant signup."""
+
+    name: str
+    platform_db_url: str
+
+
+class ApiKeyResponse(BaseModel):
+    """A newly issued or rotated API key — shown exactly once, never again."""
+
+    tenant_id: str
+    api_key: str

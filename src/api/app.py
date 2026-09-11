@@ -10,6 +10,7 @@ import os
 import time
 from collections.abc import AsyncGenerator, Awaitable, Callable
 from contextlib import asynccontextmanager
+from typing import Annotated
 
 import logfire
 import sentry_sdk
@@ -23,8 +24,30 @@ from agents import query_pokedex
 from agents.trade_advisor_api import evaluate_trade, get_pending_offers, get_trade_suggestions, send_trade_offer
 from agents.trade_market_analyst import query_market
 from api.auth import require_api_key
-from api.models import ApiResponse, ChatRequest, EvaluateTradeRequest, QueryRequest, SendOfferRequest
-from api.paths import CHAT, HEALTH, MARKET_QUERY, OFFERS, OFFERS_SEND, POKEDEX_QUERY, TRADE_EVALUATE, TRADE_SUGGESTIONS
+from api.models import (
+    ApiKeyResponse,
+    ApiResponse,
+    ChatRequest,
+    EvaluateTradeRequest,
+    QueryRequest,
+    RegisterRequest,
+    SendOfferRequest,
+)
+from api.paths import (
+    ACCOUNTS,
+    ACCOUNTS_REGISTER,
+    ACCOUNTS_ROTATE_KEY,
+    CHAT,
+    HEALTH,
+    MARKET_QUERY,
+    OFFERS,
+    OFFERS_SEND,
+    POKEDEX_QUERY,
+    TRADE_EVALUATE,
+    TRADE_SUGGESTIONS,
+)
+from api.registration import PlatformDBValidationError, validate_platform_db_url
+from api.tenants import TenantContext, create_tenant, deactivate_tenant, rotate_api_key
 from config import config
 from startup import startup
 from utils import is_vector_store_running
@@ -136,6 +159,25 @@ async def health() -> dict[str, object]:
     return {"status": "ok", "chromadb": is_vector_store_running()}
 
 
+@app.post(ACCOUNTS_REGISTER)
+@limiter.limit("5/minute")  # pyright: ignore[reportUntypedFunctionDecorator]
+async def accounts_register(request: Request, body: RegisterRequest) -> ApiKeyResponse:
+    """Self-serve tenant signup — mounted on `app`, not protected_router, since
+    this is how a caller gets a key in the first place. Rate-limited well
+    below the app-wide default: it's the one surface an anonymous caller can
+    hit with no key at all, making it the obvious abuse target.
+    """
+    try:
+        validate_platform_db_url(body.platform_db_url)
+    except PlatformDBValidationError as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e)) from e
+
+    tenant_id, api_key = create_tenant(body.name, body.platform_db_url)
+    return ApiKeyResponse(tenant_id=tenant_id, api_key=api_key)
+
+
 @protected_router.post(CHAT)
 async def chat(request: ChatRequest) -> ApiResponse:
     """Free-text natural language agent query."""
@@ -218,6 +260,20 @@ async def market_query(request: QueryRequest) -> ApiResponse:
     except Exception as e:
         raise _handle_agent_error(e) from e
     return ApiResponse(result=result)
+
+
+@protected_router.post(ACCOUNTS_ROTATE_KEY)
+async def accounts_rotate_key(tenant: Annotated[TenantContext, Depends(require_api_key)]) -> ApiKeyResponse:
+    """Replace the caller's own API key. The old key stops working immediately."""
+    new_key = rotate_api_key(tenant.tenant_id)
+    return ApiKeyResponse(tenant_id=tenant.tenant_id, api_key=new_key)
+
+
+@protected_router.delete(ACCOUNTS)
+async def accounts_delete(tenant: Annotated[TenantContext, Depends(require_api_key)]) -> ApiResponse:
+    """Deactivate the caller's own tenant account (soft delete, see api.tenants.deactivate_tenant)."""
+    deactivate_tenant(tenant.tenant_id)
+    return ApiResponse(result="Account deactivated")
 
 
 app.include_router(protected_router)

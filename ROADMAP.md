@@ -396,16 +396,19 @@ make test
 
 **Final endpoint summary:**
 
-| Method | Path                    | Auth | Description                            |
-| ------ | ----------------------- | ---- | -------------------------------------- |
-| GET    | `/health`               | No   | Service health check                   |
-| POST   | `/v1/chat`              | Yes  | Free-text natural language agent query |
-| POST   | `/v1/trade/evaluate`    | Yes  | Structured trade evaluation            |
-| GET    | `/v1/trade/suggestions` | Yes  | Proactive trade suggestions            |
-| GET    | `/v1/offers`            | Yes  | Pending trade offer inbox              |
-| POST   | `/v1/offers/send`       | Yes  | Send a trade offer                     |
-| POST   | `/v1/pokedex/query`     | Yes  | Pokedex knowledge question             |
-| POST   | `/v1/market/query`      | Yes  | Market demand & trend query            |
+| Method | Path                       | Auth | Description                                    |
+| ------ | -------------------------- | ---- | ----------------------------------------------- |
+| GET    | `/health`                  | No   | Service health check                           |
+| POST   | `/v1/accounts/register`    | No   | Self-serve tenant signup (Phase 15)            |
+| POST   | `/v1/chat`                 | Yes  | Free-text natural language agent query         |
+| POST   | `/v1/trade/evaluate`       | Yes  | Structured trade evaluation                    |
+| GET    | `/v1/trade/suggestions`    | Yes  | Proactive trade suggestions                    |
+| GET    | `/v1/offers`               | Yes  | Pending trade offer inbox                      |
+| POST   | `/v1/offers/send`          | Yes  | Send a trade offer                             |
+| POST   | `/v1/pokedex/query`        | Yes  | Pokedex knowledge question                     |
+| POST   | `/v1/market/query`         | Yes  | Market demand & trend query                    |
+| POST   | `/v1/accounts/rotate-key`  | Yes  | Rotate the caller's own API key (Phase 15)     |
+| DELETE | `/v1/accounts`             | Yes  | Deactivate the caller's own account (Phase 15) |
 
 ---
 
@@ -747,34 +750,41 @@ extends Phase 3's tenant store rather than replacing it.
 
 **Tasks:**
 
-- `POST /accounts/register` (unauthenticated by definition — it's how a caller *gets* a key):
-  accepts `{name, platform_db_url}`, returns a newly generated API key **once** in the response
-  body, and inserts the same `tenants` row shape `scripts/provision_tenant.py` creates today
-- Before storing, validate the submitted `platform_db_url` actually connects and matches
-  `docs/REFERENCE/PLATFORM_DB.md`'s schema contract (e.g. a `SELECT 1` against each expected
-  table) — reject with a clear 4xx and which table/column is missing, rather than silently
-  storing a DSN that will fail on first real use
-- Rate-limit this endpoint specifically — it's the one surface an anonymous caller can hit
-  with no key at all, making it the obvious abuse target
-- `POST /accounts/rotate-key` and `DELETE /accounts` (both behind the tenant's own current
-  key) — self-serve means tenants can no longer ask you to do this manually, so they need a
-  way to do it themselves
-- Update `scripts/provision_tenant.py`'s docstring to note it's now the *admin override* path
-  (support/manual cases), not the only way in
+- ~~`POST /v1/accounts/register` (unauthenticated by definition — it's how a caller *gets* a
+  key): accepts `{name, platform_db_url}`, returns a newly generated API key **once**, and
+  inserts the same `tenants` row shape `scripts/provision_tenant.py` creates today~~ **done**
+- ~~Before storing, validate the submitted `platform_db_url` actually connects and matches
+  `docs/REFERENCE/PLATFORM_DB.md`'s schema contract~~ **done** — `src/api/registration.py`
+  connects and checks `information_schema.tables` for all five required tables, rejecting with
+  a 422 naming exactly which are missing (or a 503 if the server itself is missing the
+  `platform-db` dependency group)
+- ~~Rate-limit this endpoint specifically~~ **done** — `5/minute`, well under the `100/minute`
+  app-wide default
+- ~~`POST /v1/accounts/rotate-key` and `DELETE /v1/accounts` (both behind the tenant's own
+  current key)~~ **done**
+- ~~Update `scripts/provision_tenant.py`'s docstring to note it's now the *admin override*
+  path~~ **done**
+
+The Dockerfile's `uv sync` now includes the `platform-db` group — this validation, and every
+tenant's own real database routing (Phase 3+), need `psycopg` installed in the deployed image,
+not just as a locally optional extra.
 
 **Verification:**
 
 ```bash
-curl -X POST https://<your-public-domain>/accounts/register \
+curl -X POST https://<your-public-domain>/v1/accounts/register \
   -H "Content-Type: application/json" \
   -d '{"name": "new-tenant", "platform_db_url": "postgresql://user:pass@host/db"}'
-# → {"api_key": "<shown once>", "tenant_id": "..."}
+# → {"tenant_id": "...", "api_key": "<shown once>"}
 
 # A platform_db_url that doesn't match the schema contract is rejected up front:
-curl -X POST https://<your-public-domain>/accounts/register \
+curl -X POST https://<your-public-domain>/v1/accounts/register \
   -H "Content-Type: application/json" \
   -d '{"name": "bad-tenant", "platform_db_url": "postgresql://user:pass@host/empty_db"}'
-# → HTTP 4xx, naming the missing table
+# → HTTP 422, naming the missing table
+
+uv run pytest tests/api/test_registration.py tests/api/test_accounts_endpoints.py -v
+# → all passing
 ```
 
 ---

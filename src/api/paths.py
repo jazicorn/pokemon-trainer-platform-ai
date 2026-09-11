@@ -20,3 +20,10 @@ OFFERS = f"{API_PREFIX}/offers"
 OFFERS_SEND = f"{API_PREFIX}/offers/send"
 POKEDEX_QUERY = f"{API_PREFIX}/pokedex/query"
 MARKET_QUERY = f"{API_PREFIX}/market/query"
+
+# Self-serve tenant registration (ROADMAP.md Phase 15). ACCOUNTS_REGISTER is
+# the one route on protected_router's version prefix that skips
+# require_api_key — it's how a caller gets a key in the first place.
+ACCOUNTS_REGISTER = f"{API_PREFIX}/accounts/register"
+ACCOUNTS_ROTATE_KEY = f"{API_PREFIX}/accounts/rotate-key"
+ACCOUNTS = f"{API_PREFIX}/accounts"

@@ -21,13 +21,14 @@ web API's PostgreSQL database instead of the bundled mock data.
 When `PLATFORM_DB_URL` is unset, all data sources automatically fall back to
 local mock data — no code changes required.
 
-**This same schema contract also applies to the HTTP API's tenants** (see
-ROADMAP.md Phase 3) — each tenant supplies their own `platform_db_url` at
-provisioning time (`scripts/provision_tenant.py`), encrypted and stored in
-`data/tenants.db`, rather than setting the global `PLATFORM_DB_URL` env var
-above. That env var and the CLI's single-tenant behavior described in this
-document are unaffected; the API never reads it, only ever using the
-per-request tenant database resolved by `api.auth.require_api_key`.
+**This same schema contract also applies to the HTTP API's tenants** (see ROADMAP.md Phase 3)
+— each tenant supplies their own `platform_db_url`, either via self-serve
+`POST /v1/accounts/register` (Phase 15, which validates it against this exact contract before
+storing it) or an admin-issued `scripts/provision_tenant.py`. Either way it's encrypted and
+stored in `data/tenants.db`, rather than setting the global `PLATFORM_DB_URL` env var above.
+That env var and the CLI's single-tenant behavior described in this document are unaffected;
+the API never reads it, only ever using the per-request tenant database resolved by
+`api.auth.require_api_key`.
 
 ---
 

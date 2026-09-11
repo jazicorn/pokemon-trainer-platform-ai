@@ -105,26 +105,35 @@ API key, each mapped server-side to that tenant's own Postgres database (see
 # 1. Set TENANT_DB_ENCRYPTION_KEY (see docs/1PASSWORD.md's "Other Secrets" section)
 export TENANT_DB_ENCRYPTION_KEY=$(uv run python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())")
 
-# 2. Provision a tenant — prints a real API key once, store it now
-uv run python scripts/provision_tenant.py "my-tenant" "postgresql://user:pass@host/db"
-
-# 3. Start the API
+# 2. Start the API
 make run-api
+
+# 3. Get a key — self-serve (below), or uv run python scripts/provision_tenant.py
+# "my-tenant" "postgresql://user:pass@host/db" for an admin-issued one
 ```
 
-| Method | Path                    | Auth | Description                            |
-| ------ | ----------------------- | ---- | -------------------------------------- |
-| GET    | `/health`               | No   | Service health check                   |
-| POST   | `/v1/chat`              | Yes  | Free-text natural language agent query |
-| POST   | `/v1/trade/evaluate`    | Yes  | Structured trade evaluation            |
-| GET    | `/v1/trade/suggestions` | Yes  | Proactive trade suggestions            |
-| GET    | `/v1/offers`            | Yes  | Pending trade offer inbox              |
-| POST   | `/v1/offers/send`       | Yes  | Send a trade offer                     |
-| POST   | `/v1/pokedex/query`     | Yes  | Pokedex knowledge question             |
-| POST   | `/v1/market/query`      | Yes  | Market demand & trend query            |
+| Method | Path                        | Auth | Description                                    |
+| ------ | --------------------------- | ---- | ----------------------------------------------- |
+| GET    | `/health`                   | No   | Service health check                           |
+| POST   | `/v1/accounts/register`     | No   | Self-serve tenant signup                       |
+| POST   | `/v1/chat`                  | Yes  | Free-text natural language agent query         |
+| POST   | `/v1/trade/evaluate`        | Yes  | Structured trade evaluation                    |
+| GET    | `/v1/trade/suggestions`     | Yes  | Proactive trade suggestions                    |
+| GET    | `/v1/offers`                | Yes  | Pending trade offer inbox                      |
+| POST   | `/v1/offers/send`           | Yes  | Send a trade offer                             |
+| POST   | `/v1/pokedex/query`         | Yes  | Pokedex knowledge question                     |
+| POST   | `/v1/market/query`          | Yes  | Market demand & trend query                    |
+| POST   | `/v1/accounts/rotate-key`   | Yes  | Rotate the caller's own API key                |
+| DELETE | `/v1/accounts`              | Yes  | Deactivate the caller's own account            |
 
 ```bash
 curl http://localhost:8080/health
+
+# Self-serve signup — platform_db_url must already match the schema contract
+# above; a real API key comes back once in the response.
+curl -X POST http://localhost:8080/v1/accounts/register \
+  -H "Content-Type: application/json" \
+  -d '{"name": "my-tenant", "platform_db_url": "postgresql://user:pass@host/db"}'
 
 curl -X POST http://localhost:8080/v1/trade/evaluate \
   -H "X-API-Key: $API_KEY" \

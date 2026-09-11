@@ -6,8 +6,9 @@ from the global `PLATFORM_DB_URL` (the CLI's single configured platform
 database) — this is operator-owned: one row per tenant, each with its own
 encrypted `platform_db_url` and hashed API key. See ROADMAP.md Phase 3.
 
-Provisioning is admin-only for now (`scripts/provision_tenant.py`); Phase 15
-adds self-serve registration on top of this same schema.
+Provisioned either by `scripts/provision_tenant.py` (admin override) or
+self-serve via `POST /v1/accounts/register` (see `api.registration`,
+ROADMAP.md Phase 15) — both insert the same row shape.
 """
 
 from __future__ import annotations
@@ -130,6 +131,35 @@ def create_tenant(name: str, platform_db_url: str) -> tuple[str, str]:
         conn.commit()
 
     return tenant_id, raw_key
+
+
+def rotate_api_key(tenant_id: str) -> str:
+    """Replace a tenant's API key with a newly generated one.
+
+    The old key stops working immediately (its hash is overwritten, not kept
+    alongside the new one). Returns the new raw key — shown once, same as
+    `create_tenant`.
+    """
+    raw_key = secrets.token_urlsafe(32)
+    key_hash = hash_api_key(raw_key)
+
+    with get_connection() as conn:
+        conn.execute("UPDATE tenants SET api_key_hash = ? WHERE id = ?", (key_hash, tenant_id))
+        conn.commit()
+
+    return raw_key
+
+
+def deactivate_tenant(tenant_id: str) -> None:
+    """Deactivate a tenant — a soft delete, not a row removal.
+
+    Matches `is_active`'s existing role in `get_tenant_by_key_hash`: a
+    deactivated tenant's key stops resolving, indistinguishable from a
+    wrong key, so a revoked key doesn't reveal it once existed.
+    """
+    with get_connection() as conn:
+        conn.execute("UPDATE tenants SET is_active = 0 WHERE id = ?", (tenant_id,))
+        conn.commit()
 
 
 def get_tenant_by_key_hash(key_hash: str) -> TenantContext | None:

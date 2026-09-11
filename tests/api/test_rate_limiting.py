@@ -75,3 +75,13 @@ class TestAppWiring:
         default; must be set explicitly (see api/app.py's own note).
         """
         assert real_limiter._in_memory_fallback_enabled  # pyright: ignore[reportPrivateUsage]
+
+    def test_accounts_register_has_its_own_stricter_limit(self) -> None:
+        """POST /v1/accounts/register (ROADMAP.md Phase 15) is the one route
+        an anonymous caller can hit with no key at all, so it carries its own
+        tighter limit instead of the 100/minute app-wide default.
+        """
+        route_limits = real_limiter._route_limits  # pyright: ignore[reportPrivateUsage]
+        key = "api.app.accounts_register"
+        assert key in route_limits
+        assert any(str(limit.limit) == "5 per 1 minute" for limit in route_limits[key])

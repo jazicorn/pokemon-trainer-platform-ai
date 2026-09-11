@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
-"""Provision a new API tenant — admin-only console script (ROADMAP.md Phase 3).
+"""Provision a new API tenant — admin override path (ROADMAP.md Phase 3).
 
 Generates a new API key, encrypts the tenant's own `platform_db_url` at rest,
 and inserts the row into `data/tenants.db`. The generated key is printed
 exactly once here — it is never stored or retrievable again, so capture it
 now and hand it to the tenant.
 
-This is the only way to create a tenant until Phase 15's self-serve
-registration exists on top of the same schema.
+`POST /v1/accounts/register` (ROADMAP.md Phase 15) is the normal way in now;
+this script is for support/manual cases — e.g. a tenant who can't self-serve,
+or a `platform_db_url` you want to register without going through that
+endpoint's own connectivity validation.
 
 Usage:
     uv run python scripts/provision_tenant.py <name> <platform_db_url>
