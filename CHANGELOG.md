@@ -1,3 +1,14 @@
+## v0.14.0 (2026-09-11)
+
+### ✨ Features
+
+- **api**: add self-serve tenant registration (Roadmap Phase 15)
+
+### 🐛 Fixes
+
+- **types**: resolve psycopg row_factory type mismatch under pyright
+- **deploy**: run the API server, not the CLI, on Fly
+
 ## v0.13.1 (2026-09-11)
 
 ### 🐛 Fixes
