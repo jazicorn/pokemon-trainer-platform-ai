@@ -154,6 +154,18 @@ Unlike `TENANT_DB_ENCRYPTION_KEY`, losing this one isn't a disaster — it's not
 encrypting anything, it's just where errors get sent. Regenerate a new DSN from
 the same Sentry project if it ever leaks or needs rotating.
 
+`CHROMA_API_KEY`/`CHROMA_TENANT`/`CHROMA_DATABASE` (Chroma Cloud, see
+ROADMAP.md Phase 9) also follow the vendor-issued pattern — all three
+come from your Chroma Cloud project's own quickstart page (trychroma.com), not
+generated locally:
+
+1. Create three items in your Private vault — `CHROMA_API_KEY`, `CHROMA_TENANT`,
+   `CHROMA_DATABASE` — each with its value as the "credential" field
+2. Uncomment their lines in `.env.op`
+
+Like `SENTRY_DSN`, losing these isn't a disaster — nothing is encrypted with
+them. Rotate the API key from the same Chroma Cloud project if it ever leaks.
+
 ## Troubleshooting
 
 See [TROUBLESHOOTING/1password.md](TROUBLESHOOTING/1password.md).

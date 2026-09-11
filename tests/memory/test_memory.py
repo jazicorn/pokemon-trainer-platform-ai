@@ -6,13 +6,14 @@ from typing import NoReturn
 
 import pytest
 
+import utils as utils_module
 from memory.conversation_memory import ConversationMemory, RecommendationMemory
 from memory.database import (
     get_connection,
     init_database,
 )
 from memory.user_preferences import UserPreferencesManager
-from utils import is_chromadb_running
+from utils import is_chromadb_running, is_vector_store_running
 
 
 @pytest.fixture(autouse=True)
@@ -78,6 +79,42 @@ class TestChromaDBCheck:
 
         monkeypatch.setattr("utils.httpx.get", mock_get)
         assert is_chromadb_running() is False
+
+
+class TestIsVectorStoreRunning:
+    """ROADMAP.md Phase 9 — checks whichever backend is actually active, not always
+    self-hosted ChromaDB.
+    """
+
+    def test_falls_back_to_is_chromadb_running_when_chroma_api_key_unset(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        # Patched on utils_module.config specifically, not config_module.config — these can be
+        # two different objects (see tests/conftest.py's _isolate_chroma_api_key for why,
+        # verified directly: this exact gap once let a real CHROMA_API_KEY leak through).
+        # is_vector_store_running() itself lives in utils.py and reads utils.py's own binding.
+        monkeypatch.setattr(utils_module.config, "chroma_api_key", None)
+        monkeypatch.setattr("utils.is_chromadb_running", lambda: True)
+
+        assert is_vector_store_running() is True
+
+    def test_checks_chroma_cloud_when_chroma_api_key_set(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        from unittest.mock import MagicMock
+
+        monkeypatch.setattr(utils_module.config, "chroma_api_key", "test-key")
+        mock_client = MagicMock()
+        monkeypatch.setattr("rag.vector_store.create_cloud_client", lambda: mock_client)
+
+        assert is_vector_store_running() is True
+        mock_client.heartbeat.assert_called_once()
+
+    def test_returns_false_when_chroma_cloud_is_unreachable(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(utils_module.config, "chroma_api_key", "test-key")
+
+        def raise_connection_error() -> None:
+            raise ConnectionError("unreachable")
+
+        monkeypatch.setattr("rag.vector_store.create_cloud_client", raise_connection_error)
+
+        assert is_vector_store_running() is False
 
 
 class TestUserPreferencesManager:

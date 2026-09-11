@@ -124,7 +124,7 @@ class Config:
     # platform_db_url permanently unrecoverable, not just hard to find.
     tenant_db_encryption_key: str | None = None
 
-    # HTTP API observability (Phase 6). Both optional — the API runs fine
+    # HTTP API observability (Phase 4). Both optional — the API runs fine
     # with neither set, just without tracing/error-reporting wired up.
     #
     # ENABLE_PHOENIX opts the API into the *same* Phoenix/OTEL pipeline the
@@ -136,9 +136,35 @@ class Config:
     enable_phoenix: bool = False
 
     # Sentry DSN for dedicated error tracking (free "Developer" tier: 5,000
-    # errors/month — see ROADMAP.md Phase 6). sentry_sdk.init(dsn=None) is
+    # errors/month — see ROADMAP.md Phase 4). sentry_sdk.init(dsn=None) is
     # documented as a safe no-op, so this is fine unset for local dev.
     sentry_dsn: str | None = None
+
+    # Rate limiting storage (Phase 14) — a redis:// or rediss:// URI (e.g. an
+    # Upstash Redis instance). None/unset falls back to slowapi's default
+    # in-memory counter — correct for a single local dev process, but each
+    # of a scaled-out API's own instances would then keep its own separate
+    # count (see ROADMAP.md Phase 14's rate-limiting note). Also fixes a
+    # smaller issue at single-instance scale: an in-memory counter resets on
+    # every restart/redeploy.
+    rate_limit_storage_uri: str | None = None
+
+    # Chroma Cloud (ROADMAP.md Phase 14) — managed, hybrid-search-capable vector
+    # storage, replacing self-hosted ChromaDB in production. chroma_api_key's presence is the
+    # switch: set, PokemonVectorStore (src/rag/vector_store.py) talks to Chroma Cloud; unset,
+    # it falls back to local self-hosted ChromaDB via config.chromadb_url — same "presence of
+    # the value is the switch" idiom as platform_db_url/sentry_dsn above. Also read directly
+    # from the CHROMA_API_KEY env var by chromadb's own ChromaCloudQwenEmbeddingFunction/
+    # ChromaCloudSpladeEmbeddingFunction and CloudClient — no extra wiring needed, since
+    # _load_dotenv_files() above already puts .env's values into os.environ.
+    chroma_api_key: str | None = None
+    chroma_tenant: str | None = None
+    chroma_database: str | None = None
+    # Optional — CloudClient's own default (api.trychroma.com) is correct for standard Chroma
+    # Cloud SaaS. Only needed for a non-default deployment (e.g. a dedicated/custom host);
+    # present here because Chroma's own project quickstart page includes it alongside the
+    # other three vars regardless.
+    chroma_host: str | None = None
 
     def __post_init__(self) -> None:
         """Validate configuration at instantiation time."""
@@ -181,6 +207,11 @@ config = Config(
     tenant_db_encryption_key=os.getenv("TENANT_DB_ENCRYPTION_KEY") or None,
     enable_phoenix=os.getenv("ENABLE_PHOENIX", "").lower() == "true",
     sentry_dsn=os.getenv("SENTRY_DSN") or None,
+    rate_limit_storage_uri=os.getenv("RATE_LIMIT_STORAGE_URI") or None,
+    chroma_api_key=os.getenv("CHROMA_API_KEY") or None,
+    chroma_tenant=os.getenv("CHROMA_TENANT") or None,
+    chroma_database=os.getenv("CHROMA_DATABASE") or None,
+    chroma_host=os.getenv("CHROMA_HOST") or None,
 )
 
 # pydantic-ai's OllamaProvider reads OLLAMA_BASE_URL (not this project's own

@@ -9,11 +9,18 @@
 #   docker compose run --rm app              # CLI + ChromaDB only (default)
 #   docker compose --profile observability run --rm app   # + Phoenix tracing
 #   docker compose --profile platform-db run --rm app     # + local PostgreSQL
+#   docker compose up api                    # Web API instead of the CLI (ROADMAP.md Phase 9)
 #
 # `run` (not `up`) is used for the app service because the CLI is an
 # interactive REPL, not a long-running server — `run --rm` attaches a TTY
 # and cleans up the container on exit. ChromaDB/Phoenix/Postgres are ordinary
-# long-running services and come up automatically as dependencies.
+# long-running services and come up automatically as dependencies. `api` is
+# also long-running, so it uses `up` the same way.
+#
+# This file is for local dev/testing parity, not the production deploy path
+# for the API — see docs/DEPLOYMENT.md (Fly.io, fly.toml) for that. Running
+# `docker compose up api` here is how to exercise the exact same command and
+# healthcheck Fly runs, without needing a real deploy to test it.
 #
 # API keys and model selection come from a root .env file (see .env.example) —
 # docker compose reads it automatically for the ${VAR} substitutions below.
@@ -80,6 +87,40 @@ services:
       - ./data:/app/data
     stdin_open: true
     tty: true
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: uv run python api_server.py
+    depends_on:
+      chromadb:
+        condition: service_healthy
+    ports:
+      - "${API_PORT:-8080}:8080"
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      # Phase 3 — required for any tenant operation; there is no sane default.
+      TENANT_DB_ENCRYPTION_KEY: ${TENANT_DB_ENCRYPTION_KEY:?TENANT_DB_ENCRYPTION_KEY must be set to run the api service}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      ENABLE_PHOENIX: ${ENABLE_PHOENIX:-}
+      # Unset locally is fine — falls back to an in-memory rate-limit counter.
+      RATE_LIMIT_STORAGE_URI: ${RATE_LIMIT_STORAGE_URI:-}
+      CHROMADB_URL: http://chromadb:8000
+      PHOENIX_URL: http://phoenix:6006
+    volumes:
+      # data/tenants.db (Phase 3) lives here — losing this volume means every
+      # provisioned tenant loses access. Same mount the app service uses.
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
 
 volumes:
   platform_db_data:

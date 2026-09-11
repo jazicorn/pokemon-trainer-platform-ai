@@ -1,0 +1,36 @@
+# Fly.io app config for the public API (ROADMAP.md Phase 9). See
+# docs/DEPLOYMENT.md for the full runbook, including the separate
+# `<app>-chromadb` app this one talks to over Fly's private network.
+#
+# Built from this repo's own Dockerfile via `fly deploy` — not the GHCR
+# image image-publish.yml already publishes. Wiring CI to deploy that image
+# automatically on release is a natural fast-follow, not done here.
+
+app = "REPLACE-WITH-YOUR-APP-NAME"
+primary_region = "REPLACE-WITH-YOUR-REGION"  # e.g. "iad" — see `fly platform regions`
+
+[build]
+
+[env]
+  API_HOST = "0.0.0.0"
+  API_PORT = "8080"
+  # CHROMADB_URL is set as a secret (not here) once the chromadb app exists,
+  # since it names that app: fly secrets set CHROMADB_URL=http://<name>-chromadb.internal:8000
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "10s"
+    method = "GET"
+    path = "/health"
+    timeout = "3s"
+
+[[mounts]]
+  source = "data_volume"
+  destination = "/app/data"

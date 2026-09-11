@@ -35,7 +35,11 @@ def main() -> None:
 
     # Import string (not the app object) so uvicorn can still find the app
     # if --reload ever gets added — it needs to re-import the module itself.
-    uvicorn.run("api.app:app", host=host, port=port)
+    #
+    # server_header=False drops the "Server: uvicorn" response header (Phase
+    # 9 security checklist) — set here, not in api.app's own middleware,
+    # since uvicorn writes it before any ASGI middleware sees the response.
+    uvicorn.run("api.app:app", host=host, port=port, server_header=False)
 
 
 if __name__ == "__main__":

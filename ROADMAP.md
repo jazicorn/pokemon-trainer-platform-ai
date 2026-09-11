@@ -3,10 +3,16 @@
 Convert the Pokemon Trainer Platform from a CLI + MCP server into a full HTTP web API using
 FastAPI, while keeping the existing CLI and MCP interfaces intact.
 
-Covers Phases 1-11 — the API itself: dependencies through admin tooling. What happens once
+Covers Phases 1-16 — the API itself: dependencies through admin tooling. What happens once
 it's real (hosting, billing, the public website, security, ops maturity, growth) continues in
-[ROADMAP_PLATFORM.md](ROADMAP_PLATFORM.md), Phases 12 onward. Phase numbers are shared and
+[ROADMAP_PLATFORM.md](ROADMAP_PLATFORM.md), Phases 17 onward. Phase numbers are shared and
 continuous across both files, not reset.
+
+Phases here aren't in their original numbering — four phases explicitly said, in their own
+text, that their number was wrong (Observability, the Docs Site, the Interim Landing Page,
+Support Tooling), and one more's own goal made the same point without saying so directly (API
+Versioning must precede any real external tenant). They've been moved to where they actually
+belong in the build sequence; everything else's relative order is unchanged.
 
 **Testing policy — applies to every phase below:** a phase isn't done until its own
 automated tests exist in `tests/` and pass, written as part of implementing that phase, not
@@ -81,7 +87,7 @@ authentication and tenant DB routing have to be the same lookup, not two separat
 
 **Provisioning for this phase: admin-only.** No public signup endpoint yet — you provision each
 tenant yourself via a console script. Self-serve registration is its own later phase (see
-Phase 10) once this foundation exists and is trusted.
+Phase 15) once this foundation exists and is trusted.
 
 **Design:**
 
@@ -129,13 +135,13 @@ Phase 10) once this foundation exists and is trusted.
 - Apply `Depends(require_api_key)` as a router-level or app-level dependency, excluding
   `/health`
 - Write `tests/api/test_tenants.py` and `tests/api/test_auth.py` as part of *this* phase, not
-  deferred to Phase 7 — every other module in this project (agents, cli, memory, ...) has tests
-  written alongside its own code, and API auth logic shouldn't be the one exception. Phase 7 is
+  deferred to Phase 8 — every other module in this project (agents, cli, memory, ...) has tests
+  written alongside its own code, and API auth logic shouldn't be the one exception. Phase 8 is
   gap-filling and integration coverage across phases, not the sole place tests get written.
 
 **Verification:**
 
-No route protected by `require_api_key` exists yet — that's Phase 4. A `curl` against
+No route protected by `require_api_key` exists yet — that's Phase 5. A `curl` against
 `/trade/suggestions` here would 404 before ever reaching auth, which isn't a
 meaningful check of anything and would look like a bug when it isn't one. What's
 actually verifiable at the end of *this* phase:
@@ -156,12 +162,73 @@ curl http://localhost:8080/health
 # → {"status": "ok", "chromadb": true}
 ```
 
-Once Phase 4 adds real routes, this same 401/403/200 behavior becomes directly
-`curl`-able against them too — see Phase 4's own verification section.
+Once Phase 5 adds real routes, this same 401/403/200 behavior becomes directly
+`curl`-able against them too — see Phase 5's own verification section.
 
 ---
 
-## Phase 4 — Core Trade Endpoints
+## Phase 4 — Observability & Request Logging
+
+**Do this right after Phase 3, before real routes exist — earlier than its original number
+suggested.** Technically it only needs the FastAPI `app` object, which has existed since
+Phase 1; there's no hard dependency on the trade endpoints existing first. Phase 3 is exactly
+the kind of logic — tenant lookup, 401/403 auth failures, encrypt/decrypt round-trips — worth
+having structured logging in place *while* debugging it, not retrofitted after building blind.
+
+**Goal:** Wire HTTP request tracing into the existing Logfire + OpenTelemetry stack so every
+API call appears in the Phoenix dashboard alongside agent spans — plus dedicated error
+tracking, which tracing alone doesn't give you.
+
+**Why:** The project already instruments agent calls via `openinference-instrumentation-pydantic-ai`
+and exports traces to Phoenix (`src/observability/`). Without this phase, HTTP-level context
+(method, path, status, latency) is invisible in those traces. Separately, Phoenix/Logfire show
+you trace *spans* — what a request did — not a dedicated, alertable view of *new* unhandled
+exceptions, which is a different job.
+
+**Tooling, chosen for free/low-cost tiers, not just defaults:**
+
+- **Logfire** — already free-tier-friendly for this project's volume, and ships FastAPI
+  instrumentation out of the box (no new dependency).
+- **Phoenix** — self-hosted, fully open-source, genuinely free regardless of volume (already
+  running via `docker-compose.yml`'s `observability` profile).
+- **Sentry** (new to this phase) — dedicated error tracking and alerting on *new* exception
+  types, which trace viewers don't really do. Checked its current pricing directly rather than
+  assuming: the free "Developer" tier gives 5,000 errors/month, 5M trace spans, and even **1
+  free uptime monitor** — small enough overlap with Phase 27 that it's worth checking whether
+  Sentry's free monitor covers that need before also paying for a separate uptime tool.
+
+**Tasks:**
+
+- Add `logfire.instrument_fastapi(app)` in `src/api/app.py` after the app is created
+- Add a lightweight logging middleware to `src/api/app.py` that writes one structured
+  line per request: method, path, status code, and duration in ms
+  - Use Python's stdlib `logging` (already used throughout the project)
+  - Format: `POST /chat 200 342ms`
+- Add Sentry's Python SDK, initialized in `src/api/app.py`'s lifespan, scoped to the free tier's
+  limits (single project, no need for its paid integrations yet)
+- Verify traces appear in Phoenix at `http://localhost:6006` when `ENABLE_PHOENIX=true`, and a
+  deliberately-raised test exception appears in Sentry
+- Write a small `tests/api/test_logging_middleware.py` for the request-logging middleware
+  itself (method/path/status/duration line gets written) as part of this phase
+
+**Verification:**
+
+```bash
+# Start with Phoenix enabled
+ENABLE_PHOENIX=true make run-api
+
+# Make a request
+curl -H "X-API-Key: $API_KEY" \
+  "http://localhost:8080/trade/suggestions?user_id=user_001"
+
+# Check server logs show the request line
+# Check Phoenix at http://localhost:6006 shows the trace with agent sub-spans
+# Trigger a deliberate error and confirm it appears in the Sentry dashboard
+```
+
+---
+
+## Phase 5 — Core Trade Endpoints
 
 **Goal:** Expose the primary agent functionality over HTTP.
 
@@ -176,7 +243,7 @@ Once Phase 4 adds real routes, this same 401/403/200 behavior becomes directly
 - All routes protected by `require_api_key` dependency from Phase 3
 - Write `tests/api/test_trade_endpoints.py` for these three routes as part of this phase
   (`TestClient`, mocked `evaluate_trade`/`get_trade_suggestions` — same mocking pattern already
-  used throughout `tests/agents/`), not deferred to Phase 7
+  used throughout `tests/agents/`), not deferred to Phase 8
 
 **Endpoints added this phase:** 3 (total: 4 with `/health`)
 
@@ -219,7 +286,7 @@ curl -H "X-API-Key: $API_KEY" \
 
 ---
 
-## Phase 5 — Offers & Query Endpoints
+## Phase 6 — Offers & Query Endpoints
 
 **Goal:** Complete the full API surface — inbox management and knowledge queries.
 
@@ -233,7 +300,7 @@ curl -H "X-API-Key: $API_KEY" \
   - `POST /pokedex/query` → `query_pokedex(question, user_id)` from `agents`
   - `POST /market/query` → `query_market(question)` from `agents.trade_market_analyst`
 - Write `tests/api/test_offers_endpoints.py` and `tests/api/test_query_endpoints.py` for these
-  four routes as part of this phase, same reasoning as Phase 4
+  four routes as part of this phase, same reasoning as Phase 5
 
 **Endpoints added this phase:** 4 (total: 8)
 
@@ -264,69 +331,42 @@ open http://localhost:8080/docs
 
 ---
 
-## Phase 6 — Observability & Request Logging
+## Phase 7 — API Versioning Strategy
 
-**Do this right after Phase 3, before Phase 4/5 — earlier than its number suggests.**
-Technically it only needs the FastAPI `app` object, which has existed since Phase 1; there's
-no hard dependency on the trade endpoints existing first. Phase 3 is exactly the kind of logic
-— tenant lookup, 401/403 auth failures, encrypt/decrypt round-trips — worth having structured
-logging in place *while* debugging it, not retrofitted after three more phases of building
-blind. Same reasoning as Phase 12/18 already being flagged as earlier-than-numbered.
+**Moved well ahead of its original number:** the whole point is introducing versioning
+*before* any external tenant integrates, so a future breaking change doesn't silently break
+existing integrations — retrofitting versioning onto a live API with real callers is far more
+painful than deciding this now, while Phase 14 (deployment) and Phase 15 (self-serve
+registration) haven't happened yet and there are still zero real callers. Doing this here also
+means Phase 8's integration tests and Phase 9's docs are written against the final `/v1/...`
+paths directly, with no rework later.
 
-**Goal:** Wire HTTP request tracing into the existing Logfire + OpenTelemetry stack so every
-API call appears in the Phoenix dashboard alongside agent spans — plus dedicated error
-tracking, which tracing alone doesn't give you.
+**Goal:** Introduce versioning before the API is ever publicly reachable.
 
-**Why:** The project already instruments agent calls via `openinference-instrumentation-pydantic-ai`
-and exports traces to Phoenix (`src/observability/`). Without this phase, HTTP-level context
-(method, path, status, latency) is invisible in those traces. Separately, Phoenix/Logfire show
-you trace *spans* — what a request did — not a dedicated, alertable view of *new* unhandled
-exceptions, which is a different job.
+**Design:**
 
-**Tooling, chosen for free/low-cost tiers, not just defaults:**
-
-- **Logfire** — already free-tier-friendly for this project's volume, and ships FastAPI
-  instrumentation out of the box (no new dependency).
-- **Phoenix** — self-hosted, fully open-source, genuinely free regardless of volume (already
-  running via `docker-compose.yml`'s `observability` profile).
-- **Sentry** (new to this phase) — dedicated error tracking and alerting on *new* exception
-  types, which trace viewers don't really do. Checked its current pricing directly rather than
-  assuming: the free "Developer" tier gives 5,000 errors/month, 5M trace spans, and even **1
-  free uptime monitor** — small enough overlap with Phase 26 that it's worth checking whether
-  Sentry's free monitor covers that need before also paying for a separate uptime tool.
+- URL-path versioning (`/v1/chat`, `/v1/trade/evaluate`, ...) — simplest and most discoverable
+  for API consumers, versus a header-based scheme.
+- `/health` stays unversioned — it's infrastructure-level, not business logic, matching its
+  existing exemption from API-key auth (Phase 3).
+- Decide (not necessarily exercise yet) a deprecation policy: how long `/v1` stays supported
+  once a `/v2` exists.
 
 **Tasks:**
 
-- Add `logfire.instrument_fastapi(app)` in `src/api/app.py` after the app is created
-- Add a lightweight logging middleware to `src/api/app.py` that writes one structured
-  line per request: method, path, status code, and duration in ms
-  - Use Python's stdlib `logging` (already used throughout the project)
-  - Format: `POST /chat 200 342ms`
-- Add Sentry's Python SDK, initialized in `src/api/app.py`'s lifespan, scoped to the free tier's
-  limits (single project, no need for its paid integrations yet)
-- Verify traces appear in Phoenix at `http://localhost:6006` when `ENABLE_PHOENIX=true`, and a
-  deliberately-raised test exception appears in Sentry
-- Write a small `tests/api/test_logging_middleware.py` for the request-logging middleware
-  itself (method/path/status/duration line gets written) as part of this phase
+- Mount Phase 5/6's routes under an `APIRouter(prefix="/v1")` in `src/api/app.py`
+- Write a short versioning/deprecation policy doc
 
 **Verification:**
 
 ```bash
-# Start with Phoenix enabled
-ENABLE_PHOENIX=true make run-api
-
-# Make a request
-curl -H "X-API-Key: $API_KEY" \
-  "http://localhost:8080/trade/suggestions?user_id=user_001"
-
-# Check server logs show the request line
-# Check Phoenix at http://localhost:6006 shows the trace with agent sub-spans
-# Trigger a deliberate error and confirm it appears in the Sentry dashboard
+curl -H "X-API-Key: $KEY" https://<domain>/v1/trade/suggestions   # → 200
+curl https://<domain>/trade/suggestions                            # → 404, forcing explicitness
 ```
 
 ---
 
-## Phase 7 — API Test Gaps & Integration Coverage
+## Phase 8 — API Test Gaps & Integration Coverage
 
 **Originally scoped as "write all the API tests here" — that was the wrong design, not
 just a Phase 3 oversight.** Every other module in this project (agents, cli, memory, ...) has
@@ -344,7 +384,7 @@ per-phase tests reasonably left out.
 - An end-to-end test hitting a realistic sequence across routes — e.g. provision a tenant,
   send an offer, fetch it back via `GET /offers`, confirm the AI analysis is present —
   something no single phase's own tests would naturally cover in isolation
-- Audit `tests/api/` against the endpoint table in Phase 8 — confirm every route has at least
+- Audit `tests/api/` against the endpoint table in Phase 9 — confirm every route has at least
   one test, and file gaps here rather than assuming
 - Any cross-cutting auth edge cases not covered by Phase 3's own tests (e.g. a tenant's key
   working correctly across *every* route type, not just the one Phase 3 tested it against)
@@ -358,7 +398,7 @@ make test
 
 ---
 
-## Phase 8 — Polish & Documentation
+## Phase 9 — Polish & Documentation
 
 **Goal:** Make the API discoverable and easy to run.
 
@@ -375,118 +415,350 @@ make test
 | Method | Path                 | Auth | Description                            |
 | ------ | -------------------- | ---- | -------------------------------------- |
 | GET    | `/health`            | No   | Service health check                   |
-| POST   | `/chat`              | Yes  | Free-text natural language agent query |
-| POST   | `/trade/evaluate`    | Yes  | Structured trade evaluation            |
-| GET    | `/trade/suggestions` | Yes  | Proactive trade suggestions            |
-| GET    | `/offers`            | Yes  | Pending trade offer inbox              |
-| POST   | `/offers/send`       | Yes  | Send a trade offer                     |
-| POST   | `/pokedex/query`     | Yes  | Pokedex knowledge question             |
-| POST   | `/market/query`      | Yes  | Market demand & trend query            |
+| POST   | `/v1/chat`              | Yes  | Free-text natural language agent query |
+| POST   | `/v1/trade/evaluate`    | Yes  | Structured trade evaluation            |
+| GET    | `/v1/trade/suggestions` | Yes  | Proactive trade suggestions            |
+| GET    | `/v1/offers`            | Yes  | Pending trade offer inbox              |
+| POST   | `/v1/offers/send`       | Yes  | Send a trade offer                     |
+| POST   | `/v1/pokedex/query`     | Yes  | Pokedex knowledge question             |
+| POST   | `/v1/market/query`      | Yes  | Market demand & trend query            |
 
 ---
 
-## Phase 9 — Deployment
+## Phase 10 — Project Documentation Site (GitHub Pages)
+
+**Goal:** A browsable docs/landing site at `https://jazicorn.github.io/pokemon-trainer-platform-ai/`,
+built from the project's existing `README.md` and `docs/` markdown — no new content authored
+just for this, just a better way to browse what's already written.
+
+**Independent of the other phases:** unlike the sequential build-up in the phases before it,
+this one has no dependency on the API work at all — it's just documentation tooling. It can be
+done any time, including before Phase 2, without blocking or being blocked by anything else
+here.
+
+**Design:**
+
+- **MkDocs + the Material theme**, not Docusaurus (JS/React — heavier tooling for a Python
+  project) or hand-written HTML (loses search/nav for free, and means maintaining content in
+  two places). MkDocs renders the existing markdown files directly, is itself just a
+  `uv`-installable Python tool consistent with the rest of this project, and gets full-text
+  search + navigation with no extra work.
+- Site structure mirrors the existing docs layout: Home (`README.md`), Getting Started
+  (`docs/GETTING_STARTED.md`), Reference (`docs/REFERENCE/*.md`), Roadmap (`ROADMAP.md`),
+  History (`HISTORY.md` — Commitizen's auto-generated changelog from Phase-adjacent release work)
+- Deployed via a new `.github/workflows/docs-publish.yml`, building and pushing to a
+  `gh-pages` branch on every push to `main` that touches `docs/**`, `README.md`, `ROADMAP.md`,
+  `HISTORY.md`, or `mkdocs.yml` — the same narrowly-scoped path-filtering `image-build.yml`
+  already uses elsewhere in this repo
+- GitHub Pages itself (repo Settings → Pages, serving from the `gh-pages` branch) is a
+  one-time manual step in the GitHub UI — no workflow file can do that part
+
+**Tasks:**
+
+- Add `mkdocs` + `mkdocs-material` as a new `docs` dependency group in `pyproject.toml`
+  (not `dev` — it's not needed for development or CI testing, only for building the site)
+- Create `mkdocs.yml` at the project root: site name, nav structure mapping to the files above,
+  Material theme config
+- Create `.github/workflows/docs-publish.yml` (`mkdocs gh-deploy`, path-filtered as above)
+- One-time: enable GitHub Pages in repo settings, pointed at the `gh-pages` branch
+- Add a badge/link in `README.md`'s header pointing at the published Pages URL, matching the
+  existing badge-row style
+
+**Verification:**
+
+```bash
+uv sync --group docs
+uv run mkdocs serve
+# → http://127.0.0.1:8000 — confirm the nav renders every docs/ page and README/ROADMAP/HISTORY
+
+git push origin main   # touching docs/**, README.md, ROADMAP.md, HISTORY.md, or mkdocs.yml
+# → docs-publish.yml runs, gh-pages branch updates
+# → https://jazicorn.github.io/pokemon-trainer-platform-ai/ reflects the change
+```
+
+---
+
+## Phase 11 — Interim Landing Page (Roadmap + Newsletter Signup)
+
+**Despite the original number, this is early work, not late.** It depends only on Phase 10's
+GitHub Pages setup existing — nothing from the phases between them. The full marketing/signup
+site (Phase 20) is a long way off, since it needs most of the API actually built first; this
+exists to close that gap, so it belongs right alongside or shortly after Phase 10, not at the
+end of the list.
+
+**Goal:** A minimal public page — the roadmap, in readable form, plus an email signup for
+updates — so there's *something* to point people at and start building an audience during the
+gap before Phase 20 exists, rather than nothing at all until then.
+
+**Design:**
+
+- Reuse Phase 10's MkDocs/GitHub Pages site rather than standing up separate hosting — this
+  can be that site's homepage, with `ROADMAP.md` rendered below the fold (Phase 10 already
+  renders it as its own page; surface it prominently here too).
+- Email capture needs *some* backend, and GitHub Pages is static-only. For a stopgap like this,
+  don't build custom infrastructure for it — use an existing newsletter provider (Buttondown,
+  ConvertKit, ListMonk, etc.) with a simple embeddable form. The tradeoff is real (your
+  subscriber data lives on their platform, not yours) but building a custom signup backend for
+  something explicitly meant to be temporary is over-engineering the wrong thing. Revisit if
+  Phase 20 wants to own this list directly later — exporting from any mainstream provider is
+  standard.
+- Needs a one-line privacy note next to the signup form (what the email is used for, how to
+  unsubscribe) — a lightweight preview of Phase 20's real Privacy Policy, not a substitute for
+  it once that exists.
+
+**Tasks:**
+
+- Pick a newsletter provider and create the list
+- Add the landing content + embedded signup form to Phase 10's MkDocs site
+- Add the one-line privacy note near the form
+- Link it from the main README
+
+**Verification:**
+
+```bash
+uv run mkdocs serve
+# → homepage shows roadmap summary + signup form, both render correctly
+
+# Submit a test signup, confirm it actually lands in the provider's list
+# (manual check — this is a third-party integration, not something to script here)
+```
+
+---
+
+## Phase 12 — Dependency & Vulnerability Scanning
+
+**Moved up from its original position — no dependency on any other phase**, and there's no
+reason to wait: it applies to whatever the repo looks like at any point.
+
+**Goal:** Automated detection of vulnerable dependencies, using tooling that's free on GitHub.
+
+**Tasks:**
+
+- Add `.github/dependabot.yml` for the `pip` (uv-compatible) and `github-actions` ecosystems —
+  security alerts plus version-update PRs
+- Add a `pip-audit` step to `ci-quality.yml`
+- Decide the policy: block CI on critical/high findings, warn (don't block) on medium/low
+
+**Verification:**
+
+```bash
+uv run pip-audit
+# → 0 known vulnerabilities, or a clear actionable list
+```
+
+Also confirm Dependabot opens its first PR automatically once the config is merged.
+
+---
+
+## Phase 13 — Support Tooling
+
+**Set this up before Phase 15 ships, not after.** Self-serve registration means strangers can
+become tenants without you ever touching the process — the first one who hits a problem
+shouldn't be the reason you're scrambling to set up a support inbox that day.
+
+**Goal:** A working support channel ready before self-serve signup goes live, sized to actual
+early-stage volume rather than to what a support team would eventually need.
+
+**Tool: Plain (joinplain.com).** Built specifically for B2B/API companies talking to technical
+users — Slack-based triage, issue-linking — which fits this audience (developers integrating
+against an API) better than a general-purpose shared inbox. Help Scout remains the fallback if
+Plain's workflow ends up being more than needed day one: simpler, more generic, also cheap.
+
+**Tasks:**
+
+- Set up a Plain account and connect the support address (e.g. `support@<your-domain>`)
+- Link it from Phase 20's marketing site and Phase 11's interim landing page
+- Revisit around Phase 19 (paid tiers) — billing questions (refunds, disputes, "why was I
+  charged") raise support expectations; re-evaluate whether Plain still fits or whether it's
+  time to consider a heavier tool, rather than assuming the day-one choice holds forever
+
+**Verification:**
+
+```bash
+# Send a real test email to the support address and confirm it lands in the shared inbox
+```
+
+---
+
+## Phase 14 — Deployment
 
 **Goal:** Run the API as a persistent, publicly-reachable service — this is a genuinely public
 API (per Phase 3's design decision), not a private backend-to-backend link, so real TLS and
 public-network hardening are required here, not optional.
 
+**Host: [Fly.io](https://fly.io).** Docker-native (deploys this repo's own `Dockerfile`
+directly), free built-in TLS at its edge, persistent volumes, no reverse-proxy layer to run or
+maintain ourselves. Full runbook: `docs/DEPLOYMENT.md`.
+
 **This phase isn't done until its security checklist passes too, not just deployment
-mechanics.** These five items were originally written up as ROADMAP_PLATFORM.md Phase 17's
-"P0 — required before Phase 9" tier — but a security checklist that only *lives* in a later,
-separate phase is exactly the mistake this project already made once with testing (the
-original Phase 3/Phase 7 split, where a separate later "testing phase" let Phase 3 look done
-without ever having tests). Moved here for the same reason: nothing should be able to call
-this phase complete without them.
+mechanics.**
+
+**Architecture.** One Fly app:
+
+- **`<name>-api`** — public. This repo's `Dockerfile`, deployed via `fly.toml`. `force_https`
+  at Fly's edge handles TLS (no Caddy/nginx). A persistent Fly volume holds `/app/data`, so
+  `data/tenants.db` survives redeploys.
+
+RAG's vector storage is **Chroma Cloud** (managed, not something this deploy runs itself) — a
+second, private `<name>-chromadb` Fly app (self-hosted ChromaDB) was the original plan, dropped
+in favor of Chroma Cloud before it was ever deployed. See "Vector storage: Chroma Cloud" below.
 
 **Tasks:**
 
-- Add a long-running `api` service to `docker-compose.yml` (alongside the existing `chromadb`,
-  `phoenix`, `postgres`, `app` services) — `docker compose up api`, not `run --rm` like the
-  interactive CLI's `app` service:
-  - `command: uv run python api_server.py` (overrides the image's CLI `CMD`)
-  - `healthcheck` against `GET /health`, matching the `chromadb` service's pattern
-  - `volumes:` must include `./data:/app/data` (already true for `app`) so `data/tenants.db`
-    (Phase 3) persists across restarts/redeploys instead of living in ephemeral container
-    storage — losing this file means every provisioned tenant loses access
-  - Resolve the container's non-root UID against the actual host's ownership of `./data`
-    once that host is chosen (see `Dockerfile`'s own note on this) — a UID mismatch means
-    the container can't write `data/tenants.db` at all; a world-writable host directory
-    avoids that but is broad. `data/tenants.db` holds every real tenant's encrypted
-    `platform_db_url`, so this is a real decision here, not a local-dev nicety
-- Confirm `image-publish.yml`'s existing GHCR image (built for the CLI's `CMD`) still works
-  for the API: since `docker-compose.yml` overrides `command:`, no separate image/Dockerfile
-  is needed — same published image, different command per service
-- Document the actual target host in `docs/DEPLOYMENT.md` (new) once one is chosen, covering
-  how secrets (`ANTHROPIC_API_KEY`, `TENANT_DB_ENCRYPTION_KEY`) are injected as real environment
-  variables via that platform's own secret store — never a committed `.env` — and where
-  `TENANT_DB_ENCRYPTION_KEY`'s backup copy lives (see Phase 3's warning: losing it is
-  unrecoverable, not just inconvenient)
+- ~~Fix a lifespan bug found while researching Fly~~ **done** — `api/app.py`'s `lifespan()`
+  called `startup(chromadb=True, ...)`, which shells out to `docker run` when ChromaDB isn't
+  reachable. A Fly Machine has no Docker daemon of its own, so that call would fail and
+  `start_chromadb()` responds to a failed start with `raise SystemExit(0)` — killing the API
+  before it serves a single request. Fixed to `chromadb=False`, mirroring the guard Phase 4
+  already has for Phoenix. `/health`'s own `is_vector_store_running()` check (`src/utils.py`)
+  still reports reachability truthfully for whichever RAG backend is actually active.
+- ~~Add a long-running `api` service to `docker-compose.yml`~~ **done** — for local dev/testing
+  parity (`docker compose up api` runs the exact command/healthcheck Fly runs), **not** the
+  production deploy path — `fly.toml` is.
+- ~~Resolve the non-root-user/volume-permission conflict~~ **done** — a Fly (or Docker) volume
+  is created empty and root-owned; the image's non-root `appuser` can't write to it as-is. Fixed
+  via `docker-entrypoint.sh`: runs as root, `chown`s `/app/data`, then `exec gosu appuser "$@"`
+  (`gosu`, not a wrapping shell, so container signals still reach the app process directly).
+  `Dockerfile`'s `USER appuser` line moved into this entrypoint.
+- ~~Write `fly.toml`~~ **done** — `force_https = true`, health check against `/health`, a
+  `[mounts]` entry for the data volume. Built from this repo's `Dockerfile` directly via
+  `fly deploy` for this first pass; wiring CI to auto-deploy `image-publish.yml`'s already
+  -published GHCR image on release is a clean fast-follow, not bundled in here.
+- ~~Write `docs/DEPLOYMENT.md`~~ **done** — the Fly runbook: creating the app, its volume,
+  `fly secrets set` for `ANTHROPIC_API_KEY` / `TENANT_DB_ENCRYPTION_KEY` / `SENTRY_DSN` /
+  Chroma Cloud's three vars, deploy commands, and the `TENANT_DB_ENCRYPTION_KEY` backup
+  reminder Phase 3 already established.
+
+**Vector storage: Chroma Cloud.** Replaces self-hosted ChromaDB (`src/rag/vector_store.py`)
+with managed storage — no self-hosted infra to run or back up, and it's what the "Architecture"
+section above deploys instead of a second Fly app.
+
+*Originally scoped as full hybrid search* (dense + sparse embeddings, Reciprocal Rank Fusion)
+using Chroma Cloud's hosted Qwen (dense) and Splade (sparse) embedding functions. Blocked: both
+depend on a JSON schema-validation file that's missing from every published `chromadb-client`
+wheel checked (1.5.6 through 1.5.9) *and* from Chroma's own GitHub source — a genuine upstream
+bug, not fixable client-side. **Shipped as dense-only instead**, embeddings computed
+client-side (the same `get_simple_embedding`/`get_ollama_embedding` self-hosted mode already
+used) — Chroma Cloud is used purely for storage/search, not its hosted embedding functions.
+Revisit hybrid search once the upstream bug is fixed.
+
+Design:
+
+- `PokemonVectorStore` picks its backend by whether `config.chroma_api_key` is set — same
+  "presence of the value is the switch" idiom as `platform_db_url`/`sentry_dsn`. Set: Chroma
+  Cloud via the official `chromadb` client (`CloudClient`, no schema — see above). Unset (local
+  dev/tests default): self-hosted ChromaDB, unchanged from before.
+- Documents over Chroma's 16 KiB per-document limit are chunked (`src/rag/chunking.py`,
+  line-span splitting — not one of Chroma's own named strategies, just a simple starting
+  point; none of this project's current documents are anywhere near the limit) and tagged with
+  `source_document_id`/`chunk_index` metadata, deduped back to one result per source document
+  via `GroupBy` at query time. A chunked document currently reuses its whole-document embedding
+  for every chunk — correct today only because nothing actually gets chunked; revisit (embed
+  each chunk's own text) if that changes.
+- No per-tenant/per-org sharding: the `pokemon`/`smogon_strategy` collections hold shared,
+  static reference data — every tenant queries the same knowledge base, nothing here is
+  tenant-owned. Would apply if a future phase embeds tenant-specific documents.
+- No real data migration: this project holds no irreplaceable embedded content —
+  `scripts/migrate_to_chroma_cloud.py` just re-runs the existing PokeAPI/Smogon ingestion
+  (`rag/ingest.py`) against whichever backend is now configured.
+
+Tasks:
+
+- ~~Bump `chromadb-client` to `>=1.5.9`~~ **done** — `1.5.1` (the prior pin) fails to even
+  `import chromadb` on this project's Python 3.14 runtime (a `pydantic.v1` incompatibility);
+  `1.5.9` fixes this cleanly.
+- ~~Add `chroma_api_key`/`chroma_tenant`/`chroma_database`/`chroma_host` to `src/config.py`~~
+  **done** — `chroma_host` is optional, only needed for a non-default/dedicated deployment.
+- ~~Rewrite `PokemonVectorStore` for the two-backend design above~~ **done**.
+- ~~Write `src/rag/chunking.py`~~ **done**.
+- ~~Write `scripts/migrate_to_chroma_cloud.py`~~ **done**, and run for real against a live
+  Chroma Cloud account — 40 Pokemon plus their Smogon strategy documents ingested and
+  query-verified end-to-end.
+- ~~Update `.env.example` / `.env.op` / `docs/1PASSWORD.md`~~ **done**.
+- ~~Update `docker-compose.yml`'s `api` service~~ **done** — `RATE_LIMIT_STORAGE_URI` was
+  missing from an earlier task's own env passthrough; added alongside these.
+
+**A real secret-hygiene incident, during this work's own test-isolation:** a test monkeypatched
+`config.config`'s attributes to fake values, but `rag/vector_store.py`/`utils.py` had already
+bound their own `from config import config` reference *before* an unrelated test file's
+`importlib.reload(cfg_module)` replaced `config.config` with a new object elsewhere in the same
+session — verified directly (`config.config is vector_store.config` is `True` before that
+reload, `False` after). The monkeypatch silently affected the wrong object; the code under test
+kept reading the stale one, which still held a real `CHROMA_API_KEY` from the local `.env`, and
+that value surfaced in a test failure message. Fixed by patching the attribute on each
+consuming module's own bound reference, not `config.config` generically — see
+`tests/conftest.py`'s `_isolate_chroma_api_key` for the full explanation. The exposed key was
+rotated.
+
+Tests (mocked by default, matching this project's standing policy — no live external service
+required for `make test`):
+
+- `tests/rag/test_chunking.py` — pure unit tests, no live service.
+- `tests/rag/test_vector_store_cloud.py` — `chromadb`'s own classes mocked throughout.
+- `tests/memory/test_memory.py`'s `TestIsVectorStoreRunning` — both branches of
+  `is_vector_store_running()`.
+- A new `requires_chroma_cloud` pytest marker (`pytest.ini`, mirroring `requires_chromadb`) for
+  live-service coverage (`tests/rag/test_chroma_cloud_live.py`) — deselected from `make test`
+  by default (`make test-chroma-cloud` runs it explicitly, against a real account).
 
 **Security checklist (required, not optional — this phase isn't done without these):**
 
-- **TLS/HTTPS sitewide** — a reverse proxy or the hosting platform's own load balancer in
-  front, Caddy/nginx on a VPS or built-in HTTPS on Fly.io/Railway/Render/a cloud container
-  service. Never expose uvicorn's plain HTTP directly to the internet. (OWASP: [Transport
-  Layer Protection Cheat
+- ~~**TLS/HTTPS sitewide**~~ **done** — Fly's edge (`force_https = true` in `fly.toml`); no
+  reverse proxy of our own. (OWASP: [Transport Layer Protection Cheat
   Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Protection_Cheat_Sheet.html))
-- **Rate limiting / DoS protection** — required, not "consider it": a genuinely public,
-  unauthenticated-until-keyed surface (plus Phase 10's registration endpoint, reachable with
-  *no* key at all) is a realistic abuse target from day one, not a hypothetical one. (OWASP:
-  [Denial of Service Cheat
+- ~~**Rate limiting / DoS protection**~~ **done, app-level, Redis-backed** — Fly's edge is a
+  load balancer, not a WAF, so this has to live in the app regardless of host: `slowapi`, keyed
+  by client IP, `default_limits` applied globally so it also covers `/health` and Phase 15's
+  future no-key registration endpoint. `RATE_LIMIT_STORAGE_URI` (Upstash Redis) is the counter
+  store — a shared count across however many instances are running, and one that survives a
+  redeploy (an in-memory counter, the fallback when this is unset, does neither).
+  `in_memory_fallback_enabled=True` is set explicitly so a Redis outage degrades to per-instance
+  counting instead of 500ing every request (not slowapi's own default — verified by reading its
+  source). Tests: `tests/api/test_rate_limiting.py`. (OWASP: [Denial of Service Cheat
   Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html))
-- **Input validation at every boundary** — Phase 2's Pydantic request models already provide
-  this; confirm the discipline held: every route validates through a typed model, never a raw
-  dict. (OWASP: [Input Validation Cheat
+- **Input validation at every boundary** — re-confirmed true: every route still validates
+  through a typed Pydantic model or a typed `Query(...)` param, never a raw dict. (OWASP:
+  [Input Validation Cheat
   Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html))
-- **SQL injection prevention** — already verified safe (every `platform_db.py` query uses
-  psycopg's `%s` parameterization, confirmed by direct inspection, not assumption). Re-check
-  this holds for any query code added since. (OWASP: [SQL Injection Prevention Cheat
+- **SQL injection prevention** — re-confirmed true: every `platform_db.py` query still uses
+  psycopg's `%s` parameterization, no f-strings/`.format()` building SQL. (OWASP: [SQL
+  Injection Prevention Cheat
   Sheet](https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html))
-- **Secrets management** — already largely built: Phase 3's Fernet-encrypted
-  `platform_db_url`, env-var-only secrets, nothing committed in plaintext. Confirm it stays
-  true for whatever this phase's own deployment adds. (OWASP: [Secrets Management Cheat
+- **Secrets management** — re-confirmed true: Phase 3's Fernet-encrypted `platform_db_url`,
+  env-var/`fly secrets`-only secrets, nothing committed in plaintext. (OWASP: [Secrets
+  Management Cheat
   Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html))
-- **HTTP security response headers** — HSTS, hiding the `Server:` version header, `X-Content-
-  Type-Options: nosniff`, and similar. Configure these at the same reverse-proxy layer as the
-  TLS setup above — same file, same moment, no reason to defer something this cheap to a
-  later phase. (OWASP: [HTTP Security Response Headers Cheat
+- ~~**HTTP security response headers**~~ **done, app-level** — HSTS, `X-Content-Type-Options:
+  nosniff`, `X-Frame-Options: DENY` via a FastAPI middleware (`api/app.py`'s
+  `security_headers`), not reverse-proxy config — Fly gives no such layer to configure. The
+  `Server: uvicorn` header is dropped separately via `uvicorn.run(..., server_header=False)`
+  (`api_server.py`). Tests: `tests/api/test_security_headers.py`. (OWASP: [HTTP Security
+  Response Headers Cheat
   Sheet](https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Headers_Cheat_Sheet.html))
 
-**Verification:**
+**Explicitly out of scope here** (not forgotten — just not this phase): CI auto-deploy to Fly
+on release.
+
+**Verification:** live curl checks against the real deployment — see `docs/DEPLOYMENT.md`'s own
+Verification section for the exact commands (health, TLS-redirect, 429-under-load, security
+headers, persistent-volume-survives-restart). Chroma Cloud specifically:
 
 ```bash
-curl https://<your-public-domain>/health
-# → {"status": "ok", "chromadb": true}
+uv run python scripts/migrate_to_chroma_cloud.py
+# → "Done — N Pokemon (+ their Smogon strategy documents) ingested into Chroma Cloud."
 
-curl -X POST https://<your-public-domain>/trade/evaluate \
-  -H "X-API-Key: <a tenant's provisioned key>" \
-  -H "Content-Type: application/json" \
-  -d '{"offered_pokemon": "Pikachu", "requested_pokemon": "Charizard", "user_id": "<a real user id in that tenant'"'"'s database>"}'
-# → reasoning grounded in that tenant's own platform_db_url collection, not mock data
-
-# Restart the api service and confirm tenants.db survived (persistent volume check):
-docker compose restart api
-curl -H "X-API-Key: <the same tenant key>" https://<your-public-domain>/health
-
-# Confirm TLS is actually enforced — plain HTTP should not serve the API at all:
-curl -i http://<your-public-domain>/health
-# → connection refused, or a redirect to https://, never a 200 over plain HTTP
-
-# Confirm rate limiting actually triggers, not just configured:
-for i in $(seq 1 200); do curl -s -o /dev/null -w "%{http_code}\n" \
-  https://<your-public-domain>/health; done | sort | uniq -c
-# → some requests eventually return 429
-
-# Confirm security headers are actually present, not just configured:
-curl -sI https://<your-public-domain>/health | grep -iE "strict-transport-security|x-content-type-options|^server:"
-# → HSTS and X-Content-Type-Options present; Server header absent or generic
-#   (not leaking framework/version)
+uv run python -c "
+from rag.vector_store import PokemonVectorStore
+store = PokemonVectorStore()
+for r in store.query('electric mouse pokemon', n_results=3):
+    print(r['document'][:80], r['distance'])
+"
+# → real results back from Chroma Cloud, not local ChromaDB
 ```
 
 ---
 
-## Phase 10 — Self-Serve Tenant Registration
+## Phase 15 — Self-Serve Tenant Registration
 
 **Goal:** Let a new tenant register and get an API key without you provisioning them by hand —
 extends Phase 3's tenant store rather than replacing it.
@@ -525,7 +797,7 @@ curl -X POST https://<your-public-domain>/accounts/register \
 
 ---
 
-## Phase 11 — Local Admin Web UI (Tenant Management Dashboard)
+## Phase 16 — Local Admin Web UI (Tenant Management Dashboard)
 
 **Goal:** A local, operator-only web UI for viewing and managing tenants (Phase 3's
 `data/tenants.db`) — list, create, deactivate, and rotate keys — without hand-running
@@ -538,7 +810,7 @@ entirely, so it deliberately stays out of `api_server.py`'s public surface:
 
 - Ships as its own entry point, `admin_server.py`, bound to `127.0.0.1` by default — not
   started by `docker-compose.yml`'s public `api` service, and never given a public route
-  through Phase 9's reverse proxy.
+  through Phase 14's reverse proxy.
 - To manage a remote/production deployment, run it on that host directly, or reach it over an
   SSH tunnel to `127.0.0.1` — the same operational pattern as a database admin tool, not
   something exposed alongside the public API.
@@ -631,7 +903,7 @@ curl -i -H "X-API-Key: <same key>" http://localhost:8080/trade/suggestions
 | `query_pokedex` | `src/agents/__init__.py` |
 | `query_market` | `src/agents/trade_market_analyst.py` |
 | `startup()` | `src/startup.py` |
-| `is_chromadb_running()` | `src/utils.py` |
+| `is_chromadb_running()`, `is_vector_store_running()` | `src/utils.py` |
 | `require_api_key` | `src/api/auth.py` (new) |
 | request logging middleware | `src/api/app.py` (new) |
 | API route tests | `tests/api/test_api.py` (new) |

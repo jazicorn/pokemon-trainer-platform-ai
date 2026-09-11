@@ -44,18 +44,24 @@ run-api: ## Run the HTTP API (FastAPI + uvicorn) via 1Password — see ROADMAP.m
 # ── Tests ─────────────────────────────────────────────────────────────────────
 
 test: ## Run all unit/integration tests with mocked LLM (no live keys needed)
-	uv run pytest tests/ -v --tb=short -m "not requires_chromadb"
+	uv run pytest tests/ -v --tb=short -m "not requires_chromadb and not requires_chroma_cloud"
 
 test-live: ## Run tests against live LLM APIs via 1Password
-	op run --env-file .env.op -- uv run pytest tests/ -v --tb=short -m "not requires_chromadb"
+	op run --env-file .env.op -- uv run pytest tests/ -v --tb=short -m "not requires_chromadb and not requires_chroma_cloud"
 
 test-rag: ## Run ChromaDB integration tests (ChromaDB must be running)
 	uv run pytest tests/ -v -m "requires_chromadb" -s
+
+test-chroma-cloud: ## Run Chroma Cloud integration tests (needs a real CHROMA_API_KEY — see .env.example)
+	uv run pytest tests/ -v -m "requires_chroma_cloud" -s
 
 # ── Data ──────────────────────────────────────────────────────────────────────
 
 ingest: ## Index Pokemon into ChromaDB (fetches from PokeAPI — ChromaDB must be running)
 	uv run python -m src.rag.ingest
+
+migrate-chroma-cloud: ## Re-ingest Pokemon + Smogon data into Chroma Cloud (needs CHROMA_API_KEY)
+	uv run python scripts/migrate_to_chroma_cloud.py
 
 generate-data: ## Generate mock platform trade data and user collection
 	uv run python -m src.data.generator

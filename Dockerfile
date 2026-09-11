@@ -24,20 +24,24 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --locked --no-dev --no-install-project
 
 # Now add the application source.
-COPY app.py ./
+COPY app.py api_server.py ./
 COPY src/ ./src/
 
-# Run as a non-root user. --create-home gives it a real $HOME so `uv run`'s
+# Non-root runtime user. --create-home gives it a real $HOME so `uv run`'s
 # own cache resolution (e.g. XDG_CACHE_HOME's default) has somewhere
 # writable; chown /app so the venv `uv sync` already populated (as root,
-# above) stays usable.
-#
-# Note for docker-compose's `./data:/app/data` volume mount: the host
-# directory's ownership needs to allow writes from this container UID, or
-# align the two explicitly (e.g. a matching --uid here, or a permissive host
-# directory) — a volume-permissions concern this Dockerfile alone can't fully
-# solve, since it depends on the host side too.
-RUN useradd --create-home --shell /bin/bash appuser && chown -R appuser:appuser /app
-USER appuser
+# above) stays usable. gosu is what docker-entrypoint.sh uses to drop from
+# root to this user after fixing up /app/data's ownership at container
+# start (see that script) — a freshly created volume (Docker or Fly) is
+# root-owned regardless of this USER line.
+RUN useradd --create-home --shell /bin/bash appuser && chown -R appuser:appuser /app \
+    && apt-get update && apt-get install -y --no-install-recommends gosu \
+    && rm -rf /var/lib/apt/lists/*
 
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Stays root here deliberately — docker-entrypoint.sh is the one that drops
+# to appuser, after it can still chown /app/data as root.
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["uv", "run", "python", "app.py"]
