@@ -1,3 +1,9 @@
+## v0.13.0 (2026-09-11)
+
+### ✨ Features
+
+- **docs**: migrate docs site from MkDocs to Astro/Starlight (Roadmap Phase 10)
+
 ## v0.12.0 (2026-09-11)
 
 ### ✨ Features
