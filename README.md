@@ -112,26 +112,26 @@ uv run python scripts/provision_tenant.py "my-tenant" "postgresql://user:pass@ho
 make run-api
 ```
 
-| Method | Path                 | Auth | Description                            |
-| ------ | -------------------- | ---- | -------------------------------------- |
-| GET    | `/health`            | No   | Service health check                   |
-| POST   | `/chat`              | Yes  | Free-text natural language agent query |
-| POST   | `/trade/evaluate`    | Yes  | Structured trade evaluation            |
-| GET    | `/trade/suggestions` | Yes  | Proactive trade suggestions            |
-| GET    | `/offers`            | Yes  | Pending trade offer inbox              |
-| POST   | `/offers/send`       | Yes  | Send a trade offer                     |
-| POST   | `/pokedex/query`     | Yes  | Pokedex knowledge question             |
-| POST   | `/market/query`      | Yes  | Market demand & trend query            |
+| Method | Path                    | Auth | Description                            |
+| ------ | ----------------------- | ---- | -------------------------------------- |
+| GET    | `/health`               | No   | Service health check                   |
+| POST   | `/v1/chat`              | Yes  | Free-text natural language agent query |
+| POST   | `/v1/trade/evaluate`    | Yes  | Structured trade evaluation            |
+| GET    | `/v1/trade/suggestions` | Yes  | Proactive trade suggestions            |
+| GET    | `/v1/offers`            | Yes  | Pending trade offer inbox              |
+| POST   | `/v1/offers/send`       | Yes  | Send a trade offer                     |
+| POST   | `/v1/pokedex/query`     | Yes  | Pokedex knowledge question             |
+| POST   | `/v1/market/query`      | Yes  | Market demand & trend query            |
 
 ```bash
 curl http://localhost:8080/health
 
-curl -X POST http://localhost:8080/trade/evaluate \
+curl -X POST http://localhost:8080/v1/trade/evaluate \
   -H "X-API-Key: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"offered_pokemon": "Pikachu", "requested_pokemon": "Charizard"}'
 
-curl -H "X-API-Key: $API_KEY" "http://localhost:8080/trade/suggestions?user_id=user_001"
+curl -H "X-API-Key: $API_KEY" "http://localhost:8080/v1/trade/suggestions?user_id=user_001"
 ```
 
 Swagger UI is available at `http://localhost:8080/docs` (set your key via its Authorize

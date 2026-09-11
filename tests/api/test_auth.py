@@ -94,6 +94,7 @@ class TestAppWiring:
 
     def test_health_is_unauthenticated(self) -> None:
         from api.app import app
+        from api.paths import HEALTH
 
-        response = TestClient(app).get("/health")
+        response = TestClient(app).get(HEALTH)
         assert response.status_code == 200

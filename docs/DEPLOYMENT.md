@@ -92,7 +92,7 @@ curl https://<name>-api.fly.dev/health
 # CHROMA_API_KEY is set — see ROADMAP.md Phase 14), not literally
 # self-hosted ChromaDB.
 
-curl -X POST https://<name>-api.fly.dev/trade/evaluate \
+curl -X POST https://<name>-api.fly.dev/v1/trade/evaluate \
   -H "X-API-Key: <a tenant's provisioned key>" \
   -H "Content-Type: application/json" \
   -d '{"offered_pokemon": "Pikachu", "requested_pokemon": "Charizard", "user_id": "<a real user id>"}'

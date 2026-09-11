@@ -136,7 +136,7 @@ Phase 15) once this foundation exists and is trusted.
 **Verification:**
 
 No route protected by `require_api_key` exists yet — that's Phase 5. A `curl` against
-`/trade/suggestions` here would 404 before ever reaching auth, which isn't a
+`/v1/trade/suggestions` here would 404 before ever reaching auth, which isn't a
 meaningful check of anything and would look like a bug when it isn't one. What's
 actually verifiable at the end of *this* phase:
 
@@ -191,7 +191,7 @@ exceptions, which is a different job.
 - Add a lightweight logging middleware to `src/api/app.py` that writes one structured
   line per request: method, path, status code, and duration in ms
   - Use Python's stdlib `logging` (already used throughout the project)
-  - Format: `POST /chat 200 342ms`
+  - Format: `POST /v1/chat 200 342ms`
 - Add Sentry's Python SDK, initialized in `src/api/app.py`'s lifespan, scoped to the free tier's
   limits (single project, no need for its paid integrations yet)
 - Verify traces appear in Phoenix at `http://localhost:6006` when `ENABLE_PHOENIX=true`, and a
@@ -207,7 +207,7 @@ ENABLE_PHOENIX=true make run-api
 
 # Make a request
 curl -H "X-API-Key: $API_KEY" \
-  "http://localhost:8080/trade/suggestions?user_id=user_001"
+  "http://localhost:8080/v1/trade/suggestions?user_id=user_001"
 
 # Check server logs show the request line
 # Check Phoenix at http://localhost:6006 shows the trace with agent sub-spans
@@ -223,10 +223,10 @@ curl -H "X-API-Key: $API_KEY" \
 **Tasks:**
 
 - Add to `src/api/app.py`, importing from `agents.trade_advisor_api`:
-  - `POST /chat` → `evaluate_trade(raw_query=request.message, user_id=...,
+  - `POST /v1/chat` → `evaluate_trade(raw_query=request.message, user_id=...,
     conversation_context=...)`
-  - `POST /trade/evaluate` → `evaluate_trade(offered_pokemon, requested_pokemon, user_id, ...)`
-  - `GET /trade/suggestions` (query param: `user_id`) → `get_trade_suggestions(user_id)`
+  - `POST /v1/trade/evaluate` → `evaluate_trade(offered_pokemon, requested_pokemon, user_id, ...)`
+  - `GET /v1/trade/suggestions` (query param: `user_id`) → `get_trade_suggestions(user_id)`
 - All handlers are `async def` and wrapped in `try/except Exception` → HTTP 500 on failure
 - All routes protected by `require_api_key` dependency from Phase 3
 - Write `tests/api/test_trade_endpoints.py` for these three routes as part of this phase
@@ -243,33 +243,33 @@ dependency, so once is representative, not three repetitions of the same check):
 
 ```bash
 # Missing key → 401
-curl -i http://localhost:8080/trade/suggestions
+curl -i http://localhost:8080/v1/trade/suggestions
 # → HTTP/1.1 401
 
 # Wrong/unknown key → 403
-curl -i -H "X-API-Key: wrong" http://localhost:8080/trade/suggestions
+curl -i -H "X-API-Key: wrong" http://localhost:8080/v1/trade/suggestions
 # → HTTP/1.1 403
 
 # Correct key → 200, reasoning over THAT tenant's own platform_db_url
 curl -H "X-API-Key: $API_KEY" \
-  "http://localhost:8080/trade/suggestions?user_id=user_001"
+  "http://localhost:8080/v1/trade/suggestions?user_id=user_001"
 ```
 
 And the actual functionality across all three new routes:
 
 ```bash
-curl -X POST http://localhost:8080/chat \
+curl -X POST http://localhost:8080/v1/chat \
   -H "X-API-Key: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"message": "Should I trade my Pikachu for their Charizard?"}'
 
-curl -X POST http://localhost:8080/trade/evaluate \
+curl -X POST http://localhost:8080/v1/trade/evaluate \
   -H "X-API-Key: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"offered_pokemon": "Pikachu", "requested_pokemon": "Charizard"}'
 
 curl -H "X-API-Key: $API_KEY" \
-  "http://localhost:8080/trade/suggestions?user_id=user_001"
+  "http://localhost:8080/v1/trade/suggestions?user_id=user_001"
 ```
 
 ---
@@ -281,12 +281,12 @@ curl -H "X-API-Key: $API_KEY" \
 **Tasks:**
 
 - Add to `src/api/app.py`, all protected by `require_api_key`:
-  - `GET /offers` (query param: `user_id`) → `get_pending_offers(user_id)`
+  - `GET /v1/offers` (query param: `user_id`) → `get_pending_offers(user_id)`
     from `agents.trade_advisor_api`
-  - `POST /offers/send` →
+  - `POST /v1/offers/send` →
     `send_trade_offer(sender_id, recipient_id, offered_pokemon, requested_pokemon)`
-  - `POST /pokedex/query` → `query_pokedex(question, user_id)` from `agents`
-  - `POST /market/query` → `query_market(question)` from `agents.trade_market_analyst`
+  - `POST /v1/pokedex/query` → `query_pokedex(question, user_id)` from `agents`
+  - `POST /v1/market/query` → `query_market(question)` from `agents.trade_market_analyst`
 - Write `tests/api/test_offers_endpoints.py` and `tests/api/test_query_endpoints.py` for these
   four routes as part of this phase, same reasoning as Phase 5
 
@@ -295,20 +295,20 @@ curl -H "X-API-Key: $API_KEY" \
 **Verification:**
 
 ```bash
-curl -H "X-API-Key: $API_KEY" "http://localhost:8080/offers?user_id=user_001"
+curl -H "X-API-Key: $API_KEY" "http://localhost:8080/v1/offers?user_id=user_001"
 
-curl -X POST http://localhost:8080/offers/send \
+curl -X POST http://localhost:8080/v1/offers/send \
   -H "X-API-Key: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"sender_id":"user_001","recipient_id":"user_002",
        "offered_pokemon":"Eevee","requested_pokemon":"Vaporeon"}'
 
-curl -X POST http://localhost:8080/pokedex/query \
+curl -X POST http://localhost:8080/v1/pokedex/query \
   -H "X-API-Key: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"question": "What are Charizards weaknesses?"}'
 
-curl -X POST http://localhost:8080/market/query \
+curl -X POST http://localhost:8080/v1/market/query \
   -H "X-API-Key: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"question": "Which Pokemon are trending bullish right now?"}'
@@ -338,8 +338,8 @@ docs are written against the final `/v1/...` paths directly, with no rework late
 
 **Tasks:**
 
-- Mount Phase 5/6's routes under an `APIRouter(prefix="/v1")` in `src/api/app.py`
-- Write a short versioning/deprecation policy doc
+- ~~Mount Phase 5/6's routes under an `APIRouter(prefix="/v1")` in `src/api/app.py`~~ **done**
+- ~~Write a short versioning/deprecation policy doc~~ **done** — `docs/REFERENCE/API_VERSIONING.md`
 
 **Verification:**
 
@@ -366,7 +366,7 @@ per-phase tests reasonably left out.
 **Tasks:**
 
 - An end-to-end test hitting a realistic sequence across routes — e.g. provision a tenant,
-  send an offer, fetch it back via `GET /offers`, confirm the AI analysis is present —
+  send an offer, fetch it back via `GET /v1/offers`, confirm the AI analysis is present —
   something no single phase's own tests would naturally cover in isolation
 - Audit `tests/api/` against the endpoint table in Phase 9 — confirm every route has at least
   one test, and file gaps here rather than assuming
@@ -396,9 +396,9 @@ make test
 
 **Final endpoint summary:**
 
-| Method | Path                 | Auth | Description                            |
-| ------ | -------------------- | ---- | -------------------------------------- |
-| GET    | `/health`            | No   | Service health check                   |
+| Method | Path                    | Auth | Description                            |
+| ------ | ----------------------- | ---- | -------------------------------------- |
+| GET    | `/health`               | No   | Service health check                   |
 | POST   | `/v1/chat`              | Yes  | Free-text natural language agent query |
 | POST   | `/v1/trade/evaluate`    | Yes  | Structured trade evaluation            |
 | GET    | `/v1/trade/suggestions` | Yes  | Proactive trade suggestions            |
@@ -833,7 +833,7 @@ curl -H "X-API-Key: <key shown in the admin UI>" http://localhost:8080/health
 
 # Deactivate that tenant through the UI, then confirm the API rejects it on a
 # protected route (not /health, which needs no key at all):
-curl -i -H "X-API-Key: <same key>" http://localhost:8080/trade/suggestions
+curl -i -H "X-API-Key: <same key>" http://localhost:8080/v1/trade/suggestions
 # → HTTP/1.1 403
 ```
 

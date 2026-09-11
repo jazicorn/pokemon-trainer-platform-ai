@@ -1,5 +1,5 @@
-"""Tests for the knowledge-query endpoints — POST /pokedex/query,
-POST /market/query (ROADMAP.md Phase 5).
+"""Tests for the knowledge-query endpoints — POST /v1/pokedex/query,
+POST /v1/market/query (ROADMAP.md Phase 6).
 """
 
 from __future__ import annotations
@@ -12,6 +12,7 @@ from fastapi.testclient import TestClient
 
 from api.app import app
 from api.auth import require_api_key
+from api.paths import MARKET_QUERY, POKEDEX_QUERY
 from api.tenants import TenantContext
 
 
@@ -35,7 +36,7 @@ class TestPokedexQuery:
     def test_success(self, authenticated_client: TestClient) -> None:
         with patch("api.app.query_pokedex", new=AsyncMock(return_value="4x weak to Rock")) as mock_query:
             response = authenticated_client.post(
-                "/pokedex/query",
+                POKEDEX_QUERY,
                 json={"question": "What are Charizard's weaknesses?", "user_id": "user_042"},
             )
 
@@ -45,29 +46,29 @@ class TestPokedexQuery:
 
     def test_default_user_id(self, authenticated_client: TestClient) -> None:
         with patch("api.app.query_pokedex", new=AsyncMock(return_value="x")) as mock_query:
-            authenticated_client.post("/pokedex/query", json={"question": "hi"})
+            authenticated_client.post(POKEDEX_QUERY, json={"question": "hi"})
 
         mock_query.assert_awaited_once_with(question="hi", user_id="user_001")
 
     def test_agent_failure_is_500(self, authenticated_client: TestClient) -> None:
         with patch("api.app.query_pokedex", new=AsyncMock(side_effect=RuntimeError("boom"))):
-            response = authenticated_client.post("/pokedex/query", json={"question": "hi"})
+            response = authenticated_client.post(POKEDEX_QUERY, json={"question": "hi"})
 
         assert response.status_code == 500
 
     def test_without_key_is_401(self) -> None:
-        response = TestClient(app).post("/pokedex/query", json={"question": "hi"})
+        response = TestClient(app).post(POKEDEX_QUERY, json={"question": "hi"})
         assert response.status_code == 401
 
 
 class TestMarketQuery:
     def test_success_ignores_user_id(self, authenticated_client: TestClient) -> None:
         """query_market has no per-user state — user_id in the request body
-        (present because it shares QueryRequest with /pokedex/query) must
+        (present because it shares QueryRequest with /v1/pokedex/query) must
         never be passed through to it."""
         with patch("api.app.query_market", new=AsyncMock(return_value="Charizard trending up")) as mock_query:
             response = authenticated_client.post(
-                "/market/query",
+                MARKET_QUERY,
                 json={"question": "Which Pokemon are trending?", "user_id": "user_042"},
             )
 
@@ -77,10 +78,10 @@ class TestMarketQuery:
 
     def test_agent_failure_is_500(self, authenticated_client: TestClient) -> None:
         with patch("api.app.query_market", new=AsyncMock(side_effect=RuntimeError("boom"))):
-            response = authenticated_client.post("/market/query", json={"question": "hi"})
+            response = authenticated_client.post(MARKET_QUERY, json={"question": "hi"})
 
         assert response.status_code == 500
 
     def test_without_key_is_401(self) -> None:
-        response = TestClient(app).post("/market/query", json={"question": "hi"})
+        response = TestClient(app).post(MARKET_QUERY, json={"question": "hi"})
         assert response.status_code == 401

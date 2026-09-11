@@ -19,6 +19,7 @@ from fastapi.testclient import TestClient
 
 import config as config_module
 from api.app import app
+from api.paths import CHAT, MARKET_QUERY, OFFERS, OFFERS_SEND, POKEDEX_QUERY, TRADE_EVALUATE, TRADE_SUGGESTIONS
 from api.tenants import create_tenant
 
 
@@ -74,7 +75,7 @@ class TestOfferSendThenFetch:
 
         with patch("agents.trade_advisor_api.evaluate_trade", new=AsyncMock(return_value="Solid trade.")):
             send_response = client.post(
-                "/offers/send",
+                OFFERS_SEND,
                 headers=headers,
                 json={
                     "sender_id": "user_001",
@@ -85,7 +86,7 @@ class TestOfferSendThenFetch:
             )
             assert send_response.status_code == 200
 
-            fetch_response = client.get("/offers?user_id=user_002", headers=headers)
+            fetch_response = client.get(f"{OFFERS}?user_id=user_002", headers=headers)
             assert fetch_response.status_code == 200
 
         result = fetch_response.json()["result"]
@@ -113,16 +114,16 @@ class TestSingleTenantKeyAcrossAllRoutes:
             patch("api.app.query_market", new=AsyncMock(return_value="ok")),
         ):
             responses = {
-                "POST /chat": client.post("/chat", headers=headers, json={"message": "hi"}),
-                "POST /trade/evaluate": client.post(
-                    "/trade/evaluate",
+                f"POST {CHAT}": client.post(CHAT, headers=headers, json={"message": "hi"}),
+                f"POST {TRADE_EVALUATE}": client.post(
+                    TRADE_EVALUATE,
                     headers=headers,
                     json={"offered_pokemon": "Pikachu", "requested_pokemon": "Charizard"},
                 ),
-                "GET /trade/suggestions": client.get("/trade/suggestions", headers=headers),
-                "GET /offers": client.get("/offers", headers=headers),
-                "POST /offers/send": client.post(
-                    "/offers/send",
+                f"GET {TRADE_SUGGESTIONS}": client.get(TRADE_SUGGESTIONS, headers=headers),
+                f"GET {OFFERS}": client.get(OFFERS, headers=headers),
+                f"POST {OFFERS_SEND}": client.post(
+                    OFFERS_SEND,
                     headers=headers,
                     json={
                         "sender_id": "a",
@@ -131,8 +132,8 @@ class TestSingleTenantKeyAcrossAllRoutes:
                         "requested_pokemon": "Vaporeon",
                     },
                 ),
-                "POST /pokedex/query": client.post("/pokedex/query", headers=headers, json={"question": "hi"}),
-                "POST /market/query": client.post("/market/query", headers=headers, json={"question": "hi"}),
+                f"POST {POKEDEX_QUERY}": client.post(POKEDEX_QUERY, headers=headers, json={"question": "hi"}),
+                f"POST {MARKET_QUERY}": client.post(MARKET_QUERY, headers=headers, json={"question": "hi"}),
             }
 
         for route, response in responses.items():

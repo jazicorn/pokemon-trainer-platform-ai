@@ -1,5 +1,5 @@
-"""Tests for the core trade endpoints — /chat, /trade/evaluate,
-/trade/suggestions (ROADMAP.md Phase 4).
+"""Tests for the core trade endpoints — /v1/chat, /v1/trade/evaluate,
+/v1/trade/suggestions (ROADMAP.md Phase 5).
 """
 
 from __future__ import annotations
@@ -12,6 +12,7 @@ from fastapi.testclient import TestClient
 
 from api.app import app
 from api.auth import require_api_key
+from api.paths import CHAT, TRADE_EVALUATE, TRADE_SUGGESTIONS
 from api.tenants import TenantContext
 
 
@@ -36,7 +37,7 @@ def authenticated_client() -> Generator[TestClient]:
 class TestChat:
     def test_success(self, authenticated_client: TestClient) -> None:
         with patch("api.app.evaluate_trade", new=AsyncMock(return_value="Good trade!")) as mock_eval:
-            response = authenticated_client.post("/chat", json={"message": "Should I trade my Pikachu?"})
+            response = authenticated_client.post(CHAT, json={"message": "Should I trade my Pikachu?"})
 
         assert response.status_code == 200
         assert response.json() == {"result": "Good trade!", "status": "ok"}
@@ -52,7 +53,7 @@ class TestChat:
             patch("api.app.evaluate_trade", new=AsyncMock(side_effect=error)),
             patch("api.app.sentry_sdk.capture_exception") as mock_capture,
         ):
-            response = authenticated_client.post("/chat", json={"message": "hi"})
+            response = authenticated_client.post(CHAT, json={"message": "hi"})
 
         assert response.status_code == 500
         mock_capture.assert_called_once_with(error)
@@ -62,7 +63,7 @@ class TestTradeEvaluate:
     def test_success(self, authenticated_client: TestClient) -> None:
         with patch("api.app.evaluate_trade", new=AsyncMock(return_value="Fair trade")) as mock_eval:
             response = authenticated_client.post(
-                "/trade/evaluate",
+                TRADE_EVALUATE,
                 json={"offered_pokemon": "Pikachu", "requested_pokemon": "Charizard"},
             )
 
@@ -76,14 +77,14 @@ class TestTradeEvaluate:
         )
 
     def test_missing_required_field_is_422(self, authenticated_client: TestClient) -> None:
-        response = authenticated_client.post("/trade/evaluate", json={"offered_pokemon": "Pikachu"})
+        response = authenticated_client.post(TRADE_EVALUATE, json={"offered_pokemon": "Pikachu"})
         assert response.status_code == 422
 
 
 class TestTradeSuggestions:
     def test_success_with_explicit_user_id(self, authenticated_client: TestClient) -> None:
         with patch("api.app.get_trade_suggestions", new=AsyncMock(return_value="Try trading X")) as mock_sugg:
-            response = authenticated_client.get("/trade/suggestions?user_id=user_042")
+            response = authenticated_client.get(f"{TRADE_SUGGESTIONS}?user_id=user_042")
 
         assert response.status_code == 200
         assert response.json() == {"result": "Try trading X", "status": "ok"}
@@ -91,7 +92,7 @@ class TestTradeSuggestions:
 
     def test_default_user_id(self, authenticated_client: TestClient) -> None:
         with patch("api.app.get_trade_suggestions", new=AsyncMock(return_value="x")) as mock_sugg:
-            authenticated_client.get("/trade/suggestions")
+            authenticated_client.get(TRADE_SUGGESTIONS)
 
         mock_sugg.assert_awaited_once_with(user_id="user_001")
 
@@ -102,13 +103,13 @@ class TestAuthStillAppliesToNewRoutes:
     """
 
     def test_chat_without_key_is_401(self) -> None:
-        assert TestClient(app).post("/chat", json={"message": "hi"}).status_code == 401
+        assert TestClient(app).post(CHAT, json={"message": "hi"}).status_code == 401
 
     def test_trade_evaluate_without_key_is_401(self) -> None:
         response = TestClient(app).post(
-            "/trade/evaluate", json={"offered_pokemon": "Pikachu", "requested_pokemon": "Charizard"}
+            TRADE_EVALUATE, json={"offered_pokemon": "Pikachu", "requested_pokemon": "Charizard"}
         )
         assert response.status_code == 401
 
     def test_trade_suggestions_without_key_is_401(self) -> None:
-        assert TestClient(app).get("/trade/suggestions").status_code == 401
+        assert TestClient(app).get(TRADE_SUGGESTIONS).status_code == 401

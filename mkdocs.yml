@@ -48,6 +48,7 @@ nav:
       - Glossary: ONBOARDING/GLOSSARY.md
   - Architecture: ARCHITECTURE.md
   - Reference:
+      - API Versioning: REFERENCE/API_VERSIONING.md
       - Testing: REFERENCE/TESTING.md
       - Pyright: REFERENCE/PYRIGHT.md
       - Platform Database: REFERENCE/PLATFORM_DB.md
