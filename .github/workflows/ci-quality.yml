@@ -41,6 +41,14 @@ jobs:
       - name: Lint, format, and type check
         run: make lint
 
+      - name: Dependency vulnerability scan (pip-audit)
+        # Report-only: findings show in the log but don't fail the build.
+        # pip-audit doesn't report severity, so a hard block per-finding
+        # isn't workable yet — Dependabot's PRs (.github/dependabot.yml) are
+        # expected to work the current findings down over time.
+        run: uv run pip-audit
+        continue-on-error: true
+
       - name: Validate commit messages (Commitizen)
         if: github.event_name == 'pull_request'
         run: uv run cz check --rev-range origin/${{ github.base_ref }}..HEAD

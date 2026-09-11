@@ -521,10 +521,11 @@ make docs-serve
 
 **Tasks:**
 
-- Add `.github/dependabot.yml` for the `pip` (uv-compatible) and `github-actions` ecosystems —
-  security alerts plus version-update PRs
-- Add a `pip-audit` step to `ci-quality.yml`
-- Decide the policy: block CI on critical/high findings, warn (don't block) on medium/low
+- ~~Add `.github/dependabot.yml` for the `uv` and `github-actions` ecosystems~~ **done**
+- ~~Add a `pip-audit` step to `ci-quality.yml`~~ **done** — report-only (`continue-on-error`),
+  since pip-audit reports no severity data to gate a block/warn split on. Findings show in the
+  CI log; Dependabot's PRs are expected to work them down over time. Revisit blocking once the
+  current findings are clear.
 
 **Verification:**
 

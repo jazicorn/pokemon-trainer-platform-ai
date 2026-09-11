@@ -66,6 +66,7 @@ package = true
 [dependency-groups]
 dev = [
     "commitizen>=4.13.9",
+    "pip-audit>=2.9.0",
     "pyright>=1.1.0",
     "pytest>=9.0.2",
     "pytest-asyncio>=1.3.0",
