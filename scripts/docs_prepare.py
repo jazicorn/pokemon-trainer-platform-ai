@@ -29,6 +29,13 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 DOCS_SRC = REPO_ROOT / "docs"
 DEST_ROOT = REPO_ROOT / "web" / "docs-site" / "src" / "content" / "docs"
 
+# Must match web/docs-site/astro.config.mjs's `base`. Astro serves the site under this path
+# prefix, but — unlike Starlight's own sidebar links, which it prefixes automatically — it does
+# NOT rewrite absolute-path links written inside markdown content (a known Astro limitation:
+# "Astro doesn't modify the MD/MDX content of a Content Collection"). Every internal link this
+# script emits has to carry the prefix itself, or it 404s once deployed under this base path.
+SITE_BASE = "/pokemon-trainer-platform-ai"
+
 # Type-token mapping (see ROADMAP.md Phase 10). Checked by destination-path prefix, first
 # match wins. Kept here instead of per-file frontmatter so the mapping stays in one place.
 TYPE_BY_PREFIX: list[tuple[str, str]] = [
@@ -43,9 +50,9 @@ TYPE_BY_PREFIX: list[tuple[str, str]] = [
     ("walkthrough-cli/phase-13", "fighting"),
     ("reference/market-trends", "electric"),
     ("reference/eval-results", "fighting"),
-    ("reference/1password-setup", "dark"),
     ("reference/platform-db", "dark"),
     ("reference/", "steel"),
+    ("guides/1password-setup", "dark"),
     ("troubleshooting/", "fire"),
     ("architecture", "dragon"),
     ("roadmap/", "electric"),
@@ -59,6 +66,12 @@ class Doc:
     title: str | None = None  # override the title instead of extracting the first H1
     strip_through: str | None = None  # for README.md: drop everything before this substring
     intro: str | None = None  # manually-authored lead paragraph, inserted after frontmatter
+    # Heading substring -> replacement body. The docs site already has a fuller, better home
+    # for some of README's sections (Architecture, Market Trends, Eval Results, Getting
+    # Started) — replacing them here keeps README.md itself intact (it's still the complete
+    # GitHub-facing pitch) while the site's Overview page points to the real page instead of
+    # carrying a second, shorter copy of the same content.
+    section_replacements: dict[str, str] | None = None
 
 
 README_TAGLINE = (
@@ -67,6 +80,34 @@ README_TAGLINE = (
     "and Pokédex knowledge via RAG."
 )
 
+README_REPLACEMENTS = {
+    "Prerequisites": (
+        "Python 3.13+ (via `uv`), Docker/Colima for ChromaDB, and optionally the 1Password CLI "
+        f"for API key management. See [Getting Started]({SITE_BASE}/getting-started/) for the full checklist."
+    ),
+    "Installation & Setup": (
+        "Full clone-to-first-run instructions, including a Docker Compose path that needs no "
+        f"local Python/uv setup, live in [Getting Started]({SITE_BASE}/getting-started/)."
+    ),
+    "System Architecture: Hierarchical Delegation": (
+        "Trade Advisor orchestrates four specialists — Pokedex Expert, Market Analyst, "
+        "Legitimacy Guard, Battle Strategy Advisor. The full delegation model, memory system, "
+        f"and RAG implementation are documented in [Architecture]({SITE_BASE}/architecture/)."
+    ),
+    "Testing & Quality Assurance": (
+        f"`make test` / `make test-live` / `make test-rag` — see [Testing]({SITE_BASE}/reference/testing/) "
+        "for the full guide, test categories, and CI behavior."
+    ),
+    "Technical Analysis for a Gaming Economy": (
+        "The Market Analyst's Momentum Score and Bullish/Bearish/Stable classification are "
+        f"documented in full, with the formula, in [Market Trends]({SITE_BASE}/reference/market_trends/)."
+    ),
+    "Scientific Validation: Multi-Agent Evaluations": (
+        "Benchmark methodology and results for trade recommendation quality and RAG-vs-no-RAG "
+        f"accuracy live in [Eval Results]({SITE_BASE}/reference/eval_results/)."
+    ),
+}
+
 DOCS: list[Doc] = [
     Doc(
         REPO_ROOT / "README.md",
@@ -74,6 +115,7 @@ DOCS: list[Doc] = [
         title="Overview",
         strip_through="## \U0001f680 The Tech Stack",
         intro=README_TAGLINE,
+        section_replacements=README_REPLACEMENTS,
     ),
     Doc(DOCS_SRC / "GETTING_STARTED.md", "getting-started"),
     Doc(REPO_ROOT / "ARCHITECTURE.md", "architecture"),
@@ -81,9 +123,9 @@ DOCS: list[Doc] = [
     Doc(REPO_ROOT / "ROADMAP_PLATFORM.md", "roadmap/platform", title="Platform, Launch & Growth (Phases 17-29)"),
     Doc(REPO_ROOT / "HISTORY.md", "history"),
     Doc(REPO_ROOT / "CHANGELOG.md", "changelog"),
-    Doc(DOCS_SRC / "1PASSWORD.md", "reference/1password-setup", title="1Password Setup"),
-    Doc(DOCS_SRC / "ARIZE_PHOENIX_SETUP.md", "reference/arize-phoenix-setup"),
-    Doc(DOCS_SRC / "DEPLOYMENT.md", "reference/deployment"),
+    Doc(DOCS_SRC / "1PASSWORD.md", "guides/1password-setup", title="1Password Setup"),
+    Doc(DOCS_SRC / "ARIZE_PHOENIX_SETUP.md", "guides/arize-phoenix-setup"),
+    Doc(DOCS_SRC / "DEPLOYMENT.md", "guides/deployment"),
 ]
 
 for _dir, _dest in [
@@ -101,16 +143,17 @@ for _dir, _dest in [
         DOCS.append(Doc(path, f"{_dest}/{stem}"))
 
 # repo-relative source path -> new site route, for rewriting cross-references between docs.
+# Values carry SITE_BASE — see that constant's comment for why.
 LINK_MAP: dict[str, str] = {}
 for doc in DOCS:
     try:
         key = doc.source.relative_to(REPO_ROOT).as_posix()
     except ValueError:
         continue
-    LINK_MAP[key] = f"/{doc.dest_slug}/"
+    LINK_MAP[key] = f"{SITE_BASE}/{doc.dest_slug}/"
 # A few extra spellings the same files are referenced by across the corpus.
-LINK_MAP["docs/1PASSWORD.md"] = "/reference/1password-setup/"
-LINK_MAP["README.md"] = "/overview/"
+LINK_MAP["docs/1PASSWORD.md"] = f"{SITE_BASE}/guides/1password-setup/"
+LINK_MAP["README.md"] = f"{SITE_BASE}/overview/"
 
 H1_MD = re.compile(r"^#\s+(.+?)\s*$")
 H1_HTML = re.compile(r"<h1[^>]*>(.*?)</h1>", re.IGNORECASE | re.DOTALL)
@@ -141,6 +184,44 @@ def rewrite_links(source: Path, body: str) -> str:
     return LINK_TARGET.sub(_sub, body)
 
 
+H2 = re.compile(r"^##\s+(.+?)\s*$")
+
+
+def apply_section_replacements(body: str, replacements: dict[str, str]) -> str:
+    """Replace the content of each `## <heading containing key>` section (up to the next
+    `## ` heading) with `replacements[key]`, keeping the heading itself so nav/TOC still
+    lists it."""
+    remaining = dict(replacements)
+    lines = body.splitlines()
+    out: list[str] = []
+    i = 0
+    while i < len(lines):
+        m = H2.match(lines[i])
+        matched_key = next((k for k in remaining if m and k in m.group(1)), None) if m else None
+        out.append(lines[i])
+        i += 1
+        if not matched_key:
+            continue
+        # Skip this section's existing body up to (not including) the next `## ` heading.
+        while i < len(lines) and not H2.match(lines[i]):
+            i += 1
+        out.append("")
+        out.append(remaining.pop(matched_key))
+        out.append("")
+    return "\n".join(out)
+
+
+def yaml_escape(value: str) -> str:
+    return value.replace('"', '\\"')
+
+
+def pokemon_type_for(slug: str) -> str | None:
+    for prefix, ptype in TYPE_BY_PREFIX:
+        if slug.startswith(prefix) or slug == prefix.rstrip("/"):
+            return ptype
+    return None
+
+
 def extract_title(text: str) -> tuple[str, str]:
     """Pull the first H1 (markdown or raw HTML) out of `text`; return (title, remaining_body)."""
     lines = text.splitlines()
@@ -158,17 +239,6 @@ def extract_title(text: str) -> tuple[str, str]:
     return "Untitled", text
 
 
-def yaml_escape(value: str) -> str:
-    return value.replace('"', '\\"')
-
-
-def pokemon_type_for(slug: str) -> str | None:
-    for prefix, ptype in TYPE_BY_PREFIX:
-        if slug.startswith(prefix) or slug == prefix.rstrip("/"):
-            return ptype
-    return None
-
-
 def build(doc: Doc) -> None:
     raw = doc.source.read_text(encoding="utf-8")
     if doc.strip_through:
@@ -177,6 +247,8 @@ def build(doc: Doc) -> None:
             raw = raw[idx:]
     extracted_title, body = extract_title(raw)
     title = doc.title or extracted_title
+    if doc.section_replacements:
+        body = apply_section_replacements(body, doc.section_replacements)
     body = rewrite_links(doc.source, body).strip() + "\n"
 
     frontmatter = [f'title: "{yaml_escape(title)}"']

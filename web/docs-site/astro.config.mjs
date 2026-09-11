@@ -32,6 +32,7 @@ export default defineConfig({
         { label: "Onboarding", items: [{ autogenerate: { directory: "onboarding" } }] },
         { label: "Architecture", link: "/architecture/" },
         { label: "Reference", items: [{ autogenerate: { directory: "reference" } }] },
+        { label: "Guides", items: [{ autogenerate: { directory: "guides" } }] },
         { label: "Troubleshooting", items: [{ autogenerate: { directory: "troubleshooting" } }] },
         {
           label: "CLI Build Walkthrough",

@@ -1,8 +1,8 @@
-# Phase 13: Evaluations
+# Stage 13: Evaluations
 
 ## Overview
 
-Phase 13 measures the system's quality using a structured eval framework — running fixed test cases
+Stage 13 measures the system's quality using a structured eval framework — running fixed test cases
 against the live agents and scoring their outputs. Two evaluations are implemented:
 
 1. **Trade Advisor eval**: Runs each entry in `TRADE_CASES` through the Trade Advisor agent and
@@ -17,11 +17,11 @@ pipeline logic is tested independently of model quality.
 ## Where It Fits
 
 ```text
-Phase 5: Pokedex Expert   ─┐  (RAG accuracy is measured here)
-Phase 9: Trade Advisor    ─┤  (trade recommendations are scored here)
-Phase 10: Multi-Agent     ─┘  (what gets compared against a single-agent baseline)
+Stage 5: Pokedex Expert   ─┐  (RAG accuracy is measured here)
+Stage 9: Trade Advisor    ─┤  (trade recommendations are scored here)
+Stage 10: Multi-Agent     ─┘  (what gets compared against a single-agent baseline)
         ↓
-Phase 13: Evaluations
+Stage 13: Evaluations
 ```
 
 ## Key Files

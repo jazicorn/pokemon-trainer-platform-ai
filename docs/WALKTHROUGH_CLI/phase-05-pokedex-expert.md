@@ -1,8 +1,8 @@
-# Phase 5: Pokedex Expert
+# Stage 5: Pokedex Expert
 
 ## Overview
 
-Phase 5 introduces the first specialized agent: the **Pokedex Expert**. It answers questions about
+Stage 5 introduces the first specialized agent: the **Pokedex Expert**. It answers questions about
 Pokemon stats, types, abilities, and comparisons by retrieving data from a **ChromaDB vector store**
 (RAG) populated with PokeAPI data. The agent also has access to the user's personal collection.
 
@@ -12,13 +12,13 @@ ChromaDB, embed it, and retrieve relevant chunks at query time.
 ## Where It Fits
 
 ```text
-Phase 1: Infrastructure (ChromaDB running)
-Phase 2: Mock Data (user_collection.json for context)
+Stage 1: Infrastructure (ChromaDB running)
+Stage 2: Mock Data (user_collection.json for context)
         |
-Phase 5: Pokedex Expert (RAG agent)
+Stage 5: Pokedex Expert (RAG agent)
         |
-Phase 11: Multi-Agent Orchestration (Trade Advisor calls Pokedex Expert as a tool)
-Phase 8:  Evaluations (RAG accuracy is measured)
+Stage 11: Multi-Agent Orchestration (Trade Advisor calls Pokedex Expert as a tool)
+Stage 8:  Evaluations (RAG accuracy is measured)
 ```
 
 ## Key Files

@@ -1,8 +1,8 @@
-# Phase 2: Mock Data & Models
+# Stage 2: Mock Data & Models
 
 ## Overview
 
-Phase 2 defines the data contracts the entire system operates on. It provides two things: **Pydantic
+Stage 2 defines the data contracts the entire system operates on. It provides two things: **Pydantic
 models** that give every component a shared, type-safe vocabulary, and **mock data generators** that
 produce realistic platform trade history and user collections to develop and test against.
 
@@ -12,9 +12,9 @@ memory, and evals all load from these files via the loader — no agent directly
 ## Where It Fits
 
 ```text
-Phase 1: Infrastructure
+Stage 1: Infrastructure
         ↓
-Phase 2: Mock Data & Models  ←  defines the data contracts
+Stage 2: Mock Data & Models  ←  defines the data contracts
         ↓
 All later phases that load trade history or user collections
 ```

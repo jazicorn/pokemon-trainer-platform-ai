@@ -1,8 +1,8 @@
-# Phase 3: Memory System
+# Stage 3: Memory System
 
 ## Overview
 
-Phase 3 is the persistence layer. It gives every agent a way to remember things across sessions:
+Stage 3 is the persistence layer. It gives every agent a way to remember things across sessions:
 user preferences (what they're seeking, what they'll never trade, their goal), conversation history
 (recent messages for context), and past recommendations (for feedback loops).
 
@@ -14,10 +14,10 @@ each other's data.
 ## Where It Fits
 
 ```text
-Phase 1: Infrastructure (init_database called during startup)
-Phase 2: Mock Data (user IDs referenced)
+Stage 1: Infrastructure (init_database called during startup)
+Stage 2: Mock Data (user IDs referenced)
         ↓
-Phase 3: Memory System
+Stage 3: Memory System
         ↓
 Later phases that read/write conversation history, preferences, or trade offers
 ```

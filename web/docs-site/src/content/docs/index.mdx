@@ -10,7 +10,10 @@ hero:
     an MCP server.
   actions:
     - text: Read the overview
-      link: /overview/
+      # Absolute links in content/frontmatter aren't base-prefixed by Astro the way
+      # Starlight's own sidebar links are (see scripts/docs_prepare.py's SITE_BASE comment) —
+      # has to be hardcoded here to match astro.config.mjs's `base`.
+      link: /pokemon-trainer-platform-ai/overview/
       icon: right-arrow
     - text: View on GitHub
       link: https://github.com/jazicorn/pokemon-trainer-platform-ai
@@ -42,7 +45,7 @@ Trade Advisor delegates to four specialists — each one a real agent in [`src/a
 		```
 		POST /v1/trade/evaluate
 		```
-		Every route is versioned — see [API Versioning](/reference/api_versioning/).
+		Every route is versioned — see [API Versioning](/pokemon-trainer-platform-ai/reference/api_versioning/).
 	</Card>
 	<Card title="MCP server" icon="puzzle">
 		```bash
@@ -61,7 +64,7 @@ curl -X POST https://your-host/v1/trade/evaluate \
 ```
 
 Trade Advisor routes this to Market Analyst, Legitimacy Guard, and Battle Strategy Advisor before
-answering — the [Architecture](/architecture/) page walks through the full delegation chain.
+answering — the [Architecture](/pokemon-trainer-platform-ai/architecture/) page walks through the full delegation chain.
 
 <style>
   {`

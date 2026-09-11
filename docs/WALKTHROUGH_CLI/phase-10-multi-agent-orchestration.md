@@ -1,8 +1,8 @@
-# Phase 10: Multi-Agent Orchestration
+# Stage 10: Multi-Agent Orchestration
 
 ## Overview
 
-Phase 10 refines how the Trade Advisor coordinates with its specialist agents. The core principle:
+Stage 10 refines how the Trade Advisor coordinates with its specialist agents. The core principle:
 the Trade Advisor should **never directly query ChromaDB, call external APIs, or run analytics** —
 it delegates all data gathering to its specialists via tool calls. This is the hierarchical
 delegation pattern (sometimes called Master-Worker).
@@ -14,12 +14,12 @@ the orchestrator.
 ## Where It Fits
 
 ```text
-Phase 9: Trade Advisor (basic orchestration)
+Stage 9: Trade Advisor (basic orchestration)
         ↓
-Phase 10: Multi-Agent Orchestration (strict delegation boundaries)
+Stage 10: Multi-Agent Orchestration (strict delegation boundaries)
         ↓
-Phase 11: CLI (calls the orchestrated system)
-Phase 13: Evaluations (measures orchestration quality)
+Stage 11: CLI (calls the orchestrated system)
+Stage 13: Evaluations (measures orchestration quality)
 ```
 
 ## Key Files

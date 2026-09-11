@@ -69,6 +69,9 @@ ModuleNotFoundError: No module named 'agents'
 uv run python app.py
 ```
 
+The project adds `src/` to the Python path at startup, so `from agents.trade_advisor import ...`
+works. Running `python` directly without `uv` skips this.
+
 ## Docker Not Running
 
 ```text

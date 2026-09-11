@@ -217,23 +217,10 @@ review the diff, re-stage, and commit again.
 
 ## Debugging When Something Goes Wrong
 
-### "ChromaDB is unreachable"
-
-Docker is not running, or the ChromaDB container stopped.
-
-```bash
-make chromadb-status   # Check if container is up
-make chromadb-start    # Start it if not
-```
-
-### "API key is empty" or "contains a 1Password URI"
-
-Your environment variable did not resolve correctly.
-
-- Simple `.env` approach: verify the `.env` file exists in the project root and
-  has the correct key
-- 1Password approach: run `eval $(op signin)` first, then `make run`
-  (which uses `op run`)
+For the common startup errors — ChromaDB unreachable, an empty or malformed API key, import
+errors from running `python` directly instead of `uv run python` — see
+[`docs/TROUBLESHOOTING/runtime-errors.md`](../TROUBLESHOOTING/runtime-errors.md). The rest of
+this section is contributor-specific: what to do once the app *runs* but does something wrong.
 
 ### Wrong output from an agent
 
@@ -274,23 +261,6 @@ uv run pytest tests/agents/test_trade_advisor.py::TestSomeClass::test_something 
 If the test is an async test (most agent tests are), see
 [`docs/REFERENCE/TESTING.md`](../REFERENCE/TESTING.md) for the `@pytest.mark.asyncio` pattern
 and how mocked LLM responses work.
-
-### Import errors
-
-Usually means you are running Python from the wrong directory or without
-`uv`:
-
-```bash
-# Wrong
-python app.py
-
-# Right — from the project root
-uv run python app.py
-```
-
-The project adds `src/` to the Python path at startup, so
-`from agents.trade_advisor import ...` works. Running `python` directly
-without `uv` skips this.
 
 ---
 

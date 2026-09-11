@@ -1,8 +1,8 @@
-# Phase 8: Legitimacy Guard
+# Stage 8: Legitimacy Guard
 
 ## Overview
 
-Phase 8 introduces the **Legitimacy Guard** — a compliance and fraud-detection agent. It verifies
+Stage 8 introduces the **Legitimacy Guard** — a compliance and fraud-detection agent. It verifies
 whether a Pokemon in a specific PokeBall is legal, checks whether a claimed-shiny Pokemon is
 shiny-locked, validates origin regions, and classifies the Pokemon's rarity tier. The result
 includes a Risk Level (Low, Medium, High).
@@ -16,12 +16,12 @@ auditable.
 ## Where It Fits
 
 ```text
-Phase 1: Infrastructure
+Stage 1: Infrastructure
         |
-Phase 8: Legitimacy Guard (standalone compliance agent)
+Stage 8: Legitimacy Guard (standalone compliance agent)
         |
-Phase 11: Multi-Agent Orchestration (Trade Advisor calls Legitimacy Guard via tool)
-Phase 8:  Evaluations (legitimacy check accuracy is measured)
+Stage 11: Multi-Agent Orchestration (Trade Advisor calls Legitimacy Guard via tool)
+Stage 8:  Evaluations (legitimacy check accuracy is measured)
 ```
 
 ## Key Files

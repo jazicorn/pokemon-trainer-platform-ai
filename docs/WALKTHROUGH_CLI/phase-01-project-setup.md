@@ -1,8 +1,8 @@
-# Phase 1: Project Setup & Infrastructure
+# Stage 1: Project Setup & Infrastructure
 
 ## Overview
 
-Phase 1 is the foundation layer. It wires together the three infrastructure services the rest of the
+Stage 1 is the foundation layer. It wires together the three infrastructure services the rest of the
 system depends on — **SQLite** (persistent memory), **ChromaDB** (vector store), and **Phoenix**
 (observability tracing) — and validates that the environment is correctly configured before any
 agent runs.
@@ -16,7 +16,7 @@ If any step fails, the error message tells you exactly what to fix.
 ```text
 [No dependencies]
         ↓
-Phase 1: Infrastructure (config, startup, observability)
+Stage 1: Infrastructure (config, startup, observability)
         ↓
 All other phases depend on this
 ```

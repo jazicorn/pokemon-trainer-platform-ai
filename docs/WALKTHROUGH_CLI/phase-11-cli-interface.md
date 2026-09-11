@@ -1,8 +1,8 @@
-# Phase 11: CLI Interface
+# Stage 11: CLI Interface
 
 ## Overview
 
-Phase 11 is the user-facing application layer. It provides an interactive terminal experience built
+Stage 11 is the user-facing application layer. It provides an interactive terminal experience built
 with **Rich** where users type commands and receive AI-powered trade advice. The CLI handles command
 parsing, routes each command to the appropriate agent function, maintains conversation context, and
 renders results as formatted markdown inside Rich panels.
@@ -13,12 +13,12 @@ The CLI is the primary way to experience the full system end-to-end.
 
 ```text
 All agent phases (Pokedex, Market Analyst, Legitimacy Guard, Trade Advisor)
-Phase 3: Memory System (conversation history, preferences)
-Phase 4: PII Guardrails (create_safe_input wraps every input)
+Stage 3: Memory System (conversation history, preferences)
+Stage 4: PII Guardrails (create_safe_input wraps every input)
         ↓
-Phase 11: CLI Interface
+Stage 11: CLI Interface
         ↓
-Phase 12: Trade Offers (adds new CLI commands to the existing parser)
+Stage 12: Trade Offers (adds new CLI commands to the existing parser)
 ```
 
 ## Key Files

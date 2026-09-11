@@ -1,8 +1,8 @@
-# Phase 4: PII Guardrails
+# Stage 4: PII Guardrails
 
 ## Overview
 
-Phase 4 is the privacy and safety layer. Before any user message is stored to conversation history
+Stage 4 is the privacy and safety layer. Before any user message is stored to conversation history
 or passed to an agent, it passes through a PII filter that detects and redacts personally
 identifiable information — email addresses, phone numbers, SSNs, credit card numbers, IP addresses,
 usernames, and names following known prefixes.
@@ -14,9 +14,9 @@ storage.
 ## Where It Fits
 
 ```text
-Phase 3: Memory System (messages stored after filtering)
+Stage 3: Memory System (messages stored after filtering)
         ↓
-Phase 4: PII Guardrails
+Stage 4: PII Guardrails
         ↓
 CLI and agents that receive user input before it is stored or forwarded
 ```

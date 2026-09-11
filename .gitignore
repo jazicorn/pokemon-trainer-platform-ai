@@ -229,6 +229,8 @@ chromadb_setup/chroma_data/
 # Claude
 *.claude/*
 
+# Cursor
+*.cursor/*
 
 ### Node ###
 # Logs

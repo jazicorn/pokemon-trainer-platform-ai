@@ -1,8 +1,8 @@
-# Phase 7: Market Forecasting
+# Stage 7: Market Forecasting
 
 ## Overview
 
-Phase 7 adds **predictive intelligence** to the Market Analyst. Rather than only reporting current
+Stage 7 adds **predictive intelligence** to the Market Analyst. Rather than only reporting current
 demand, the system now computes a **momentum score** that compares short-term (7-day) and long-term
 (30-day) demand ratios to forecast whether a Pokemon's trade value is rising, stable, or falling.
 
@@ -14,12 +14,12 @@ surfaces this via its `get_market_forecast` tool.
 ## Where It Fits
 
 ```text
-Phase 6: Market Analyst (base analytics — demand ratio, success rate, trending)
+Stage 6: Market Analyst (base analytics — demand ratio, success rate, trending)
         |
-Phase 7: Market Forecasting (momentum layer added to TradeAnalytics)
+Stage 7: Market Forecasting (momentum layer added to TradeAnalytics)
         |
-Phase 11: Multi-Agent Orchestration (Trade Advisor uses forecast in trade evaluation)
-Phase 8:  Evaluations (forecast quality is measured)
+Stage 11: Multi-Agent Orchestration (Trade Advisor uses forecast in trade evaluation)
+Stage 8:  Evaluations (forecast quality is measured)
 ```
 
 ## Key Files
@@ -136,7 +136,7 @@ Expected output from `get_market_forecast`:
 
 ## Running the Tests
 
-Forecasting tests are in the same file as Phase 6's analytics tests:
+Forecasting tests are in the same file as Stage 6's analytics tests:
 
 ```bash
 uv run pytest tests/agents/test_trade_analytics.py -v

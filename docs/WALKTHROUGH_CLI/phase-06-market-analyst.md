@@ -1,8 +1,8 @@
-# Phase 6: Market Analyst
+# Stage 6: Market Analyst
 
 ## Overview
 
-Phase 6 introduces the **Trade Market Analyst** — a specialized agent that analyzes platform-wide
+Stage 6 introduces the **Trade Market Analyst** — a specialized agent that analyzes platform-wide
 trade patterns to answer questions about supply, demand, and market value. Unlike the Pokedex Expert
 (which knows about individual Pokemon), the Market Analyst understands collective behavior: which
 Pokemon are being requested most, which are oversupplied, and what trade success rates look like.
@@ -14,13 +14,13 @@ exposes it through a tool-calling interface.
 ## Where It Fits
 
 ```text
-Phase 2: Mock Data (platform_trades.json as the data source)
+Stage 2: Mock Data (platform_trades.json as the data source)
         |
-Phase 6: Market Analyst (base demand analytics)
+Stage 6: Market Analyst (base demand analytics)
         |
-Phase 12: Market Forecasting (adds momentum / sentiment to TradeAnalytics)
-Phase 11: Multi-Agent Orchestration (Trade Advisor calls Market Analyst via tool)
-Phase 8:  Evaluations (market data accuracy is measured)
+Stage 12: Market Forecasting (adds momentum / sentiment to TradeAnalytics)
+Stage 11: Multi-Agent Orchestration (Trade Advisor calls Market Analyst via tool)
+Stage 8:  Evaluations (market data accuracy is measured)
 ```
 
 ## Key Files
@@ -69,7 +69,7 @@ instead of relying on the real file.
 
 The `trade_market_analyst` agent has five tools:
 
-- `get_market_forecast(pokemon)` — calls `analytics.get_market_forecast()` (Phase 12 adds this)
+- `get_market_forecast(pokemon)` — calls `analytics.get_market_forecast()` (Stage 12 adds this)
 - `get_pokemon_demand(pokemon)` — calls `analytics.get_demand_ratio(pokemon)`
 - `get_trade_success(pokemon)` — calls `analytics.get_trade_success_rate(pokemon)`
 - `get_trending(days=30)` — calls `analytics.get_trending_pokemon(days, limit=10)`

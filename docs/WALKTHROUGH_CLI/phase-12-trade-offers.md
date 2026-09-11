@@ -1,8 +1,8 @@
-# Phase 12: Trade Offers
+# Stage 12: Trade Offers
 
 ## Overview
 
-Phase 12 extends the system with a **peer-to-peer trade offer workflow**. Users can now view
+Stage 12 extends the system with a **peer-to-peer trade offer workflow**. Users can now view
 incoming trade offers (with AI evaluation attached to each one), send offers to other users (with AI
 pre-screening before the offer is persisted), and accept or decline specific offers by ID.
 
@@ -15,13 +15,13 @@ the web API's PostgreSQL database instead (see `docs/REFERENCE/PLATFORM_DB.md`).
 ## Where It Fits
 
 ```text
-Phase 3: Memory System    (new table added to existing schema)
-Phase 9: Trade Advisor    (evaluate_trade reused for AI pre-screening and inbox evaluation)
-Phase 11: CLI Interface   (new commands wired into the existing parser and dispatch)
+Stage 3: Memory System    (new table added to existing schema)
+Stage 9: Trade Advisor    (evaluate_trade reused for AI pre-screening and inbox evaluation)
+Stage 11: CLI Interface   (new commands wired into the existing parser and dispatch)
         ↓
-Phase 12: Trade Offers
+Stage 12: Trade Offers
         ↓
-Phase 13: Evaluations     (offers flow can be included in evaluation scenarios)
+Stage 13: Evaluations     (offers flow can be included in evaluation scenarios)
 ```
 
 ## Key Files

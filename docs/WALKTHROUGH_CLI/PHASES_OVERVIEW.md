@@ -1,4 +1,4 @@
-# Pokemon Trainer Platform - AI: Phases Overview
+# Pokemon Trainer Platform - AI: Stages Overview
 
 This guide walks through the Pokemon Trade Advisor codebase **phase by phase** — from infrastructure
 to the fully assembled multi-agent system. Each phase focuses on **understanding and testing** the
@@ -22,9 +22,9 @@ You can also jump directly to any phase if you need to understand one component 
 
 ---
 
-## Phase Map
+## Stage Map
 
-| Phase | Title | Layer | Key Test Files |
+| Stage | Title | Layer | Key Test Files |
 | --- | --- | --- | --- |
 | [01](phase-01-project-setup.md) | Project Setup & Infrastructure | Foundation | `core/test_config.py`, `core/test_startup_validation.py` |
 | [02](phase-02-mock-data.md) | Mock Data & Models | Data | `data/test_data.py` |
@@ -50,17 +50,17 @@ understood after understanding everything above it on its branch.
 
 ```text
                     ┌─────────────────────────────────┐
-                    │  Phase 1: Project Setup          │
+                    │  Stage 1: Project Setup          │
                     │  config, startup, observability  │
                     └───────────────┬─────────────────┘
                                     │
                     ┌───────────────▼─────────────────┐
-                    │  Phase 2: Mock Data & Models     │
+                    │  Stage 2: Mock Data & Models     │
                     │  Pydantic models, trade history  │
                     └───────┬───────────────┬──────────┘
                             │               │
            ┌────────────────▼──┐     ┌──────▼──────────────┐
-           │ Phase 3: Memory   │     │ Phase 4: PII         │
+           │ Stage 3: Memory   │     │ Stage 4: PII         │
            │ SQLite, prefs,    │     │ Guardrails           │
            │ conversation      │     │ filter + middleware   │
            └────────┬──────────┘     └──────┬───────────────┘
@@ -68,35 +68,35 @@ understood after understanding everything above it on its branch.
      ┌──────────────▼────────────────────────▼────────────────────┐
      │              Specialized Agents                             │
      │  ┌──────────────────┐  ┌──────────────────┐  ┌──────────┐ │
-     │  │ Phase 5: Pokedex │  │ Phase 6: Market  │  │Phase 8:  │ │
+     │  │ Stage 5: Pokedex │  │ Stage 6: Market  │  │Stage 8:  │ │
      │  │ Expert (RAG)     │  │ Analyst          │  │Legitimacy│ │
      │  │                  │  │       +          │  │Guard     │ │
-     │  │                  │  │ Phase 7: Market  │  │          │ │
+     │  │                  │  │ Stage 7: Market  │  │          │ │
      │  │                  │  │ Forecasting      │  │          │ │
      │  └────────┬─────────┘  └──────┬───────────┘  └────┬─────┘ │
      └───────────┼───────────────────┼──────────────────┼─────────┘
                  │                   │                  │
                  └───────────────────▼──────────────────┘
                          ┌───────────────────────┐
-                         │ Phase 9: Trade Advisor │
+                         │ Stage 9: Trade Advisor │
                          │ Orchestrator           │
                          └───────────┬────────────┘
                                      │
                          ┌───────────▼────────────────┐
-                         │ Phase 10: Multi-Agent       │
+                         │ Stage 10: Multi-Agent       │
                          │ Orchestration               │
                          └───────────┬────────────────┘
                                      │
                     ┌────────────────▼──────────────────┐
-                    │  Phase 11: CLI Interface           │
+                    │  Stage 11: CLI Interface           │
                     └────────────┬──────────────────────┘
                                  │
                     ┌────────────▼──────────────────────┐
-                    │  Phase 12: Trade Offers            │
+                    │  Stage 12: Trade Offers            │
                     └────────────┬──────────────────────┘
                                  │
           ┌──────────────────────▼────────────────────────────┐
-          │  Phase 13: Evaluations  |  Phase 14: MCP Server   │
+          │  Stage 13: Evaluations  |  Stage 14: MCP Server   │
           │  quality measurement    |  optional, external      │
           └─────────────────────────────────────────────────── ┘
 ```
@@ -131,29 +131,29 @@ See [`docs/REFERENCE/TESTING.md`](../REFERENCE/TESTING.md) for detailed test con
 
 Understanding where each phase sits in the overall architecture helps with navigation:
 
-**Foundation (Phases 1-2)**: Config, environment validation, startup sequence, SQLite schema init,
+**Foundation (Stages 1-2)**: Config, environment validation, startup sequence, SQLite schema init,
 observability, and all Pydantic data models. Nothing agent-related — just the infrastructure
 everything else builds on.
 
-**Persistence & Safety (Phases 3-4)**: The memory system (conversation history, user preferences,
+**Persistence & Safety (Stages 3-4)**: The memory system (conversation history, user preferences,
 trade history in SQLite) and the PII guardrail layer (regex filter + middleware that wraps agent
 calls). These run as infrastructure, not agents.
 
-**Specialized Agents (Phases 5-8)**: Four focused agents, each with a narrow domain:
+**Specialized Agents (Stages 5-8)**: Four focused agents, each with a narrow domain:
 
-- Phase 5: Pokedex Expert — answers Pokemon fact questions via ChromaDB RAG retrieval
-- Phase 6: Market Analyst — computes demand ratios and trade success rates from platform data
-- Phase 7: Market Forecasting — adds momentum scores and bullish/bearish sentiment on top of the
+- Stage 5: Pokedex Expert — answers Pokemon fact questions via ChromaDB RAG retrieval
+- Stage 6: Market Analyst — computes demand ratios and trade success rates from platform data
+- Stage 7: Market Forecasting — adds momentum scores and bullish/bearish sentiment on top of the
   market analyst
-- Phase 8: Legitimacy Guard — checks for illegal ball/Pokemon combinations and scam indicators
+- Stage 8: Legitimacy Guard — checks for illegal ball/Pokemon combinations and scam indicators
 
-**Orchestration (Phases 9-10)**: The Trade Advisor (Phase 9) wires together the four specialists
-into a single agent that handles user queries end-to-end. Phase 10 documents the multi-agent
+**Orchestration (Stages 9-10)**: The Trade Advisor (Stage 9) wires together the four specialists
+into a single agent that handles user queries end-to-end. Stage 10 documents the multi-agent
 delegation architecture and usage token propagation.
 
-**User Interface (Phases 11-12)**: The Typer CLI (Phase 11) and the trade offers feature (Phase 12)
+**User Interface (Stages 11-12)**: The Typer CLI (Stage 11) and the trade offers feature (Stage 12)
 that extends the advisor with async offer management and pending offer tracking.
 
-**Quality & Integration (Phases 13-14)**: Evaluations (Phase 13) measure agent accuracy with a
-structured scoring framework. The MCP server (Phase 14) exposes all four agent functions as tools
+**Quality & Integration (Stages 13-14)**: Evaluations (Stage 13) measure agent accuracy with a
+structured scoring framework. The MCP server (Stage 14) exposes all four agent functions as tools
 consumable by external AI clients.

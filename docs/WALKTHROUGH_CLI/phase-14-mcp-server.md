@@ -1,8 +1,8 @@
-# Phase 14: MCP Server (Optional)
+# Stage 14: MCP Server (Optional)
 
 ## Overview
 
-Phase 14 exposes the Trade Advisor as an **MCP (Model Context Protocol) server**, allowing external
+Stage 14 exposes the Trade Advisor as an **MCP (Model Context Protocol) server**, allowing external
 AI assistants such as Claude Desktop to call the advisor's capabilities as structured tools. This is
 an optional integration layer — the core CLI system works without it.
 
@@ -13,11 +13,11 @@ An external client starts the server as a subprocess and sends requests over the
 ## Where It Fits
 
 ```text
-Phase 5: Pokedex Expert      (query_pokedex exposed as tool)
-Phase 6+7: Market Analyst    (query_market exposed as tool)
-Phase 9: Trade Advisor       (evaluate_trade + get_trade_suggestions exposed as tools)
+Stage 5: Pokedex Expert      (query_pokedex exposed as tool)
+Stage 6+7: Market Analyst    (query_market exposed as tool)
+Stage 9: Trade Advisor       (evaluate_trade + get_trade_suggestions exposed as tools)
         ↓
-Phase 14: MCP Server (optional external interface — wraps all four agent functions)
+Stage 14: MCP Server (optional external interface — wraps all four agent functions)
 ```
 
 ## Key Files

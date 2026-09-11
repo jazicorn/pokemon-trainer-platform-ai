@@ -1,8 +1,8 @@
-# Phase 9: Trade Advisor
+# Stage 9: Trade Advisor
 
 ## Overview
 
-Phase 9 introduces the **Trade Advisor** — the orchestrating agent at the center of the system.
+Stage 9 introduces the **Trade Advisor** — the orchestrating agent at the center of the system.
 Given a trade proposal ("Should I give my Alakazam for their Machamp?"), the Trade Advisor gathers
 Pokemon stats from the Pokedex Expert, market data from the Market Analyst, legitimacy info from the
 Legitimacy Guard, and the user's personal context from memory, then synthesizes all four into an
@@ -14,12 +14,12 @@ serve it.
 ## Where It Fits
 
 ```text
-Phase 5: Pokedex Expert    ─┐
-Phase 7: Market Forecasting ─┤
-Phase 8: Legitimacy Guard   ─┼→ Phase 9: Trade Advisor (Orchestrator)
-Phase 3: Memory System      ─┘         ↓
-                                Phase 10: Multi-Agent (refines delegation)
-                                Phase 11: CLI (user-facing interface)
+Stage 5: Pokedex Expert    ─┐
+Stage 7: Market Forecasting ─┤
+Stage 8: Legitimacy Guard   ─┼→ Stage 9: Trade Advisor (Orchestrator)
+Stage 3: Memory System      ─┘         ↓
+                                Stage 10: Multi-Agent (refines delegation)
+                                Stage 11: CLI (user-facing interface)
 ```
 
 ## Key Files
