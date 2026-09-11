@@ -1,3 +1,9 @@
+## v0.9.1 (2026-09-11)
+
+### 🐛 Fixes
+
+- **ci**: don't bump version or publish images on failing CI
+
 ## v0.9.0 (2026-09-11)
 
 ### ✅ Tests
