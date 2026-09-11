@@ -1,3 +1,9 @@
+## v0.11.0 (2026-09-11)
+
+### ✨ Features
+
+- **api**: add API versioning strategy (Roadmap Phase 7)
+
 ## v0.10.0 (2026-09-11)
 
 ### ✨ Features
