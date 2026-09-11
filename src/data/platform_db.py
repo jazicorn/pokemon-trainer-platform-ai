@@ -16,7 +16,7 @@ import os
 import warnings
 from datetime import date
 from functools import lru_cache
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from data.models import (
     OwnedPokemon,
@@ -34,6 +34,17 @@ from data.models import (
 # connect() below, only once we know PLATFORM_DB_URL is actually set.
 _PSYCOPG_AVAILABLE = importlib.util.find_spec("psycopg") is not None
 
+if TYPE_CHECKING:
+    # TYPE_CHECKING-only — never executed, so this doesn't affect the
+    # optional-dependency behaviour above. `from __future__ import
+    # annotations` (top of file) makes every annotation a lazy string, so
+    # connect()'s return type below can reference these names safely even
+    # when psycopg isn't installed at runtime. The ignore comment covers
+    # pyright runs that also lack the `platform-db` group synced (CI's own
+    # `ci-quality.yml` now syncs it — see that file's own note).
+    import psycopg  # pyright: ignore[reportMissingImports]
+    from psycopg.rows import DictRow  # pyright: ignore[reportMissingImports]
+
 
 class PlatformDBClient:
     """Thin wrapper around psycopg3 exposing the same interface as
@@ -49,12 +60,17 @@ class PlatformDBClient:
     def __init__(self, dsn: str) -> None:
         self._dsn = dsn
 
-    def connect(self) -> Any:
+    def connect(self) -> psycopg.Connection[DictRow]:
         """Open a new connection with dict-shaped rows. Caller is responsible for closing it."""
         import psycopg  # pyright: ignore[reportMissingImports]
         from psycopg.rows import dict_row  # pyright: ignore[reportMissingImports]
 
-        return psycopg.connect(self._dsn, row_factory=dict_row)
+        # Calling Connection[DictRow].connect(...) directly, rather than the
+        # psycopg.connect(...) alias, is required for pyright to bind the
+        # Row type parameter to DictRow instead of defaulting it to
+        # TupleRow — a known pyright/psycopg stub interaction (psycopg#865),
+        # not a runtime distinction; both call the same classmethod.
+        return psycopg.Connection[DictRow].connect(self._dsn, row_factory=dict_row)
 
     def fetch_trades(self, days: int = 90) -> PlatformTrades:
         """Platform-wide trade history from the last ``days`` days."""
