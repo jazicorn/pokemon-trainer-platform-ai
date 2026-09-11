@@ -1,0 +1,61 @@
+---
+// The five-agent strip shown in the header on every page (see SiteTitle.astro,
+// which renders this alongside the default site title) — ROADMAP.md Phase 10.
+import { PARTY } from "./party";
+---
+
+<div class="party-chrome" aria-label="Agent party">
+  {
+    PARTY.map((agent) => (
+      <span
+        class="party-chrome__member"
+        data-type={agent.type}
+        tabindex="0"
+        title={`${agent.initials} — ${agent.name} (${agent.role})`}
+      >
+        {agent.initials}
+      </span>
+    ))
+  }
+</div>
+
+<style>
+  .party-chrome {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-inline-start: 0.75rem;
+    padding-inline-start: 0.75rem;
+    border-inline-start: 1px solid var(--sl-color-hairline);
+    flex-shrink: 0;
+  }
+
+  .party-chrome__member {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 700;
+    border: 1.5px solid var(--sl-color-bg);
+    cursor: default;
+    user-select: none;
+  }
+
+  .party-chrome__member[data-type="dragon"] { background: var(--type-dragon-bright); }
+  .party-chrome__member[data-type="psychic"] { background: var(--type-psychic-bright); }
+  .party-chrome__member[data-type="electric"] { background: var(--type-electric-bright); color: #2b2200; }
+  .party-chrome__member[data-type="dark"] { background: var(--type-dark-bright); }
+  .party-chrome__member[data-type="fighting"] { background: var(--type-fighting-bright); }
+
+  /* Matches Starlight's own breakpoint for collapsing the header nav to the
+     mobile menu — keep the strip from crowding the title once that happens. */
+  @media (max-width: 50rem) {
+    .party-chrome {
+      display: none;
+    }
+  }
+</style>

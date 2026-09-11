@@ -1,0 +1,29 @@
+---
+// Wraps Starlight's default PageTitle to add a type-badge "kicker" above it
+// when the current page's frontmatter carries a `pokemonType` (set by
+// scripts/docs_prepare.py — see content.config.ts for the field, ROADMAP.md
+// Phase 10 for the type-to-section mapping).
+import Default from "@astrojs/starlight/components/PageTitle.astro";
+
+const { pokemonType } = Astro.locals.starlightRoute.entry.data;
+
+const LABELS: Record<string, string> = {
+  dragon: "Dragon",
+  psychic: "Psychic",
+  electric: "Electric",
+  dark: "Dark",
+  fighting: "Fighting",
+  steel: "Steel",
+  grass: "Grass",
+  fire: "Fire",
+};
+---
+
+{
+  pokemonType && (
+    <p class="type-kicker">
+      <span class={`type-badge type-${pokemonType}`}>{LABELS[pokemonType]}</span>
+    </p>
+  )
+}
+<Default><slot /></Default>

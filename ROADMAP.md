@@ -420,47 +420,83 @@ this one has no dependency on the API work at all — it's just documentation to
 done any time, including before Phase 2, without blocking or being blocked by anything else
 here.
 
-**Design:**
+**Design (v2 — Astro + Starlight):** this phase originally shipped on MkDocs + Material
+(a `uv`-installable Python tool, deliberately not Docusaurus/React — see git history for that
+version's reasoning), then briefly grew a small React "hub" island bolted onto the Material
+Home page. Both were replaced outright — not layered further — once the priority became "looks
+creative and polished," which a themed MkDocs site couldn't get to on its own:
 
-- **MkDocs + the Material theme**, not Docusaurus (JS/React — heavier tooling for a Python
-  project) or hand-written HTML (loses search/nav for free, and means maintaining content in
-  two places). MkDocs renders the existing markdown files directly, is itself just a
-  `uv`-installable Python tool consistent with the rest of this project, and gets full-text
-  search + navigation with no extra work.
-- Site structure covers the entire existing docs corpus: Home (`README.md`), Getting Started,
-  Onboarding (`docs/ONBOARDING/`), Architecture, Reference (`docs/REFERENCE/*.md` plus
-  `docs/1PASSWORD.md`/`ARIZE_PHOENIX_SETUP.md`/`DEPLOYMENT.md`), Troubleshooting
-  (`docs/TROUBLESHOOTING/`), the CLI build walkthrough (`docs/WALKTHROUGH_CLI/`), both roadmap
-  files, `HISTORY.md`, and `CHANGELOG.md`.
-- ~~Deployed via a new `.github/workflows/docs-publish.yml`~~ **done** — pushes to a `gh-pages`
-  branch on every push to `main` that touches the docs corpus, both roadmap files, `README.md`,
-  `ARCHITECTURE.md`, `HISTORY.md`, `CHANGELOG.md`, `mkdocs.yml`, or `Makefile`.
-- MkDocs can't reference files outside its own `docs_dir`. `README.md`, both roadmap files,
-  `ARCHITECTURE.md`, `HISTORY.md`, and `CHANGELOG.md` live at the repo root, so
-  `make docs-prepare` copies them into `docs/` before every build — generated, not committed
-  (see `.gitignore`), so there's still one source of truth for each.
+- **[Astro](https://astro.build) + [Starlight](https://starlight.astro.build)**, in
+  `web/docs-site/`. Same self-hosted GitHub Pages model as the MkDocs version (still a `gh-pages`
+  branch, still no third-party platform dependency — this is *not* a move to something like
+  Mintlify, which would mean hosting docs on their infrastructure instead of ours) and, like
+  Astro's islands architecture generally, ships close to zero JS by default — the opposite
+  direction from the React hub it replaces, even though the framework itself is JS-based. Content
+  is still plain markdown; only navigation and theming moved into Astro/Starlight's own config
+  and component model.
+- Content is unchanged at the source: `README.md`, both roadmap files, `ARCHITECTURE.md`,
+  `HISTORY.md`, `CHANGELOG.md`, and everything under `docs/` are still the one source of truth.
+  `scripts/docs_prepare.py` (the direct successor to the old Makefile `cp` lines) mirrors them
+  into `web/docs-site/src/content/docs/` — adding the frontmatter (`title`, and a `pokemonType`
+  badge for pages that map to one of the eight type tokens below) that plain markdown doesn't
+  carry, and rewriting cross-references between docs to the new route paths. Generated, gitignored,
+  same "one source of truth" reasoning as before. The one hand-authored exception is
+  `src/content/docs/index.mdx` (the home page), which the script never touches.
+- **Home** (`index.mdx`) is a from-scratch Starlight "splash" page, not a mirror of `README.md`:
+  a hero, a "Meet the party" grid of the five real agents (`src/components/AgentCard.astro` +
+  `party.ts`), a "Talk to it" `CardGrid` with real CLI/`/v1`/MCP entry points, and a `curl`
+  example against a real endpoint. `README.md` itself now renders as its own **Overview** page
+  (first item in the sidebar) instead of doubling as Home.
+- **Party chrome** (the five-agent strip in the header, every page) and the **type-badge kicker**
+  (above a page's H1, on pages whose section maps to one of the eight type tokens) are Starlight
+  component overrides — `SiteTitle.astro` and `PageTitle.astro` in `web/docs-site/src/components/`,
+  following [Starlight's documented override pattern](https://starlight.astro.build/guides/overriding-components/)
+  of wrapping the default component rather than reimplementing it. `pokemonType` is a frontmatter
+  field added to Starlight's schema (`src/content.config.ts`'s `docsSchema({ extend: ... })`),
+  computed once at prepare-time by `docs_prepare.py` rather than sniffed from the URL at runtime
+  in the browser (the MkDocs version's approach) — same eight-color system, no client-side
+  path-matching needed anymore.
+- Starlight's own accent color (used for links, the active sidebar item, focus rings) is retuned
+  from its stock blue to this project's Dragon hue (`web/docs-site/src/styles/theme.css`) so the
+  whole site reads as one coordinated palette instead of theme-default blue fighting the
+  Pokemon-type colors used everywhere else — the MkDocs version never did this, which is most of
+  why its color scheme read as "off."
+- `.github/workflows/docs-publish.yml` builds with `astro build` (Node, via `actions/setup-node`)
+  and still deploys to the `gh-pages` branch, now via `peaceiris/actions-gh-pages` since there's
+  no `mkdocs gh-deploy` equivalent in this stack.
 - GitHub Pages itself (repo Settings → Pages, serving from the `gh-pages` branch) is a
   one-time manual step in the GitHub UI — no workflow file can do that part. **Still pending.**
 
 **Tasks:**
 
-- ~~Add `mkdocs` + `mkdocs-material` as a new `docs` dependency group in `pyproject.toml`~~
-  **done** (not `dev` — it's not needed for development or CI testing, only for building the site)
-- ~~Create `mkdocs.yml` at the project root~~ **done** — full nav covering the entire docs
-  corpus (see above), Material theme with light/dark toggle
-- ~~Create `.github/workflows/docs-publish.yml`~~ **done**
+- ~~Scaffold `web/docs-site/` (Astro + Starlight)~~ **done**
+- ~~Write `scripts/docs_prepare.py`~~ **done** — mirrors root/`docs/` markdown into
+  `src/content/docs/`, adds frontmatter, rewrites internal links
+- ~~Build the Home page (`index.mdx`) as a real splash page, not a README mirror~~ **done**
+- ~~Party chrome + type-badge kicker as Starlight component overrides~~ **done**
+- ~~Retune Starlight's accent color to match the type-token palette~~ **done**
+- ~~Rewrite `.github/workflows/docs-publish.yml` for the Astro build + `gh-pages` deploy~~ **done**
+- ~~Remove the MkDocs + React-hub setup (`mkdocs.yml`, `web/hub/`, the `docs` dependency
+  group)~~ **done**
 - One-time: enable GitHub Pages in repo settings, pointed at the `gh-pages` branch — **not done
   yet**, needs a human in the GitHub UI
-- ~~Add a badge/link in `README.md`'s header pointing at the published Pages URL~~ **done**
+- Still open, deliberately deferred rather than done blind alongside the framework swap:
+  reorganizing the docs corpus itself (nav grouping, page-level splitting/merging) now that it's
+  easy to see the whole site rendered — content is currently mirrored over with its existing
+  structure intact, not redesigned
 
 **Verification:**
 
 ```bash
 make docs-serve
-# → http://127.0.0.1:8000 — confirm the nav renders every docs/ page and README/ROADMAP/HISTORY
+# → runs scripts/docs_prepare.py, then `astro dev` — confirm the sidebar renders every docs/
+#   page and README/ROADMAP/HISTORY, Home renders the hub (agent cards + Talk to it), the
+#   five-agent party strip shows in the header on every page, and type badges appear on pages
+#   that map to one, light and dark
 
-git push origin main   # touching the docs corpus, README.md, ROADMAP.md, ROADMAP_PLATFORM.md,
-                        # ARCHITECTURE.md, HISTORY.md, CHANGELOG.md, mkdocs.yml, or Makefile
+git push origin main   # touching docs/, web/docs-site/, scripts/docs_prepare.py, README.md,
+                        # ROADMAP.md, ROADMAP_PLATFORM.md, ARCHITECTURE.md, HISTORY.md,
+                        # CHANGELOG.md, or Makefile
 # → docs-publish.yml runs, gh-pages branch updates
 # → https://jazicorn.github.io/pokemon-trainer-platform-ai/ reflects the change, once GitHub
 #   Pages is enabled (see the still-pending task above)

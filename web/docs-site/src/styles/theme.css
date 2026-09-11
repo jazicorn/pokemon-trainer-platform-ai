@@ -1,0 +1,36 @@
+/* Distinctive display font for headings/hero; body copy stays on Starlight's
+   default system-font stack, which is more legible for long docs prose than
+   a display face would be. @import must lead the file (CSS requirement). */
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap");
+
+/*
+ * Site-wide theme: Starlight's own accent color (used for links, the active
+ * sidebar item, focus rings, etc.) is retuned from its stock blue to this
+ * project's Dragon hue (~257°) so the whole site reads as one coordinated
+ * palette instead of "Starlight blue" fighting the Pokemon-type colors used
+ * elsewhere (party chrome, type badges — see type-tokens.css). Same
+ * low/base/high pattern Starlight's own props.css uses for every hue, just
+ * re-hued — see https://github.com/withastro/starlight/blob/main/packages/starlight/src/style/props.css
+ */
+
+:root {
+  --sl-color-accent-low: hsl(257, 54%, 20%);
+  --sl-color-accent: hsl(257, 90%, 66%);
+  --sl-color-accent-high: hsl(257, 90%, 88%);
+}
+
+:root[data-theme="light"] {
+  --sl-color-accent-high: hsl(257, 70%, 34%);
+  --sl-color-accent: hsl(257, 85%, 58%);
+  --sl-color-accent-low: hsl(257, 85%, 93%);
+}
+
+/* Space Grotesk is a display face — scoped to headings and the hero only,
+   not the sidebar/nav chrome or body copy, where the system stack reads
+   better at small sizes and over long stretches of text. */
+.sl-markdown-content :is(h1, h2, h3, h4, h5, h6),
+.content-panel > .sl-container h1,
+.hero h1,
+.hero .tagline {
+  font-family: "Space Grotesk", var(--sl-font-system);
+}

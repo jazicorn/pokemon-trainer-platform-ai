@@ -1,0 +1,10 @@
+---
+// Wraps Starlight's default SiteTitle to add the party-chrome strip right
+// after it — see https://starlight.astro.build/guides/overriding-components/
+// and ROADMAP.md Phase 10.
+import Default from "@astrojs/starlight/components/SiteTitle.astro";
+import PartyChrome from "./PartyChrome.astro";
+---
+
+<Default><slot /></Default>
+<PartyChrome />

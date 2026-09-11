@@ -1,0 +1,59 @@
+/*
+ * Eight Pokemon-type color tokens (ROADMAP.md Phase 10): the party chrome
+ * strip (src/components/PartyChrome.astro), the per-page type badge
+ * (src/components/PageTitle.astro, driven by each page's `pokemonType`
+ * frontmatter — see scripts/docs_prepare.py), and the "Meet the party"
+ * agent cards on the home page.
+ *
+ * Each type has an official-bright value (used for small chrome — avatars,
+ * dots) and a muted value (used anywhere the color sits behind or next to
+ * text) — same hue, lower saturation, so it doesn't fight Starlight's own
+ * (Dragon-hued, see theme.css) accent color for attention.
+ */
+
+:root {
+  --type-dragon-bright: #7038f8;
+  --type-dragon: #5b4fbf;
+  --type-psychic-bright: #f85888;
+  --type-psychic: #c45b78;
+  --type-electric-bright: #f8d030;
+  --type-electric: #c4a02a;
+  --type-dark-bright: #705848;
+  --type-dark: #5c534c;
+  --type-fighting-bright: #c03028;
+  --type-fighting: #a34a45;
+  --type-steel-bright: #b8b8d0;
+  --type-steel: #7a7a8c;
+  --type-grass-bright: #78c850;
+  --type-grass: #5d8f4a;
+  --type-fire-bright: #f08030;
+  --type-fire: #c46b3a;
+}
+
+.type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  padding: 0.2em 0.75em;
+  border-radius: 999px;
+  font-size: var(--sl-text-2xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  line-height: 1.8;
+  white-space: nowrap;
+}
+
+.type-badge.type-dragon { background: var(--type-dragon); }
+.type-badge.type-psychic { background: var(--type-psychic); }
+.type-badge.type-electric { background: var(--type-electric); color: #2b2200; }
+.type-badge.type-dark { background: var(--type-dark); }
+.type-badge.type-fighting { background: var(--type-fighting); }
+.type-badge.type-steel { background: var(--type-steel); }
+.type-badge.type-grass { background: var(--type-grass); }
+.type-badge.type-fire { background: var(--type-fire); }
+
+.type-kicker {
+  margin: 0 0 0.75rem;
+}

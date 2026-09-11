@@ -1,0 +1,75 @@
+---
+title: Home
+description: Multi-agent Pokemon trade advisor — CLI, MCP server, and public HTTP API.
+template: splash
+hero:
+  title: A second brain for Pokemon trainers
+  tagline: >
+    Five specialized agents collaborate on trade evaluation, market forecasting, legitimacy
+    checks, battle viability, and Pokedex knowledge — talk to them from a CLI, an HTTP API, or
+    an MCP server.
+  actions:
+    - text: Read the overview
+      link: /overview/
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/jazicorn/pokemon-trainer-platform-ai
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+import AgentCard from "../../components/AgentCard.astro";
+import { PARTY } from "../../components/party";
+
+## Meet the party
+
+Trade Advisor delegates to four specialists — each one a real agent in [`src/agents/`](https://github.com/jazicorn/pokemon-trainer-platform-ai/tree/main/src/agents), not a marketing diagram.
+
+<div class="agent-grid">
+  {PARTY.map((agent) => <AgentCard agent={agent} />)}
+</div>
+
+## Talk to it
+
+<CardGrid>
+	<Card title="CLI" icon="laptop">
+		```bash
+		uv run python app.py
+		```
+	</Card>
+	<Card title="HTTP API" icon="setting">
+		```
+		POST /v1/trade/evaluate
+		```
+		Every route is versioned — see [API Versioning](/reference/api_versioning/).
+	</Card>
+	<Card title="MCP server" icon="puzzle">
+		```bash
+		uv run python -m src.mcp_server.server
+		```
+	</Card>
+</CardGrid>
+
+## See it work
+
+```bash
+curl -X POST https://your-host/v1/trade/evaluate \
+  -H "X-API-Key: $POKEMON_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"offered_pokemon": "Charizard", "requested_pokemon": "Dragonite"}'
+```
+
+Trade Advisor routes this to Market Analyst, Legitimacy Guard, and Battle Strategy Advisor before
+answering — the [Architecture](/architecture/) page walks through the full delegation chain.
+
+<style>
+  {`
+  .agent-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 0.75rem;
+    margin: 1.5rem 0 2.5rem;
+  }
+  `}
+</style>

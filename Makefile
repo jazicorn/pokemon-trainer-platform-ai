@@ -137,27 +137,22 @@ commit: ## Guided Conventional Commits prompt (Commitizen)
 
 # ── Docs Site ─────────────────────────────────────────────────────────────────
 
-# MkDocs can only serve files under docs_dir (docs/) — it doesn't resolve
-# `../` nav paths outside it (verified directly: it silently drops them).
-# Mirror the root-level docs in first; see .gitignore for why these copies
-# are never committed.
+# Astro + Starlight (web/docs-site/ — see ROADMAP.md Phase 10; migrated off
+# MkDocs Material). Astro can only render content inside its own project, so
+# this mirrors README.md, both roadmap files, ARCHITECTURE.md, HISTORY.md,
+# CHANGELOG.md, and everything under docs/ into
+# web/docs-site/src/content/docs/, same "generated, not committed" reasoning
+# as the old MkDocs setup (see .gitignore) — one source of truth stays at the
+# repo root / docs/. src/content/docs/index.mdx (the home page) is the one
+# hand-authored exception; this script never touches it.
 docs-prepare:
-	cp README.md docs/index.md
-	cp ROADMAP.md docs/ROADMAP.md
-	cp ROADMAP_PLATFORM.md docs/ROADMAP_PLATFORM.md
-	cp ARCHITECTURE.md docs/ARCHITECTURE.md
-	cp HISTORY.md docs/HISTORY.md
-	cp CHANGELOG.md docs/CHANGELOG.md
+	uv run python scripts/docs_prepare.py
 
 docs-serve: docs-prepare ## Serve the docs site locally with live reload
-	uv run mkdocs serve
+	cd web/docs-site && npm install && npm run dev
 
-docs-build: docs-prepare ## Build the static docs site into site/
-	# Not --strict: some existing docs link to non-markdown repo files
-	# (workflow YAMLs, .env.example, src/config.py) that were never meant
-	# to be doc pages — MkDocs can't resolve those, which is expected, not
-	# a build-blocking error.
-	uv run mkdocs build
+docs-build: docs-prepare ## Build the static docs site into web/docs-site/dist/
+	cd web/docs-site && npm install && npm run build
 
 # ── Help ──────────────────────────────────────────────────────────────────────
 

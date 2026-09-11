@@ -1,0 +1,67 @@
+---
+// A colored card for one party member, used on the home page's "Meet the
+// party" grid — bigger and more legible than the header's PartyChrome dots,
+// same underlying data (party.ts) and type tokens.
+import type { PartyMember } from "./party";
+
+interface Props {
+  agent: PartyMember;
+}
+const { agent } = Astro.props;
+---
+
+<div class="agent-card" data-type={agent.type}>
+  <span class="agent-card__avatar">{agent.initials}</span>
+  <div>
+    <p class="agent-card__name">{agent.name}</p>
+    <p class="agent-card__role">{agent.role}</p>
+  </div>
+</div>
+
+<style>
+  .agent-card {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 1rem 1.1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--sl-color-hairline);
+    background: var(--sl-color-bg-nav);
+    border-inline-start: 3px solid var(--card-accent);
+  }
+
+  .agent-card[data-type="dragon"] { --card-accent: var(--type-dragon-bright); }
+  .agent-card[data-type="psychic"] { --card-accent: var(--type-psychic-bright); }
+  .agent-card[data-type="electric"] { --card-accent: var(--type-electric-bright); }
+  .agent-card[data-type="dark"] { --card-accent: var(--type-dark-bright); }
+  .agent-card[data-type="fighting"] { --card-accent: var(--type-fighting-bright); }
+
+  .agent-card__avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    background: var(--card-accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+
+  .agent-card[data-type="electric"] .agent-card__avatar { color: #2b2200; }
+
+  .agent-card__name {
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .agent-card__role {
+    margin: 0.15rem 0 0;
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-gray-3);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+</style>

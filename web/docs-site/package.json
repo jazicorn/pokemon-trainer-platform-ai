@@ -1,0 +1,19 @@
+{
+  "name": "web-docs-site",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "predev": "cd ../.. && uv run python scripts/docs_prepare.py",
+    "dev": "astro dev",
+    "start": "astro dev",
+    "prebuild": "cd ../.. && uv run python scripts/docs_prepare.py",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.42.0",
+    "astro": "^7.2.10",
+    "sharp": "^0.35.3"
+  }
+}
