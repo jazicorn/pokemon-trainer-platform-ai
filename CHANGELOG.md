@@ -1,3 +1,9 @@
+## v0.10.0 (2026-09-11)
+
+### ✨ Features
+
+- **docs**: add MkDocs documentation site (Roadmap Phase 10)
+
 ## v0.9.1 (2026-09-11)
 
 ### 🐛 Fixes
