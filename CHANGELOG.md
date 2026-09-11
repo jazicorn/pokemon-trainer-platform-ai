@@ -1,3 +1,9 @@
+## v0.12.0 (2026-09-11)
+
+### ✨ Features
+
+- **ci**: add dependency vulnerability scanning (Roadmap Phase 12)
+
 ## v0.11.0 (2026-09-11)
 
 ### ✨ Features
