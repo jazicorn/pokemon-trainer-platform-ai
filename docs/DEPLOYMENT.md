@@ -12,6 +12,9 @@ One Fly app:
   TLS is handled entirely by Fly's edge (`force_https = true` in `fly.toml`) — no Caddy/nginx
   needed. A persistent Fly volume holds `/app/data`, so `data/tenants.db` (Phase 3) survives
   redeploys.
+  The Dockerfile's own `CMD` launches the CLI (`app.py`), since the same image is also used
+  for local CLI use — `fly.toml`'s `[processes]` block overrides that for this deployment,
+  running `api_server.py` instead.
 
 RAG's vector storage is **Chroma Cloud** (a managed service, not something this deploy runs
 itself) — see ROADMAP.md Phase 14. Phase 14 originally planned a second, private

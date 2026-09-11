@@ -642,7 +642,10 @@ RAG's vector storage is **Chroma Cloud** (managed) — see "Vector storage: Chro
   `exec gosu appuser "$@"` (a real exec, not a wrapping shell, so container signals still reach
   the app directly).
 - ~~Write `fly.toml`~~ **done** — `force_https = true`, health check against `/health`, a
-  `[mounts]` entry for the data volume.
+  `[mounts]` entry for the data volume, and a `[processes]` block overriding the Dockerfile's
+  own `CMD` (which launches the CLI, `app.py`, since the same image also serves that role
+  locally) to run `api_server.py` instead — `[http_service]` targets that group explicitly via
+  `processes = ["app"]`.
 - ~~Write `docs/DEPLOYMENT.md`~~ **done** — the Fly runbook, including secrets setup and the
   `TENANT_DB_ENCRYPTION_KEY` backup reminder Phase 3 established.
 

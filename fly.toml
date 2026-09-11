@@ -15,7 +15,17 @@ primary_region = "REPLACE-WITH-YOUR-REGION"  # e.g. "iad" — see `fly platform 
   API_HOST = "0.0.0.0"
   API_PORT = "8080"
 
+# The Dockerfile's own CMD launches the CLI (app.py), not the API server —
+# it's the same image used for both. Without this, Fly falls back to that
+# CMD as-is (process group commands supersede a Docker image's CMD, but only
+# when a [processes] section actually defines one), so the deployed Machine
+# would run the CLI instead of api_server.py. "app" is Fly's own implicit
+# default group name; naming it explicitly here is what lets us override it.
+[processes]
+  app = "uv run python api_server.py"
+
 [http_service]
+  processes = ["app"]
   internal_port = 8080
   force_https = true
   auto_stop_machines = false
