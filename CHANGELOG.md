@@ -1,3 +1,18 @@
+## v0.9.0 (2026-09-11)
+
+### ✅ Tests
+
+- **api**: add integration coverage and auth-consistency test (Roadmap Phase 7)
+
+### ✨ Features
+
+- **api**: deploy to Fly.io with Chroma Cloud (Roadmap Phase 14)
+
+### 📝 Documentation
+
+- **roadmap**: reorder phases into dependency order
+- **readme**: add Web API section (Roadmap Phase 8)
+
 ## v0.8.0 (2026-09-10)
 
 ### ✨ Features
