@@ -1,0 +1,54 @@
+name: Docs Publish
+
+# Builds the MkDocs site (ROADMAP.md Phase 10) and pushes it to the gh-pages
+# branch on every push to main that touches the docs corpus or its own
+# config. GitHub Pages itself (Settings > Pages, serving from gh-pages) is a
+# one-time manual step this workflow can't do.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "README.md"
+      - "ROADMAP.md"
+      - "ROADMAP_PLATFORM.md"
+      - "ARCHITECTURE.md"
+      - "HISTORY.md"
+      - "CHANGELOG.md"
+      - "mkdocs.yml"
+      - "Makefile"
+  workflow_dispatch:
+
+permissions:
+  contents: write # mkdocs gh-deploy pushes to the gh-pages branch
+
+concurrency:
+  group: docs-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Build and publish docs site
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.0.1
+        with:
+          enable-cache: true
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: uv sync --locked --group docs
+
+      - name: Mirror root-level docs into docs/
+        # MkDocs can only serve files under docs_dir — see mkdocs.yml's own
+        # comment on why this copy step exists.
+        run: make docs-prepare
+
+      - name: Deploy to gh-pages
+        run: uv run mkdocs gh-deploy --force --no-history

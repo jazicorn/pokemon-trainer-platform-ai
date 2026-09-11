@@ -135,6 +135,30 @@ hooks-install: ## One-time setup: use .githooks/ for this repo (commit-msg valid
 commit: ## Guided Conventional Commits prompt (Commitizen)
 	uv run cz commit
 
+# ── Docs Site ─────────────────────────────────────────────────────────────────
+
+# MkDocs can only serve files under docs_dir (docs/) — it doesn't resolve
+# `../` nav paths outside it (verified directly: it silently drops them).
+# Mirror the root-level docs in first; see .gitignore for why these copies
+# are never committed.
+docs-prepare:
+	cp README.md docs/index.md
+	cp ROADMAP.md docs/ROADMAP.md
+	cp ROADMAP_PLATFORM.md docs/ROADMAP_PLATFORM.md
+	cp ARCHITECTURE.md docs/ARCHITECTURE.md
+	cp HISTORY.md docs/HISTORY.md
+	cp CHANGELOG.md docs/CHANGELOG.md
+
+docs-serve: docs-prepare ## Serve the docs site locally with live reload
+	uv run mkdocs serve
+
+docs-build: docs-prepare ## Build the static docs site into site/
+	# Not --strict: some existing docs link to non-markdown repo files
+	# (workflow YAMLs, .env.example, src/config.py) that were never meant
+	# to be doc pages — MkDocs can't resolve those, which is expected, not
+	# a build-blocking error.
+	uv run mkdocs build
+
 # ── Help ──────────────────────────────────────────────────────────────────────
 
 help: ## Show this help
@@ -151,4 +175,5 @@ help: ## Show this help
         lint lint-fix \
         hooks-install commit \
         docker-build docker-run docker-down \
+        docs-prepare docs-serve docs-build \
         help

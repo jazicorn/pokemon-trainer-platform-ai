@@ -1,0 +1,92 @@
+# Docs site config (ROADMAP.md Phase 10). Renders this project's existing
+# markdown as-is — no content authored just for this site.
+#
+# README.md, ROADMAP.md, ROADMAP_PLATFORM.md, ARCHITECTURE.md, HISTORY.md,
+# and CHANGELOG.md live at the repo root, but MkDocs can only serve files
+# under docs_dir (it doesn't resolve `../` nav paths outside it — verified
+# directly, it silently drops them). `make docs-build`/`docs-serve` copy
+# them into docs/ first; see .gitignore for why those copies are never
+# committed.
+
+site_name: Pokemon Trainer Platform - AI
+site_description: Multi-agent Pokemon trade advisor — CLI, MCP server, and public HTTP API.
+site_url: https://jazicorn.github.io/pokemon-trainer-platform-ai/
+repo_url: https://github.com/jazicorn/pokemon-trainer-platform-ai
+repo_name: jazicorn/pokemon-trainer-platform-ai
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - content.code.copy
+
+nav:
+  - Home: index.md
+  - Getting Started: GETTING_STARTED.md
+  - Onboarding:
+      - Start Here: ONBOARDING/00-READ-ME-FIRST.md
+      - What Is This Project: ONBOARDING/01-what-is-this-project.md
+      - AI Concepts Explained: ONBOARDING/02-ai-concepts-explained.md
+      - System Architecture: ONBOARDING/03-system-architecture.md
+      - Setup and First Run: ONBOARDING/04-setup-and-first-run.md
+      - Codebase Tour: ONBOARDING/05-codebase-tour.md
+      - How to Contribute: ONBOARDING/06-how-to-contribute.md
+      - Glossary: ONBOARDING/GLOSSARY.md
+  - Architecture: ARCHITECTURE.md
+  - Reference:
+      - Testing: REFERENCE/TESTING.md
+      - Pyright: REFERENCE/PYRIGHT.md
+      - Platform Database: REFERENCE/PLATFORM_DB.md
+      - Market Trends: REFERENCE/MARKET_TRENDS.md
+      - Eval Results: REFERENCE/EVAL_RESULTS.md
+      - Ollama Cloud Models: REFERENCE/OLLAMA_CLOUD_MODELS.md
+      - 1Password Setup: 1PASSWORD.md
+      - Arize Phoenix Setup: ARIZE_PHOENIX_SETUP.md
+      - Deployment (Fly.io): DEPLOYMENT.md
+  - Troubleshooting:
+      - Docker: TROUBLESHOOTING/docker.md
+      - Colima: TROUBLESHOOTING/colima.md
+      - 1Password: TROUBLESHOOTING/1password.md
+      - Runtime Errors: TROUBLESHOOTING/runtime-errors.md
+  - CLI Build Walkthrough:
+      - Overview: WALKTHROUGH_CLI/PHASES_OVERVIEW.md
+      - "Phase 1: Project Setup": WALKTHROUGH_CLI/phase-01-project-setup.md
+      - "Phase 2: Mock Data": WALKTHROUGH_CLI/phase-02-mock-data.md
+      - "Phase 3: Memory System": WALKTHROUGH_CLI/phase-03-memory-system.md
+      - "Phase 4: PII Guardrails": WALKTHROUGH_CLI/phase-04-pii-guardrails.md
+      - "Phase 5: Pokedex Expert": WALKTHROUGH_CLI/phase-05-pokedex-expert.md
+      - "Phase 6: Market Analyst": WALKTHROUGH_CLI/phase-06-market-analyst.md
+      - "Phase 7: Market Forecasting": WALKTHROUGH_CLI/phase-07-market-forecasting.md
+      - "Phase 8: Legitimacy Guard": WALKTHROUGH_CLI/phase-08-legitimacy-guard.md
+      - "Phase 9: Trade Advisor": WALKTHROUGH_CLI/phase-09-trade-advisor.md
+      - "Phase 10: Multi-Agent Orchestration": WALKTHROUGH_CLI/phase-10-multi-agent-orchestration.md
+      - "Phase 11: CLI Interface": WALKTHROUGH_CLI/phase-11-cli-interface.md
+      - "Phase 12: Trade Offers": WALKTHROUGH_CLI/phase-12-trade-offers.md
+      - "Phase 13: Evaluations": WALKTHROUGH_CLI/phase-13-evaluations.md
+      - "Phase 14: MCP Server": WALKTHROUGH_CLI/phase-14-mcp-server.md
+  - Roadmap:
+      - Web API (Phases 1-16): ROADMAP.md
+      - Platform, Launch & Growth (Phases 17-29): ROADMAP_PLATFORM.md
+  - History: HISTORY.md
+  - Changelog: CHANGELOG.md
+
+markdown_extensions:
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences

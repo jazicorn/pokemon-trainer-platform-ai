@@ -18,6 +18,8 @@
   <img src="https://img.shields.io/badge/agents-pydantic--ai-blue" alt="Pydantic AI">
   <img src="https://img.shields.io/badge/vector--db-chromadb-blue" alt="ChromaDB">
   <!-- markdownlint-disable-next-line MD013 -->
+  <a href="https://jazicorn.github.io/pokemon-trainer-platform-ai/"><img src="https://img.shields.io/badge/docs-mkdocs--material-blue" alt="Docs site"></a>
+  <!-- markdownlint-disable-next-line MD013 -->
   <a href="https://github.com/jazicorn/pokemon-trainer-platform-ai/actions/workflows/ci-test.yml"><img src="https://github.com/jazicorn/pokemon-trainer-platform-ai/actions/workflows/ci-test.yml/badge.svg" alt="CI Test"></a>
   <!-- markdownlint-disable-next-line MD013 -->
   <a href="https://github.com/jazicorn/pokemon-trainer-platform-ai/actions/workflows/ci-quality.yml"><img src="https://github.com/jazicorn/pokemon-trainer-platform-ai/actions/workflows/ci-quality.yml/badge.svg" alt="CI Quality"></a>

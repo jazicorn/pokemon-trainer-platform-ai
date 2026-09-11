@@ -8,12 +8,6 @@ it's real (hosting, billing, the public website, security, ops maturity, growth)
 [ROADMAP_PLATFORM.md](ROADMAP_PLATFORM.md), Phases 17 onward. Phase numbers are shared and
 continuous across both files, not reset.
 
-Phases here aren't in their original numbering — four phases explicitly said, in their own
-text, that their number was wrong (Observability, the Docs Site, the Interim Landing Page,
-Support Tooling), and one more's own goal made the same point without saying so directly (API
-Versioning must precede any real external tenant). They've been moved to where they actually
-belong in the build sequence; everything else's relative order is unchanged.
-
 **Testing policy — applies to every phase below:** a phase isn't done until its own
 automated tests exist in `tests/` and pass, written as part of implementing that phase, not
 after it. There is no "manually verify with curl or a throwaway script" step in this
@@ -168,12 +162,6 @@ Once Phase 5 adds real routes, this same 401/403/200 behavior becomes directly
 ---
 
 ## Phase 4 — Observability & Request Logging
-
-**Do this right after Phase 3, before real routes exist — earlier than its original number
-suggested.** Technically it only needs the FastAPI `app` object, which has existed since
-Phase 1; there's no hard dependency on the trade endpoints existing first. Phase 3 is exactly
-the kind of logic — tenant lookup, 401/403 auth failures, encrypt/decrypt round-trips — worth
-having structured logging in place *while* debugging it, not retrofitted after building blind.
 
 **Goal:** Wire HTTP request tracing into the existing Logfire + OpenTelemetry stack so every
 API call appears in the Phoenix dashboard alongside agent spans — plus dedicated error
@@ -333,15 +321,11 @@ open http://localhost:8080/docs
 
 ## Phase 7 — API Versioning Strategy
 
-**Moved well ahead of its original number:** the whole point is introducing versioning
-*before* any external tenant integrates, so a future breaking change doesn't silently break
-existing integrations — retrofitting versioning onto a live API with real callers is far more
-painful than deciding this now, while Phase 14 (deployment) and Phase 15 (self-serve
-registration) haven't happened yet and there are still zero real callers. Doing this here also
-means Phase 8's integration tests and Phase 9's docs are written against the final `/v1/...`
-paths directly, with no rework later.
-
-**Goal:** Introduce versioning before the API is ever publicly reachable.
+**Goal:** Introduce versioning *before* any external tenant integrates (Phase 14 deployment,
+Phase 15 self-serve registration), so a future breaking change doesn't silently break existing
+integrations — retrofitting versioning onto a live API with real callers is far more painful
+than deciding this now. Doing this before Phase 8/9 also means their integration tests and
+docs are written against the final `/v1/...` paths directly, with no rework later.
 
 **Design:**
 
@@ -443,48 +427,52 @@ here.
   two places). MkDocs renders the existing markdown files directly, is itself just a
   `uv`-installable Python tool consistent with the rest of this project, and gets full-text
   search + navigation with no extra work.
-- Site structure mirrors the existing docs layout: Home (`README.md`), Getting Started
-  (`docs/GETTING_STARTED.md`), Reference (`docs/REFERENCE/*.md`), Roadmap (`ROADMAP.md`),
-  History (`HISTORY.md` — Commitizen's auto-generated changelog from Phase-adjacent release work)
-- Deployed via a new `.github/workflows/docs-publish.yml`, building and pushing to a
-  `gh-pages` branch on every push to `main` that touches `docs/**`, `README.md`, `ROADMAP.md`,
-  `HISTORY.md`, or `mkdocs.yml` — the same narrowly-scoped path-filtering `image-build.yml`
-  already uses elsewhere in this repo
+- Site structure covers the entire existing docs corpus: Home (`README.md`), Getting Started,
+  Onboarding (`docs/ONBOARDING/`), Architecture, Reference (`docs/REFERENCE/*.md` plus
+  `docs/1PASSWORD.md`/`ARIZE_PHOENIX_SETUP.md`/`DEPLOYMENT.md`), Troubleshooting
+  (`docs/TROUBLESHOOTING/`), the CLI build walkthrough (`docs/WALKTHROUGH_CLI/`), both roadmap
+  files, `HISTORY.md`, and `CHANGELOG.md`.
+- ~~Deployed via a new `.github/workflows/docs-publish.yml`~~ **done** — pushes to a `gh-pages`
+  branch on every push to `main` that touches the docs corpus, both roadmap files, `README.md`,
+  `ARCHITECTURE.md`, `HISTORY.md`, `CHANGELOG.md`, `mkdocs.yml`, or `Makefile`.
+- MkDocs can't reference files outside its own `docs_dir`. `README.md`, both roadmap files,
+  `ARCHITECTURE.md`, `HISTORY.md`, and `CHANGELOG.md` live at the repo root, so
+  `make docs-prepare` copies them into `docs/` before every build — generated, not committed
+  (see `.gitignore`), so there's still one source of truth for each.
 - GitHub Pages itself (repo Settings → Pages, serving from the `gh-pages` branch) is a
-  one-time manual step in the GitHub UI — no workflow file can do that part
+  one-time manual step in the GitHub UI — no workflow file can do that part. **Still pending.**
 
 **Tasks:**
 
-- Add `mkdocs` + `mkdocs-material` as a new `docs` dependency group in `pyproject.toml`
-  (not `dev` — it's not needed for development or CI testing, only for building the site)
-- Create `mkdocs.yml` at the project root: site name, nav structure mapping to the files above,
-  Material theme config
-- Create `.github/workflows/docs-publish.yml` (`mkdocs gh-deploy`, path-filtered as above)
-- One-time: enable GitHub Pages in repo settings, pointed at the `gh-pages` branch
-- Add a badge/link in `README.md`'s header pointing at the published Pages URL, matching the
-  existing badge-row style
+- ~~Add `mkdocs` + `mkdocs-material` as a new `docs` dependency group in `pyproject.toml`~~
+  **done** (not `dev` — it's not needed for development or CI testing, only for building the site)
+- ~~Create `mkdocs.yml` at the project root~~ **done** — full nav covering the entire docs
+  corpus (see above), Material theme with light/dark toggle
+- ~~Create `.github/workflows/docs-publish.yml`~~ **done**
+- One-time: enable GitHub Pages in repo settings, pointed at the `gh-pages` branch — **not done
+  yet**, needs a human in the GitHub UI
+- ~~Add a badge/link in `README.md`'s header pointing at the published Pages URL~~ **done**
 
 **Verification:**
 
 ```bash
-uv sync --group docs
-uv run mkdocs serve
+make docs-serve
 # → http://127.0.0.1:8000 — confirm the nav renders every docs/ page and README/ROADMAP/HISTORY
 
-git push origin main   # touching docs/**, README.md, ROADMAP.md, HISTORY.md, or mkdocs.yml
+git push origin main   # touching the docs corpus, README.md, ROADMAP.md, ROADMAP_PLATFORM.md,
+                        # ARCHITECTURE.md, HISTORY.md, CHANGELOG.md, mkdocs.yml, or Makefile
 # → docs-publish.yml runs, gh-pages branch updates
-# → https://jazicorn.github.io/pokemon-trainer-platform-ai/ reflects the change
+# → https://jazicorn.github.io/pokemon-trainer-platform-ai/ reflects the change, once GitHub
+#   Pages is enabled (see the still-pending task above)
 ```
 
 ---
 
 ## Phase 11 — Interim Landing Page (Roadmap + Newsletter Signup)
 
-**Despite the original number, this is early work, not late.** It depends only on Phase 10's
-GitHub Pages setup existing — nothing from the phases between them. The full marketing/signup
+**Depends only on Phase 10's GitHub Pages setup** — nothing else. The full marketing/signup
 site (Phase 20) is a long way off, since it needs most of the API actually built first; this
-exists to close that gap, so it belongs right alongside or shortly after Phase 10, not at the
-end of the list.
+closes that gap in the meantime.
 
 **Goal:** A minimal public page — the roadmap, in readable form, plus an email signup for
 updates — so there's *something* to point people at and start building an audience during the
@@ -516,7 +504,7 @@ gap before Phase 20 exists, rather than nothing at all until then.
 **Verification:**
 
 ```bash
-uv run mkdocs serve
+make docs-serve
 # → homepage shows roadmap summary + signup form, both render correctly
 
 # Submit a test signup, confirm it actually lands in the provider's list
@@ -527,8 +515,7 @@ uv run mkdocs serve
 
 ## Phase 12 — Dependency & Vulnerability Scanning
 
-**Moved up from its original position — no dependency on any other phase**, and there's no
-reason to wait: it applies to whatever the repo looks like at any point.
+**No dependency on any other phase** — applies to whatever the repo looks like at any point.
 
 **Goal:** Automated detection of vulnerable dependencies, using tooling that's free on GitHub.
 
@@ -599,107 +586,67 @@ mechanics.**
   at Fly's edge handles TLS (no Caddy/nginx). A persistent Fly volume holds `/app/data`, so
   `data/tenants.db` survives redeploys.
 
-RAG's vector storage is **Chroma Cloud** (managed, not something this deploy runs itself) — a
-second, private `<name>-chromadb` Fly app (self-hosted ChromaDB) was the original plan, dropped
-in favor of Chroma Cloud before it was ever deployed. See "Vector storage: Chroma Cloud" below.
+RAG's vector storage is **Chroma Cloud** (managed) — see "Vector storage: Chroma Cloud" below.
 
 **Tasks:**
 
-- ~~Fix a lifespan bug found while researching Fly~~ **done** — `api/app.py`'s `lifespan()`
-  called `startup(chromadb=True, ...)`, which shells out to `docker run` when ChromaDB isn't
-  reachable. A Fly Machine has no Docker daemon of its own, so that call would fail and
-  `start_chromadb()` responds to a failed start with `raise SystemExit(0)` — killing the API
-  before it serves a single request. Fixed to `chromadb=False`, mirroring the guard Phase 4
-  already has for Phoenix. `/health`'s own `is_vector_store_running()` check (`src/utils.py`)
-  still reports reachability truthfully for whichever RAG backend is actually active.
-- ~~Add a long-running `api` service to `docker-compose.yml`~~ **done** — for local dev/testing
-  parity (`docker compose up api` runs the exact command/healthcheck Fly runs), **not** the
-  production deploy path — `fly.toml` is.
-- ~~Resolve the non-root-user/volume-permission conflict~~ **done** — a Fly (or Docker) volume
-  is created empty and root-owned; the image's non-root `appuser` can't write to it as-is. Fixed
-  via `docker-entrypoint.sh`: runs as root, `chown`s `/app/data`, then `exec gosu appuser "$@"`
-  (`gosu`, not a wrapping shell, so container signals still reach the app process directly).
-  `Dockerfile`'s `USER appuser` line moved into this entrypoint.
+- ~~Fix `api/app.py`'s `lifespan()`~~ **done** — it called `startup(chromadb=True, ...)`, which
+  shells out to `docker run` when ChromaDB isn't reachable; a Fly Machine has no Docker daemon,
+  so that failed and killed the API on boot. Fixed to `chromadb=False`, mirroring Phase 4's
+  existing guard for Phoenix. `/health`'s `is_vector_store_running()` (`src/utils.py`) reports
+  reachability for whichever RAG backend is actually active.
+- ~~Add a long-running `api` service to `docker-compose.yml`~~ **done** — local dev/testing
+  parity only; `fly.toml` is the production deploy path.
+- ~~Resolve the non-root-user/volume-permission conflict~~ **done** — a Fly volume is created
+  empty and root-owned; `docker-entrypoint.sh` runs as root, `chown`s `/app/data`, then
+  `exec gosu appuser "$@"` (a real exec, not a wrapping shell, so container signals still reach
+  the app directly).
 - ~~Write `fly.toml`~~ **done** — `force_https = true`, health check against `/health`, a
-  `[mounts]` entry for the data volume. Built from this repo's `Dockerfile` directly via
-  `fly deploy` for this first pass; wiring CI to auto-deploy `image-publish.yml`'s already
-  -published GHCR image on release is a clean fast-follow, not bundled in here.
-- ~~Write `docs/DEPLOYMENT.md`~~ **done** — the Fly runbook: creating the app, its volume,
-  `fly secrets set` for `ANTHROPIC_API_KEY` / `TENANT_DB_ENCRYPTION_KEY` / `SENTRY_DSN` /
-  Chroma Cloud's three vars, deploy commands, and the `TENANT_DB_ENCRYPTION_KEY` backup
-  reminder Phase 3 already established.
+  `[mounts]` entry for the data volume.
+- ~~Write `docs/DEPLOYMENT.md`~~ **done** — the Fly runbook, including secrets setup and the
+  `TENANT_DB_ENCRYPTION_KEY` backup reminder Phase 3 established.
 
-**Vector storage: Chroma Cloud.** Replaces self-hosted ChromaDB (`src/rag/vector_store.py`)
-with managed storage — no self-hosted infra to run or back up, and it's what the "Architecture"
-section above deploys instead of a second Fly app.
+**Vector storage: Chroma Cloud.** Replaces self-hosted ChromaDB (`src/rag/vector_store.py`) —
+managed, no self-hosted infra to run or back up.
 
-*Originally scoped as full hybrid search* (dense + sparse embeddings, Reciprocal Rank Fusion)
-using Chroma Cloud's hosted Qwen (dense) and Splade (sparse) embedding functions. Blocked: both
-depend on a JSON schema-validation file that's missing from every published `chromadb-client`
-wheel checked (1.5.6 through 1.5.9) *and* from Chroma's own GitHub source — a genuine upstream
-bug, not fixable client-side. **Shipped as dense-only instead**, embeddings computed
-client-side (the same `get_simple_embedding`/`get_ollama_embedding` self-hosted mode already
-used) — Chroma Cloud is used purely for storage/search, not its hosted embedding functions.
-Revisit hybrid search once the upstream bug is fixed.
+Dense-only, not the originally-planned hybrid search (dense + sparse via Chroma Cloud's hosted
+Qwen/Splade embedding functions) — both depend on a JSON schema file missing from every
+published `chromadb-client` wheel (1.5.6-1.5.9) and from Chroma's own GitHub source, an
+upstream bug. Embeddings are computed client-side instead (the same
+`get_simple_embedding`/`get_ollama_embedding` self-hosted mode already used); Chroma Cloud is
+used purely for storage/search. Revisit hybrid search once the upstream bug is fixed.
 
 Design:
 
 - `PokemonVectorStore` picks its backend by whether `config.chroma_api_key` is set — same
-  "presence of the value is the switch" idiom as `platform_db_url`/`sentry_dsn`. Set: Chroma
-  Cloud via the official `chromadb` client (`CloudClient`, no schema — see above). Unset (local
-  dev/tests default): self-hosted ChromaDB, unchanged from before.
+  "presence of the value is the switch" idiom as `platform_db_url`/`sentry_dsn`.
 - Documents over Chroma's 16 KiB per-document limit are chunked (`src/rag/chunking.py`,
-  line-span splitting — not one of Chroma's own named strategies, just a simple starting
-  point; none of this project's current documents are anywhere near the limit) and tagged with
-  `source_document_id`/`chunk_index` metadata, deduped back to one result per source document
-  via `GroupBy` at query time. A chunked document currently reuses its whole-document embedding
-  for every chunk — correct today only because nothing actually gets chunked; revisit (embed
-  each chunk's own text) if that changes.
-- No per-tenant/per-org sharding: the `pokemon`/`smogon_strategy` collections hold shared,
-  static reference data — every tenant queries the same knowledge base, nothing here is
-  tenant-owned. Would apply if a future phase embeds tenant-specific documents.
-- No real data migration: this project holds no irreplaceable embedded content —
-  `scripts/migrate_to_chroma_cloud.py` just re-runs the existing PokeAPI/Smogon ingestion
-  (`rag/ingest.py`) against whichever backend is now configured.
+  line-span splitting) and tagged with `source_document_id`/`chunk_index`, deduped to one
+  result per source document via `GroupBy` at query time. Not exercised today — nothing
+  currently exceeds the limit.
+- No per-tenant sharding: the `pokemon`/`smogon_strategy` collections are shared reference
+  data, not tenant-owned.
+- No data migration needed: `scripts/migrate_to_chroma_cloud.py` re-runs the existing
+  PokeAPI/Smogon ingestion (`rag/ingest.py`) against whichever backend is configured.
 
 Tasks:
 
-- ~~Bump `chromadb-client` to `>=1.5.9`~~ **done** — `1.5.1` (the prior pin) fails to even
-  `import chromadb` on this project's Python 3.14 runtime (a `pydantic.v1` incompatibility);
-  `1.5.9` fixes this cleanly.
+- ~~Bump `chromadb-client` to `>=1.5.9`~~ **done** — `1.5.1` doesn't import on Python 3.14.
 - ~~Add `chroma_api_key`/`chroma_tenant`/`chroma_database`/`chroma_host` to `src/config.py`~~
-  **done** — `chroma_host` is optional, only needed for a non-default/dedicated deployment.
+  **done** — `chroma_host` is optional, only for a non-default deployment.
 - ~~Rewrite `PokemonVectorStore` for the two-backend design above~~ **done**.
 - ~~Write `src/rag/chunking.py`~~ **done**.
-- ~~Write `scripts/migrate_to_chroma_cloud.py`~~ **done**, and run for real against a live
-  Chroma Cloud account — 40 Pokemon plus their Smogon strategy documents ingested and
-  query-verified end-to-end.
+- ~~Write `scripts/migrate_to_chroma_cloud.py`~~ **done**.
 - ~~Update `.env.example` / `.env.op` / `docs/1PASSWORD.md`~~ **done**.
-- ~~Update `docker-compose.yml`'s `api` service~~ **done** — `RATE_LIMIT_STORAGE_URI` was
-  missing from an earlier task's own env passthrough; added alongside these.
+- ~~Update `docker-compose.yml`'s `api` service~~ **done**.
 
-**A real secret-hygiene incident, during this work's own test-isolation:** a test monkeypatched
-`config.config`'s attributes to fake values, but `rag/vector_store.py`/`utils.py` had already
-bound their own `from config import config` reference *before* an unrelated test file's
-`importlib.reload(cfg_module)` replaced `config.config` with a new object elsewhere in the same
-session — verified directly (`config.config is vector_store.config` is `True` before that
-reload, `False` after). The monkeypatch silently affected the wrong object; the code under test
-kept reading the stale one, which still held a real `CHROMA_API_KEY` from the local `.env`, and
-that value surfaced in a test failure message. Fixed by patching the attribute on each
-consuming module's own bound reference, not `config.config` generically — see
-`tests/conftest.py`'s `_isolate_chroma_api_key` for the full explanation. The exposed key was
-rotated.
+Tests (mocked by default — no live external service required for `make test`):
 
-Tests (mocked by default, matching this project's standing policy — no live external service
-required for `make test`):
-
-- `tests/rag/test_chunking.py` — pure unit tests, no live service.
-- `tests/rag/test_vector_store_cloud.py` — `chromadb`'s own classes mocked throughout.
-- `tests/memory/test_memory.py`'s `TestIsVectorStoreRunning` — both branches of
-  `is_vector_store_running()`.
-- A new `requires_chroma_cloud` pytest marker (`pytest.ini`, mirroring `requires_chromadb`) for
-  live-service coverage (`tests/rag/test_chroma_cloud_live.py`) — deselected from `make test`
-  by default (`make test-chroma-cloud` runs it explicitly, against a real account).
+- `tests/rag/test_chunking.py`, `tests/rag/test_vector_store_cloud.py`.
+- `tests/memory/test_memory.py`'s `TestIsVectorStoreRunning`.
+- `requires_chroma_cloud` pytest marker (mirroring `requires_chromadb`) for live-service
+  coverage (`tests/rag/test_chroma_cloud_live.py`), deselected by default —
+  `make test-chroma-cloud` runs it against a real account.
 
 **Security checklist (required, not optional — this phase isn't done without these):**
 
@@ -707,15 +654,13 @@ required for `make test`):
   reverse proxy of our own. (OWASP: [Transport Layer Protection Cheat
   Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Protection_Cheat_Sheet.html))
 - ~~**Rate limiting / DoS protection**~~ **done, app-level, Redis-backed** — Fly's edge is a
-  load balancer, not a WAF, so this has to live in the app regardless of host: `slowapi`, keyed
-  by client IP, `default_limits` applied globally so it also covers `/health` and Phase 15's
-  future no-key registration endpoint. `RATE_LIMIT_STORAGE_URI` (Upstash Redis) is the counter
-  store — a shared count across however many instances are running, and one that survives a
-  redeploy (an in-memory counter, the fallback when this is unset, does neither).
-  `in_memory_fallback_enabled=True` is set explicitly so a Redis outage degrades to per-instance
-  counting instead of 500ing every request (not slowapi's own default — verified by reading its
-  source). Tests: `tests/api/test_rate_limiting.py`. (OWASP: [Denial of Service Cheat
-  Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html))
+  load balancer, not a WAF, so this has to live in the app: `slowapi`, keyed by client IP,
+  `default_limits` applied globally so it also covers `/health` and Phase 15's future no-key
+  registration endpoint. `RATE_LIMIT_STORAGE_URI` (Upstash Redis) backs the counter across
+  however many instances are running and across redeploys.
+  `in_memory_fallback_enabled=True` so a Redis outage degrades to per-instance counting instead
+  of 500ing every request. Tests: `tests/api/test_rate_limiting.py`. (OWASP: [Denial of Service
+  Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html))
 - **Input validation at every boundary** — re-confirmed true: every route still validates
   through a typed Pydantic model or a typed `Query(...)` param, never a raw dict. (OWASP:
   [Input Validation Cheat

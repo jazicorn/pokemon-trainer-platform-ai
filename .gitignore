@@ -155,6 +155,16 @@ venv.bak/
 # mkdocs documentation
 /site
 
+# Root-level docs mirrored into docs/ at build time (see `make docs-build`) so
+# MkDocs — which can't reference files outside its own docs_dir — can serve
+# them. Generated, not source of truth; never commit these copies.
+/docs/index.md
+/docs/ROADMAP.md
+/docs/ROADMAP_PLATFORM.md
+/docs/ARCHITECTURE.md
+/docs/HISTORY.md
+/docs/CHANGELOG.md
+
 # mypy
 .mypy_cache/
 .dmypy.json
