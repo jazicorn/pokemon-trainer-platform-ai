@@ -122,11 +122,11 @@ startup.
 
 ## Running Tests
 
-Run the full test suite (excluding ChromaDB integration tests that require
-the service):
+Run the full test suite (excluding tests that need a live ChromaDB or
+Chroma Cloud account):
 
 ```bash
-uv run pytest tests/ -v --tb=short -m "not requires_chromadb"
+uv run pytest tests/ -v --tb=short -m "not requires_chromadb and not requires_chroma_cloud"
 ```
 
 Run tests for a specific component:

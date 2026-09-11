@@ -1,6 +1,6 @@
 # Deployment (Fly.io)
 
-How to run the Web API as a real, publicly-reachable service (ROADMAP.md Phase 9). This is the
+How to run the Web API as a real, publicly-reachable service (ROADMAP.md Phase 14). This is the
 production deploy path — `docker-compose.yml`'s `api` service is for local dev/testing parity
 only, not what actually runs in production.
 
@@ -14,7 +14,7 @@ One Fly app:
   redeploys.
 
 RAG's vector storage is **Chroma Cloud** (a managed service, not something this deploy runs
-itself) — see ROADMAP.md Phase 9. Phase 9 originally planned a second, private
+itself) — see ROADMAP.md Phase 14. Phase 14 originally planned a second, private
 `<name>-chromadb` Fly app (self-hosted ChromaDB); Chroma Cloud replaces that outright, so
 there's no second app or volume for it here.
 
@@ -74,7 +74,7 @@ fly ssh console --app <name>-api -C "uv run python scripts/provision_tenant.py '
 
 ## Security checklist re-verification
 
-Re-confirmed true as of this deploy (ROADMAP.md Phase 9's checklist) — not new code, just
+Re-confirmed true as of this deploy (ROADMAP.md Phase 14's checklist) — not new code, just
 re-checked by direct inspection since the checklist was originally written:
 
 - **Input validation** — every route still takes a typed Pydantic request model or a typed
@@ -89,7 +89,7 @@ re-checked by direct inspection since the checklist was originally written:
 curl https://<name>-api.fly.dev/health
 # -> {"status": "ok", "chromadb": true}
 # "chromadb" here means "the RAG backend is reachable" (Chroma Cloud, since
-# CHROMA_API_KEY is set — see ROADMAP.md Phase 9), not literally
+# CHROMA_API_KEY is set — see ROADMAP.md Phase 14), not literally
 # self-hosted ChromaDB.
 
 curl -X POST https://<name>-api.fly.dev/trade/evaluate \
@@ -100,7 +100,7 @@ curl -X POST https://<name>-api.fly.dev/trade/evaluate \
 # TLS is enforced by Fly's edge itself (force_https) — plain HTTP should redirect, never serve:
 curl -i http://<name>-api.fly.dev/health
 
-# Rate limiting (app-level, not Fly's edge — see ROADMAP.md Phase 9):
+# Rate limiting (app-level, not Fly's edge — see ROADMAP.md Phase 14):
 for i in $(seq 1 110); do curl -s -o /dev/null -w "%{http_code}\n" \
   https://<name>-api.fly.dev/health; done | sort | uniq -c
 # -> some requests eventually return 429

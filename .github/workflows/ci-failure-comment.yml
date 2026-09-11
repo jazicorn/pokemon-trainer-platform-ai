@@ -48,7 +48,7 @@ jobs:
                 docPath: "docker-compose.yml",
               },
               "CI Test": {
-                repro: 'uv run pytest tests/ -v --tb=short -m "not requires_chromadb"',
+                repro: 'uv run pytest tests/ -v --tb=short -m "not requires_chromadb and not requires_chroma_cloud"',
                 docName: "TESTING.md",
                 docPath: "docs/REFERENCE/TESTING.md",
               },

@@ -74,6 +74,17 @@ jobs:
         # and for `gh` to auto-detect owner/repo — running it as the very
         # first step (before any checkout exists) fails outright with
         # "not a git repository".
+        #
+        # Checks conclusion, not just status: this step originally only
+        # waited for status == "completed" and never looked at whether the
+        # run actually passed. A failing "CI Test"/"CI Quality" run still
+        # reaches "completed", so cz bump ran anyway on a commit that never
+        # passed tests — confirmed live (v0.9.0 was tagged, released, and
+        # published to GHCR from a commit with a failing pytest run). Now
+        # fails this step — skipping every step after it, so no bump, no
+        # tag push, no GitHub Release, and image-publish.yml (which only
+        # triggers off the tag this job pushes) never fires either — if any
+        # required check's conclusion isn't "success".
         if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -90,13 +101,18 @@ jobs:
             wait_for+=("CI Image Build")
           fi
           echo "Waiting for: ${wait_for[*]:-<none>} on $GITHUB_SHA"
+
+          declare -A conclusions
+          all_done=false
           for _ in $(seq 1 60); do  # ~15 min ceiling
             all_done=true
             for name in "${wait_for[@]}"; do
-              status=$(gh run list --repo "${{ github.repository }}" \
+              result=$(gh run list --repo "${{ github.repository }}" \
                 --branch "${{ github.ref_name }}" --workflow "$name" \
-                --json headSha,status --jq \
-                "[.[] | select(.headSha == \"$GITHUB_SHA\")] | .[0].status // \"pending\"")
+                --json headSha,status,conclusion --jq \
+                "[.[] | select(.headSha == \"$GITHUB_SHA\")] | (.[0].status // \"pending\") + \" \" + (.[0].conclusion // \"none\")")
+              status="${result%% *}"
+              conclusions[$name]="${result#* }"
               if [ "$status" != "completed" ]; then
                 echo "  $name: $status"
                 all_done=false
@@ -104,12 +120,27 @@ jobs:
             done
             if $all_done; then
               echo "All CI checks completed for $GITHUB_SHA."
-              exit 0
+              break
             fi
             sleep 15
           done
-          echo "Timed out waiting for CI checks on $GITHUB_SHA." >&2
-          exit 1
+          if ! $all_done; then
+            echo "Timed out waiting for CI checks on $GITHUB_SHA." >&2
+            exit 1
+          fi
+
+          failed=()
+          for name in "${wait_for[@]}"; do
+            echo "  $name: ${conclusions[$name]}"
+            if [ "${conclusions[$name]}" != "success" ]; then
+              failed+=("$name (${conclusions[$name]})")
+            fi
+          done
+          if [ "${#failed[@]}" -gt 0 ]; then
+            echo "Not releasing — failed check(s): ${failed[*]}" >&2
+            exit 1
+          fi
+          echo "All CI checks passed for $GITHUB_SHA."
 
       - name: Install uv
         uses: astral-sh/setup-uv@v10.0.1

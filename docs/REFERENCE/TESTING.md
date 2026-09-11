@@ -5,11 +5,11 @@ This guide covers how to run and work with tests in the Pokemon Trainer Platform
 ## Quick Start
 
 ```bash
-# Run all tests (excludes ChromaDB-dependent tests)
-uv run pytest tests/ -v --tb=short -m "not requires_chromadb"
+# Run all tests (excludes tests needing a live ChromaDB or Chroma Cloud account)
+uv run pytest tests/ -v --tb=short -m "not requires_chromadb and not requires_chroma_cloud"
 
-# Skip ChromaDB/Docker tests explicitly
-uv run pytest tests/ -v --tb=short -m "not requires_chromadb"
+# Same thing, spelled out explicitly
+uv run pytest tests/ -v --tb=short -m "not requires_chromadb and not requires_chroma_cloud"
 
 # Run specific test file
 uv run pytest tests/data/test_data.py -v
@@ -20,18 +20,19 @@ uv run pytest tests/rag/test_rag.py::TestEmbedding -v
 
 ## pytest.ini Defaults
 
-`pytest.ini` at the project root configures two defaults that apply to every
+`pytest.ini` at the project root configures defaults that apply to every
 `uv run pytest` invocation:
 
 | Setting | Value | Effect |
 | ------- | ----- | ------ |
 | `asyncio_mode = strict` | strict | async tests must be explicitly marked with `@pytest.mark.asyncio` or `pytestmark` |
-| `markers = requires_chromadb` | registered | ChromaDB tests marked and filterable with `-m "not requires_chromadb"` |
+| `markers = requires_chromadb` | registered | needs a live local ChromaDB — filterable with `-m "not requires_chromadb"` |
+| `markers = requires_chroma_cloud` | registered | needs a live Chroma Cloud account/API key — filterable with `-m "not requires_chroma_cloud"` |
 
 Override output capturing when you want stdout suppressed (e.g. CI):
 
 ```bash
-uv run pytest tests/ -v --tb=short --capture=fd -m "not requires_chromadb"
+uv run pytest tests/ -v --tb=short --capture=fd -m "not requires_chromadb and not requires_chroma_cloud"
 ```
 
 ## Test Structure
@@ -254,7 +255,7 @@ No API keys or Docker required for the unit test suite:
 
 ```bash
 # All unit tests — API keys are stubbed automatically by conftest.py
-uv run pytest tests/ -v --tb=short --capture=fd -m "not requires_chromadb"
+uv run pytest tests/ -v --tb=short --capture=fd -m "not requires_chromadb and not requires_chroma_cloud"
 ```
 
 If Docker is available in CI, drop the `-m` filter to run ChromaDB tests too.
@@ -619,7 +620,7 @@ runs every time, not a one-off.
 
 Before committing:
 
-- [ ] All tests pass: `uv run pytest tests/ -v --tb=short -m "not requires_chromadb"`
+- [ ] All tests pass: `uv run pytest tests/ -v --tb=short -m "not requires_chromadb and not requires_chroma_cloud"`
 - [ ] No type errors: `uv run pyright src/ tests/`
 - [ ] Code formatted: `uv run ruff format .`
 - [ ] Linting passes: `uv run ruff check .`
