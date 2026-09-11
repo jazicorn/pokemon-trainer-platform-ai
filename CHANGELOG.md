@@ -1,3 +1,9 @@
+## v0.15.0 (2026-09-11)
+
+### ✨ Features
+
+- **admin**: add local tenant management web UI (Roadmap Phase 16)
+
 ## v0.14.0 (2026-09-11)
 
 ### ✨ Features
