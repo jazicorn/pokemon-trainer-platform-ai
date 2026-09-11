@@ -6,7 +6,7 @@ from the global `PLATFORM_DB_URL` (the CLI's single configured platform
 database) — this is operator-owned: one row per tenant, each with its own
 encrypted `platform_db_url` and hashed API key. See ROADMAP.md Phase 3.
 
-Provisioning is admin-only for now (`scripts/provision_tenant.py`); Phase 10
+Provisioning is admin-only for now (`scripts/provision_tenant.py`); Phase 15
 adds self-serve registration on top of this same schema.
 """
 

@@ -1,9 +1,9 @@
 """Full-stack integration tests and cross-cutting auth coverage that don't
-belong to any single phase (ROADMAP.md Phase 7).
+belong to any single phase (ROADMAP.md Phase 8).
 
-Audited tests/api/ against Phase 8's endpoint table: every route already has
-dedicated coverage from Phases 3-6, no gaps found. What's below is what
-those per-route tests can't cover on their own: chaining real routes
+Audited tests/api/ against Phase 9's endpoint table: every route already has
+dedicated coverage from the phases that added it, no gaps found. What's below
+is what those per-route tests can't cover on their own: chaining real routes
 together, and one real tenant's key resolving across every route type.
 """
 
@@ -62,7 +62,7 @@ def client(isolated_tenants_db: Path, encryption_key: str, isolated_offers_db: P
 
 class TestOfferSendThenFetch:
     """Send an offer via one route, fetch it back via another — something no
-    single phase's own tests cover, since Phase 5's tests mock
+    single phase's own tests cover, since Phase 6's tests mock
     send_trade_offer/get_pending_offers independently rather than chaining
     the real TradeOffersManager/SQLite flow between them. Only the LLM
     boundary (evaluate_trade) is mocked; everything else is real.

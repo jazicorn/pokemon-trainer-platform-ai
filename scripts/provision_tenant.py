@@ -6,7 +6,7 @@ and inserts the row into `data/tenants.db`. The generated key is printed
 exactly once here — it is never stored or retrievable again, so capture it
 now and hand it to the tenant.
 
-This is the only way to create a tenant until Phase 10's self-serve
+This is the only way to create a tenant until Phase 15's self-serve
 registration exists on top of the same schema.
 
 Usage:

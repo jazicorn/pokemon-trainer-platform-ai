@@ -1,13 +1,12 @@
 # Roadmap: Platform, Launch & Growth
 
-Continues [ROADMAP.md](ROADMAP.md) — Phases 1-11 build the API itself (dependencies through
+Continues [ROADMAP.md](ROADMAP.md) — Phases 1-16 build the API itself (dependencies through
 admin tooling). This file picks up once that exists: turning it into a real, public,
 monetized multi-tenant product — hosting and billing, the actual public website, security
 hardening for genuine public exposure, and the long tail of operational maturity (backups,
-versioning, dependency scanning, client SDKs, webhooks, staging, uptime monitoring, provider
-fallback, support tooling, growth analytics).
+client SDKs, webhooks, staging, uptime monitoring, provider fallback, growth analytics).
 
-Phase numbers are shared and continuous with ROADMAP.md — Phase 12 here is really "Phase 12
+Phase numbers are shared and continuous with ROADMAP.md — Phase 17 here is really "Phase 17
 overall," not a reset.
 
 **Testing policy — same as ROADMAP.md, applies here too:** a phase isn't done until its own
@@ -19,59 +18,7 @@ regression.
 
 ---
 
-## Phase 12 — Project Documentation Site (GitHub Pages)
-
-**Goal:** A browsable docs/landing site at `https://jazicorn.github.io/pokemon-trainer-platform-ai/`,
-built from the project's existing `README.md` and `docs/` markdown — no new content authored
-just for this, just a better way to browse what's already written.
-
-**Independent of the other phases:** unlike Phases 4–8 (which build on each other), this one
-has no dependency on the API work at all — it's just documentation tooling. It can be done any
-time, including before Phase 2, without blocking or being blocked by anything else here.
-
-**Design:**
-
-- **MkDocs + the Material theme**, not Docusaurus (JS/React — heavier tooling for a Python
-  project) or hand-written HTML (loses search/nav for free, and means maintaining content in
-  two places). MkDocs renders the existing markdown files directly, is itself just a
-  `uv`-installable Python tool consistent with the rest of this project, and gets full-text
-  search + navigation with no extra work.
-- Site structure mirrors the existing docs layout: Home (`README.md`), Getting Started
-  (`docs/GETTING_STARTED.md`), Reference (`docs/REFERENCE/*.md`), Roadmap (`ROADMAP.md`),
-  History (`HISTORY.md` — Commitizen's auto-generated changelog from Phase-adjacent release work)
-- Deployed via a new `.github/workflows/docs-publish.yml`, building and pushing to a
-  `gh-pages` branch on every push to `main` that touches `docs/**`, `README.md`, `ROADMAP.md`,
-  `HISTORY.md`, or `mkdocs.yml` — the same narrowly-scoped path-filtering `image-build.yml`
-  already uses elsewhere in this repo
-- GitHub Pages itself (repo Settings → Pages, serving from the `gh-pages` branch) is a
-  one-time manual step in the GitHub UI — no workflow file can do that part
-
-**Tasks:**
-
-- Add `mkdocs` + `mkdocs-material` as a new `docs` dependency group in `pyproject.toml`
-  (not `dev` — it's not needed for development or CI testing, only for building the site)
-- Create `mkdocs.yml` at the project root: site name, nav structure mapping to the files above,
-  Material theme config
-- Create `.github/workflows/docs-publish.yml` (`mkdocs gh-deploy`, path-filtered as above)
-- One-time: enable GitHub Pages in repo settings, pointed at the `gh-pages` branch
-- Add a badge/link in `README.md`'s header pointing at the published Pages URL, matching the
-  existing badge-row style
-
-**Verification:**
-
-```bash
-uv sync --group docs
-uv run mkdocs serve
-# → http://127.0.0.1:8000 — confirm the nav renders every docs/ page and README/ROADMAP/HISTORY
-
-git push origin main   # touching docs/**, README.md, ROADMAP.md, HISTORY.md, or mkdocs.yml
-# → docs-publish.yml runs, gh-pages branch updates
-# → https://jazicorn.github.io/pokemon-trainer-platform-ai/ reflects the change
-```
-
----
-
-## Phase 13 — Managed PostgreSQL Provisioning (Default Database Option)
+## Phase 17 — Managed PostgreSQL Provisioning (Default Database Option)
 
 **Goal:** Let a tenant register without bringing their own `PLATFORM_DB_URL` — provision a
 dedicated managed Postgres database for them automatically, using the exact same schema
@@ -81,12 +28,12 @@ your own database becomes the opt-out, not the opt-in.
 
 **Requires explicit disclosure, not just a technical default:** the whole point of encouraging
 the managed option is so tenant data lives on infrastructure you control — which only becomes
-Phase 14's cross-tenant analytics if tenants have actually agreed to that. A checkbox default
-doesn't substitute for a terms-of-service / privacy-policy tenants see and accept. Phase 16 is
+Phase 18's cross-tenant analytics if tenants have actually agreed to that. A checkbox default
+doesn't substitute for a terms-of-service / privacy-policy tenants see and accept. Phase 20 is
 where those actual pages get built — this phase links to them, not duplicates them.
 
 **Database hosting and analytics consent are two separate toggles, not one.** Where a tenant's
-database lives (`use_managed_db`) and whether their data feeds Phase 14's cross-tenant
+database lives (`use_managed_db`) and whether their data feeds Phase 18's cross-tenant
 analytics (`analytics_opt_in`) don't have to be the same decision. You already receive a
 self-hosted tenant's `platform_db_url` and use it on every request regardless — there's no
 technical reason to hard-exclude opted-in self-hosted tenants from analytics, only a consent
@@ -120,7 +67,7 @@ up real cloud infrastructure for managed Postgres anyway, so adopting that same 
 
 - One Postgres **server**, one **database per tenant** (not a shared database with a
   `tenant_id` column) — isolation by default: a bug or bad query affecting one tenant's data
-  can't touch another's. Doesn't block Phase 14's cross-tenant analytics, which reads across
+  can't touch another's. Doesn't block Phase 18's cross-tenant analytics, which reads across
   many tenant databases via ETL regardless of how they're separated.
 - A managed cloud Postgres (RDS, Cloud SQL, Supabase, etc.) rather than self-hosting the
   `postgres` service from `docker-compose.yml` for this — that service is a dev convenience;
@@ -129,11 +76,11 @@ up real cloud infrastructure for managed Postgres anyway, so adopting that same 
   automatically against each new tenant database at provisioning time — `create_tenant()`
   (Phase 3) gains a `managed: bool` path that provisions the database first, then stores the
   resulting connection string exactly like a self-hosted one (encrypted, same `tenants` table).
-- Phase 10's `POST /accounts/register` gains a `use_managed_db: bool` field (**defaulting to
+- Phase 15's `POST /accounts/register` gains a `use_managed_db: bool` field (**defaulting to
   `true`**, per your direction) — when true, `platform_db_url` in the request is ignored/omitted
   entirely and a database is provisioned instead — plus the independent `analytics_opt_in: bool`
   field described above.
-- Sets up Phase 15 naturally: a paid tier can later mean "your own dedicated Postgres instance"
+- Sets up Phase 19 naturally: a paid tier can later mean "your own dedicated Postgres instance"
   vs. free tier's shared server, many-databases model.
 
 **Tasks:**
@@ -142,11 +89,11 @@ up real cloud infrastructure for managed Postgres anyway, so adopting that same 
   for you — cost and existing cloud relationships matter here)
 - Write the tenant-database provisioning function: create database, run schema migration,
   return the connection string
-- Extend `create_tenant()` (Phase 3) and `POST /accounts/register` (Phase 10) with the
+- Extend `create_tenant()` (Phase 3) and `POST /accounts/register` (Phase 15) with the
   `use_managed_db` and `analytics_opt_in` fields
-- Link the registration flow to Phase 16's Privacy Policy / Terms pages — the actual disclosure
+- Link the registration flow to Phase 20's Privacy Policy / Terms pages — the actual disclosure
   tenants see and accept, not duplicated here
-- Add a database-per-tenant quota/cleanup story for deactivated tenants (Phase 11's
+- Add a database-per-tenant quota/cleanup story for deactivated tenants (Phase 16's
   deactivate action) — decide whether a deactivated tenant's managed database is dropped,
   retained, or archived
 - Migrate `TENANT_DB_ENCRYPTION_KEY` to KMS-backed envelope encryption: set up the KMS master
@@ -176,7 +123,7 @@ sqlite3 data/tenants.db "SELECT platform_db_url_encrypted FROM tenants LIMIT 2"
 
 ---
 
-## Phase 14 — Cross-Tenant Analytics via ClickHouse
+## Phase 18 — Cross-Tenant Analytics via ClickHouse
 
 **Goal:** Platform-wide insights ("which Pokemon are trending across every tenant this week")
 fed from every tenant database that's actually opted in, using ClickHouse as the analytics layer.
@@ -189,9 +136,9 @@ large volumes, which is exactly what cross-tenant trend analysis is. That's why 
 separate, additive layer fed *from* Postgres, not a replacement for it.
 
 **Scope boundary — this is the load-bearing part:** this pipeline only reads from tenants with
-`analytics_opt_in == true` (Phase 13), regardless of whether their database is managed or
+`analytics_opt_in == true` (Phase 17), regardless of whether their database is managed or
 self-hosted — hosting location and analytics consent are independent flags, not the same
-decision (see Phase 13's design note). A tenant who hasn't opted in never has their data touch
+decision (see Phase 17's design note). A tenant who hasn't opted in never has their data touch
 this pipeline at all, no matter where their database lives.
 
 **Design:**
@@ -205,8 +152,8 @@ this pipeline at all, no matter where their database lives.
   `trades_fact(tenant_id, traded_at, offered_pokemon, requested_pokemon, status, ...)` — rather
   than querying live tenant databases directly for analytics (keeps analytical query load off
   the OLTP databases actually serving trade requests).
-- A read path for the aggregated data — initially internal/admin-only (queried from Phase 11's
-  admin web UI), with a public `/market/insights`-style endpoint as a later, natural Phase 15
+- A read path for the aggregated data — initially internal/admin-only (queried from Phase 16's
+  admin web UI), with a public `/market/insights`-style endpoint as a later, natural Phase 19
   paid-tier feature rather than something every tenant gets by default.
 
 **Tasks:**
@@ -216,7 +163,7 @@ this pipeline at all, no matter where their database lives.
 - Schedule it (cron, or a scheduled GitHub Actions workflow / external scheduler)
 - Add a query module (e.g. `src/analytics/clickhouse_client.py`) exposing the aggregate queries
   the platform actually wants (trending Pokemon, tier distribution shifts, etc.)
-- Surface a first read of this data in Phase 11's admin web UI before exposing it publicly
+- Surface a first read of this data in Phase 16's admin web UI before exposing it publicly
 
 **Verification:**
 
@@ -233,7 +180,7 @@ docker compose exec clickhouse clickhouse-client \
 
 ---
 
-## Phase 15 — Account Plans (Free & Paid Tiers)
+## Phase 19 — Account Plans (Free & Paid Tiers)
 
 **Goal:** Differentiate tenant capability by plan, and monetize the public API.
 
@@ -242,17 +189,17 @@ docker compose exec clickhouse clickhouse-client \
 - Extend the `tenants` table (Phase 3) with a `plan` column (`free` | `paid` to start — leave
   room for more tiers later rather than hardcoding a boolean).
 - **Free tier**: rate-limited (requests/day), managed-database tenants share the pooled
-  Postgres server from Phase 13, no access to Phase 14's aggregate market-insights endpoint.
+  Postgres server from Phase 17, no access to Phase 18's aggregate market-insights endpoint.
 - **Paid tier**: higher/no rate limits, a **dedicated** managed Postgres instance instead of a
-  shared server (a direct, natural use of Phase 13's per-tenant-database design — "dedicated
+  shared server (a direct, natural use of Phase 17's per-tenant-database design — "dedicated
   database" becomes a concrete paid-tier feature, not just an isolation detail), and access to
-  Phase 14's `/market/insights` endpoint as a premium feature.
+  Phase 18's `/market/insights` endpoint as a premium feature.
 - Billing via Stripe (or an equivalent processor) — hosted Checkout for the actual payment
   flow, webhooks for subscription created/upgraded/downgraded/cancelled events updating the
   tenant's `plan` column. This is ordinary SaaS billing integration code — building the
   webhook handlers and checkout flow isn't something I'd hold back on — but the Stripe account,
   pricing, and business terms are yours to set, not something to default here.
-- Rate limiting is already required as of Phase 9 (abuse prevention, applied uniformly).
+- Rate limiting is already required as of Phase 14 (abuse prevention, applied uniformly).
   This phase adds a second dimension on top: limits that vary *by plan*, not just a uniform
   abuse threshold — free vs. paid tenants get different caps, which is a business rule, not
   a security one.
@@ -264,9 +211,9 @@ docker compose exec clickhouse clickhouse-client \
 - Add `POST /billing/checkout` (redirects to Stripe Checkout) and `POST /billing/webhook`
   (verifies Stripe's signature, updates `plan` on subscription events)
 - Implement rate limiting keyed by tenant + plan (a reverse-proxy layer or in-app middleware —
-  whichever fits wherever Phase 9 actually deploys this)
-- Gate Phase 14's `/market/insights` endpoint behind `plan == "paid"`
-- Surface plan and usage in Phase 11's admin web UI
+  whichever fits wherever Phase 14 actually deploys this)
+- Gate Phase 18's `/market/insights` endpoint behind `plan == "paid"`
+- Surface plan and usage in Phase 16's admin web UI
 
 **Verification:**
 
@@ -283,15 +230,15 @@ curl -i -H "X-API-Key: <free-tier-key>" https://<domain>/market/insights  # → 
 
 ---
 
-## Phase 16 — Marketing/Signup Website & Launch Checklist
+## Phase 20 — Marketing/Signup Website & Launch Checklist
 
-**Goal:** A real product website — distinct from Phase 12's GitHub Pages docs site — covering
-signup, pricing (Phase 15), and the legal pages Phase 13 already links to. Phase 12 renders
+**Goal:** A real product website — distinct from Phase 10's GitHub Pages docs site — covering
+signup, pricing (Phase 19), and the legal pages Phase 17 already links to. Phase 10 renders
 existing docs as-is; this phase is new, purpose-built content: a landing page, a pricing page,
 the registration flow's front end, and the Privacy Policy / Terms of Service tenants actually
 read and accept.
 
-**This is the concrete home for Phase 13's disclosure requirement** — the Privacy Policy here
+**This is the concrete home for Phase 17's disclosure requirement** — the Privacy Policy here
 is where "what managed-tenant and opted-in data is used for" actually gets written down and
 shown to a tenant before they accept it, not a task deferred indefinitely.
 
@@ -299,14 +246,14 @@ shown to a tenant before they accept it, not a task deferred indefinitely.
 
 *Legal & compliance:*
 - Privacy Policy page — covers what tenant data is collected, how `analytics_opt_in` data
-  feeds Phase 14, and how managed-database hosting (Phase 13) works
-- Terms of Service page — API usage terms, billing terms for Phase 15's paid tier
+  feeds Phase 18, and how managed-database hosting (Phase 17) works
+- Terms of Service page — API usage terms, billing terms for Phase 19's paid tier
 
 *Security:*
 - Secrets off the frontend — no API keys, Stripe secret keys, or admin tokens ever reach
   client-side code on this site (the registration flow only ever talks to `POST
   /accounts/register`, which returns a key to display once, not embed in page source)
-- Force HTTPS (already required by Phase 9 for the API; applies here too)
+- Force HTTPS (already required by Phase 14 for the API; applies here too)
 
 *Discoverability & SEO:*
 - Meta titles + descriptions, per page
@@ -325,10 +272,10 @@ shown to a tenant before they accept it, not a task deferred indefinitely.
 
 *Conversion:*
 - Form validation on the signup form
-- Spam/abuse protection on signup — the same concern Phase 10's `POST /accounts/register`
+- Spam/abuse protection on signup — the same concern Phase 15's `POST /accounts/register`
   already flags as needing rate limiting; a CAPTCHA or honeypot on the front-end form is the
   other half of that
-- Site analytics (visits, signup conversion) — a *different* thing from Phase 14's product
+- Site analytics (visits, signup conversion) — a *different* thing from Phase 18's product
   analytics: this is ordinary web analytics for the marketing site itself (e.g. Plausible or
   similar), not tenant trade data
 - One clear call to action (e.g. "Get your API key") — cookie consent banner only needed if
@@ -348,7 +295,7 @@ curl -s https://<your-site> | grep -iE "sk_live|api[_-]?key|secret"
 
 ---
 
-## Phase 17 — Security Hardening
+## Phase 21 — Security Hardening
 
 **Goal:** Systematic security hardening across transport, application, and infrastructure
 layers, prioritized by what's load-bearing for a public multi-tenant API versus genuine
@@ -357,27 +304,28 @@ series](https://cheatsheetseries.owasp.org/index.html) per item rather than trea
 OWASP" as one task — it's a reference library, not a checklist itself.
 
 **The P0 tier (TLS, rate limiting, input validation, SQL injection, secrets management)
-now lives directly in ROADMAP.md's Phase 9, not here.** It was originally written up as this
+lives directly in ROADMAP.md's Phase 14, not here.** It was originally written up as this
 phase's own P0 tier, but a security checklist that only lives in a separate, later phase is
 exactly the mistake this project already made once with testing — a later "testing phase"
 let an earlier phase look done without ever having tests. Moved for the same reason: those
-five items gate Phase 9 directly now, not a cross-reference away from it. What's left here is
+five items gate Phase 14 directly now, not a cross-reference away from it. What's left here is
 P1 (land shortly after launch) and P2 (ongoing hardening) — genuinely later-tier items, not
 load-bearing for launch itself.
 
 **Everything with a natural phase already moved there — this phase is what's left over.**
 The P0 tier (TLS, rate limiting, input validation, SQL injection, secrets management) moved
-to ROADMAP.md's Phase 9. HTTP security headers moved there too (same reverse-proxy config,
-same moment). Cookie security + CSRF moved to Phase 11 (the concrete answer to "whichever
-cookie-based feature ships first"). TLS certificate expiry monitoring moved to Phase 26
-(already "external monitoring," the natural home). What's left here doesn't have a single
-phase to attach to — it's genuinely ongoing practice, not one-time setup work.
+to ROADMAP.md's Phase 14. HTTP security headers moved there too (same reverse-proxy config,
+same moment). Cookie security + CSRF moved to Phase 16 (the concrete answer to "whichever
+cookie-based feature ships first"). Dependency/vulnerability scanning moved to Phase 12 (no
+reason to wait). TLS certificate expiry monitoring moved to Phase 27 (already "external
+monitoring," the natural home). What's left here doesn't have a single phase to attach to —
+it's genuinely ongoing practice, not one-time setup work.
 
 **Two things already checked/fixed against the real codebase, not assumed:**
 - **SQL injection — already safe.** Every query in `src/data/platform_db.py` uses psycopg's
   `%s` parameterized placeholders, never string interpolation (verified across all 9
-  `cur.execute()` calls). Re-verified as part of Phase 9's own checklist now; the task here is
-  keeping it true as Phase 13/15 add more queries, not fixing something broken.
+  `cur.execute()` calls). Re-verified as part of Phase 14's own checklist now; the task here is
+  keeping it true as Phase 17/19 add more queries, not fixing something broken.
 - **Non-root Docker user — already fixed.** `Dockerfile` had no `USER` directive at all;
   added directly (no phase dependency, so no reason to wait) — `useradd --create-home` plus
   a `chown` of `/app`, switched to before `CMD`.
@@ -389,15 +337,15 @@ phase to attach to — it's genuinely ongoing practice, not one-time setup work.
   "secure today" doesn't mean "secure in a year" as ciphers age out.
 - **Recurring security review cadence** — this environment already has a `security-review`
   skill available; run it before releases that touch auth/payment/data-access code (Phases 3,
-  13, 15 especially), not just once at the end of this whole roadmap.
+  17, 19 especially), not just once at the end of this whole roadmap.
 
 **Tasks:**
 
 - Add a query-safety note to `CONTRIBUTING`-style guidance (or a lint rule, if one exists for
   this) flagging string-interpolated SQL as a blocker in review
-- Run an initial SSL Labs scan once Phase 9's domain exists; put a recurring reminder on
+- Run an initial SSL Labs scan once Phase 14's domain exists; put a recurring reminder on
   whatever calendar/task system you actually use — this isn't a one-time roadmap checkbox
-- Schedule recurring `security-review` runs tied to Phases 3/13/15 landing, not just ad hoc
+- Schedule recurring `security-review` runs tied to Phases 3/17/19 landing, not just ad hoc
 
 **Verification:**
 
@@ -410,60 +358,14 @@ docker run --rm pokemon-trainer-platform-ai-app whoami
 
 ---
 
-## Phase 18 — Interim Landing Page (Roadmap + Newsletter Signup)
-
-**Despite the number, treat this as early work, not late.** It depends only on Phase 12's
-GitHub Pages setup existing — nothing from Phases 2–17. Phase 16's full marketing/signup site
-is a long way off, since it needs most of the API actually built first; this exists to close
-that gap, so it belongs right alongside or shortly after Phase 12, not at the end of the list.
-
-**Goal:** A minimal public page — the roadmap, in readable form, plus an email signup for
-updates — so there's *something* to point people at and start building an audience during the
-gap before Phase 16 exists, rather than nothing at all until then.
-
-**Design:**
-
-- Reuse Phase 12's MkDocs/GitHub Pages site rather than standing up separate hosting — this
-  can be that site's homepage, with `ROADMAP.md` rendered below the fold (Phase 12 already
-  renders it as its own page; surface it prominently here too).
-- Email capture needs *some* backend, and GitHub Pages is static-only. For a stopgap like this,
-  don't build custom infrastructure for it — use an existing newsletter provider (Buttondown,
-  ConvertKit, ListMonk, etc.) with a simple embeddable form. The tradeoff is real (your
-  subscriber data lives on their platform, not yours) but building a custom signup backend for
-  something explicitly meant to be temporary is over-engineering the wrong thing. Revisit if
-  Phase 16 wants to own this list directly later — exporting from any mainstream provider is
-  standard.
-- Needs a one-line privacy note next to the signup form (what the email is used for, how to
-  unsubscribe) — a lightweight preview of Phase 16's real Privacy Policy, not a substitute for
-  it once that exists.
-
-**Tasks:**
-
-- Pick a newsletter provider and create the list
-- Add the landing content + embedded signup form to Phase 12's MkDocs site
-- Add the one-line privacy note near the form
-- Link it from the main README
-
-**Verification:**
-
-```bash
-uv run mkdocs serve
-# → homepage shows roadmap summary + signup form, both render correctly
-
-# Submit a test signup, confirm it actually lands in the provider's list
-# (manual check — this is a third-party integration, not something to script here)
-```
-
----
-
-## Phase 19 — Backups & Disaster Recovery
+## Phase 22 — Backups & Disaster Recovery
 
 **Goal:** Tenant data survives infrastructure failure, with a *tested* restore path — not just
 an assumption that the managed Postgres provider "probably handles it."
 
 **Design:**
 
-- Enable the managed Postgres provider's (Phase 13) automated snapshots, with an explicit
+- Enable the managed Postgres provider's (Phase 17) automated snapshots, with an explicit
   retention window and point-in-time recovery if the provider offers it.
 - `data/tenants.db` (Phase 3's SQLite tenant/API-key store) is a **separate** risk — it's not
   in managed Postgres, it's a local file on whatever host runs the API. Losing it means every
@@ -476,7 +378,7 @@ an assumption that the managed Postgres provider "probably handles it."
 
 **Tasks:**
 
-- Enable and configure automated Postgres backups/retention on the Phase 13 provider
+- Enable and configure automated Postgres backups/retention on the Phase 17 provider
 - Set up periodic backup of `data/tenants.db` to object storage
 - Write a restore runbook
 - Perform one real test restore; record actual timing against the documented RTO
@@ -493,9 +395,9 @@ cp /tmp/tenants-backup-test.db data/tenants.db
 
 ---
 
-## Phase 20 — Per-Tenant Cost/Usage Tracking
+## Phase 23 — Per-Tenant Cost/Usage Tracking
 
-**Goal:** Track real LLM spend per tenant — independent of Phase 15's request-count rate
+**Goal:** Track real LLM spend per tenant — independent of Phase 19's request-count rate
 limiting, which caps *how often* someone calls the API, not *how much each call costs*.
 
 **Why this is a separate concern from rate limiting:** a free-tier tenant sending long
@@ -516,7 +418,7 @@ or hand-maintain a pricing table that goes stale the moment a provider changes p
   4xx response naming the limit, not a generic failure.
 - Paid tier: soft cap — alert, don't block (they're paying for what they use).
 - Tenant-facing `GET /account/usage` so tenants see their own consumption without asking you,
-  plus a surfaced view in Phase 11's admin web UI.
+  plus a surfaced view in Phase 16's admin web UI.
 
 **Tasks:**
 
@@ -524,7 +426,7 @@ or hand-maintain a pricing table that goes stale the moment a provider changes p
 - Add the usage-tracking table/schema
 - Integrate `genai_prices` for cost conversion
 - Enforce the free-tier hard cap; implement the paid-tier alert
-- Add `GET /account/usage` and the Phase 11 admin surface
+- Add `GET /account/usage` and the Phase 16 admin surface
 
 **Verification:**
 
@@ -539,63 +441,10 @@ curl -H "X-API-Key: <key>" https://<domain>/account/usage
 
 ---
 
-## Phase 21 — API Versioning Strategy
-
-**Goal:** Introduce versioning *before* any external tenant integrates, so a future breaking
-change doesn't silently break existing integrations — retrofitting versioning onto a live API
-with real callers is far more painful than deciding this now, while there are still zero of them.
-
-**Design:**
-
-- URL-path versioning (`/v1/chat`, `/v1/trade/evaluate`, ...) — simplest and most discoverable
-  for API consumers, versus a header-based scheme.
-- `/health` stays unversioned — it's infrastructure-level, not business logic, matching its
-  existing exemption from API-key auth (Phase 3).
-- Decide (not necessarily exercise yet) a deprecation policy: how long `/v1` stays supported
-  once a `/v2` exists.
-
-**Tasks:**
-
-- Mount Phase 4/5's routes under an `APIRouter(prefix="/v1")` in `src/api/app.py`
-- Update all docs/examples (Phase 8, Phase 16, any client code) to the `/v1/...` paths
-- Write a short versioning/deprecation policy doc
-
-**Verification:**
-
-```bash
-curl -H "X-API-Key: $KEY" https://<domain>/v1/trade/suggestions   # → 200
-curl https://<domain>/trade/suggestions                            # → 404, forcing explicitness
-```
-
----
-
-## Phase 22 — Dependency & Vulnerability Scanning
-
-**Goal:** Automated detection of vulnerable dependencies, using tooling that's free on GitHub
-and hasn't come up despite Phase 17's whole focus on security.
-
-**Tasks:**
-
-- Add `.github/dependabot.yml` for the `pip` (uv-compatible) and `github-actions` ecosystems —
-  security alerts plus version-update PRs
-- Add a `pip-audit` step to `ci-quality.yml`
-- Decide the policy: block CI on critical/high findings, warn (don't block) on medium/low
-
-**Verification:**
-
-```bash
-uv run pip-audit
-# → 0 known vulnerabilities, or a clear actionable list
-```
-
-Also confirm Dependabot opens its first PR automatically once the config is merged.
-
----
-
-## Phase 23 — Client SDKs
+## Phase 24 — Client SDKs
 
 **Goal:** Lower integration friction for tenants with a thin client wrapping the versioned API
-(Phase 21) — directly relevant to the original "would I be calling the FastAPI endpoints from
+(Phase 7) — directly relevant to the original "would I be calling the FastAPI endpoints from
 my platform's backend" question this whole roadmap started from.
 
 **Design:**
@@ -623,7 +472,7 @@ result = client.evaluate_trade(offered_pokemon="Pikachu", requested_pokemon="Cha
 
 ---
 
-## Phase 24 — Outbound Webhooks
+## Phase 25 — Outbound Webhooks
 
 **Goal:** Let tenants receive events (e.g., "trade offer analysis complete") instead of polling
 `GET /offers`.
@@ -633,13 +482,13 @@ result = client.evaluate_trade(offered_pokemon="Pikachu", requested_pokemon="Cha
 - Tenant registers a webhook URL (new field on `tenants`, or a dedicated `webhooks` table for
   multiple event subscriptions).
 - Signed payload delivery — HMAC using a per-tenant secret, so tenants can verify authenticity,
-  the same pattern Stripe itself uses for its own webhooks (fitting, given Phase 15 already
+  the same pattern Stripe itself uses for its own webhooks (fitting, given Phase 19 already
   integrates Stripe).
 - Fire-and-forget with retry/backoff — never block the triggering request on webhook delivery.
 
 **Tasks:**
 
-- Add webhook URL + secret fields to tenant config (surfaced in Phase 11's admin UI)
+- Add webhook URL + secret fields to tenant config (surfaced in Phase 16's admin UI)
 - Implement signed delivery + retry logic
 - Document the payload schema and signature verification for tenants
 
@@ -652,14 +501,14 @@ result = client.evaluate_trade(offered_pokemon="Pikachu", requested_pokemon="Cha
 
 ---
 
-## Phase 25 — Staging Environment
+## Phase 26 — Staging Environment
 
-**Goal:** A pre-production environment mirroring Phase 9's real deployment, so changes touching
+**Goal:** A pre-production environment mirroring Phase 14's real deployment, so changes touching
 tenant data or billing get exercised before they reach real tenants.
 
 **Design:**
 
-- A second instance of the same image (Phase 9), not a separate codebase — separate
+- A second instance of the same image (Phase 14), not a separate codebase — separate
   `TENANT_DB_ENCRYPTION_KEY`, separate managed Postgres instance, Stripe **test-mode** keys.
 - Decide the promotion flow deliberately: auto-deploy every merge to staging, with production
   requiring a manual trigger/approval, is a reasonable default — but this is a real process
@@ -667,9 +516,9 @@ tenant data or billing get exercised before they reach real tenants.
 
 **Tasks:**
 
-- Stand up a second Phase 9 deployment target pointed at staging config
+- Stand up a second Phase 14 deployment target pointed at staging config
 - Implement the chosen promotion flow
-- Use Stripe test-mode keys in staging so Phase 15 billing can be exercised safely
+- Use Stripe test-mode keys in staging so Phase 19 billing can be exercised safely
 
 **Verification:**
 
@@ -680,7 +529,7 @@ curl https://staging.<your-domain>/health
 
 ---
 
-## Phase 26 — Status Page & Uptime Monitoring
+## Phase 27 — Status Page & Uptime Monitoring
 
 **Goal:** External visibility into uptime for tenants, and alerting for you when something is
 actually down — from outside your own infrastructure, so it still works when that infrastructure
@@ -690,9 +539,9 @@ doesn't.
 
 - An external uptime monitor (UptimeRobot, Better Uptime, etc. — free tiers exist) hitting the
   public `/health` endpoint on a schedule, alerting you on failure.
-- A public status page (many uptime tools include a hosted one) linked from Phase 16's site and
-  Phase 18's interim landing page.
-- **TLS certificate expiry monitoring** lives here too, not bolted onto Phase 9's deployment
+- A public status page (many uptime tools include a hosted one) linked from Phase 20's site and
+  Phase 11's interim landing page.
+- **TLS certificate expiry monitoring** lives here too, not bolted onto Phase 14's deployment
   mechanics — this phase is already "external monitoring/alerting," which is exactly what
   expiry checking is. Most managed platforms (Let's Encrypt via Caddy, Fly.io, Render)
   auto-renew, but silent auto-renewal failure is a real failure mode worth an explicit alert,
@@ -705,7 +554,7 @@ doesn't.
 - Set up an external monitor against `/health`
 - Set up a TLS expiry monitor against the same domain, same tool
 - Configure alerting to wherever you actually want to be notified
-- Link the public status page from Phases 16 and 18
+- Link the public status page from Phases 20 and 11
 
 **Verification:**
 
@@ -720,7 +569,7 @@ doesn't.
 
 ---
 
-## Phase 27 — LLM Provider Fallback
+## Phase 28 — LLM Provider Fallback
 
 **Goal:** Graceful degradation if the primary LLM provider has an outage, using multi-provider
 support `src/config.py` already has (Ollama, OpenAI, Gemini alongside Anthropic).
@@ -734,7 +583,7 @@ policy, not building new retry logic.
 
 - Wrap `trade_advisor`'s model in a `FallbackModel` chain: primary provider, then a configured
   secondary (e.g. Anthropic → OpenAI, or → a local/cloud Ollama model already supported).
-- Treat this as a **paid-tier** differentiator (Phase 15) — the free tier can reasonably just
+- Treat this as a **paid-tier** differentiator (Phase 19) — the free tier can reasonably just
   fail during a primary-provider outage; reliability is a fair thing to charge for.
 
 **Tasks:**
@@ -752,61 +601,31 @@ policy, not building new retry logic.
 
 ---
 
-## Phase 28 — Support Tooling
-
-**Set this up before Phase 10 ships, not after.** Self-serve registration means strangers can
-become tenants without you ever touching the process — the first one who hits a problem
-shouldn't be the reason you're scrambling to set up a support inbox that day.
-
-**Goal:** A working support channel ready before self-serve signup goes live, sized to actual
-early-stage volume rather than to what a support team would eventually need.
-
-**Tool: Plain (joinplain.com).** Built specifically for B2B/API companies talking to technical
-users — Slack-based triage, issue-linking — which fits this audience (developers integrating
-against an API) better than a general-purpose shared inbox. Help Scout remains the fallback if
-Plain's workflow ends up being more than needed day one: simpler, more generic, also cheap.
-
-**Tasks:**
-
-- Set up a Plain account and connect the support address (e.g. `support@<your-domain>`)
-- Link it from Phase 16's marketing site and Phase 18's interim landing page
-- Revisit around Phase 15 (paid tiers) — billing questions (refunds, disputes, "why was I
-  charged") raise support expectations; re-evaluate whether Plain still fits or whether it's
-  time to consider a heavier tool, rather than assuming the day-one choice holds forever
-
-**Verification:**
-
-```bash
-# Send a real test email to the support address and confirm it lands in the shared inbox
-```
-
----
-
 ## Phase 29 — Tenant Engagement & Retention Analytics
 
 **Goal:** Answer "are our customers actually sticking around" — a real, different question
-from what's already planned. Phase 14 aggregates *Pokemon trend data* across tenants; Phase
-20 tracks *LLM cost/tokens* per tenant. Neither says whether a tenant who signed up ever made
+from what's already planned. Phase 18 aggregates *Pokemon trend data* across tenants; Phase
+23 tracks *LLM cost/tokens* per tenant. Neither says whether a tenant who signed up ever made
 a real call, or is still using the API weeks later. That's a business-health question a SaaS
-product with paid tiers (Phase 15) genuinely needs answered.
+product with paid tiers (Phase 19) genuinely needs answered.
 
 **Tool: Mixpanel or PostHog** — either fits (product/event analytics: funnels, retention,
-cohorts). If Phase 16/18's marketing site already adopted one for visitor/conversion
+cohorts). If Phase 20/11's marketing site already adopted one for visitor/conversion
 tracking, reuse that same vendor rather than running two separate analytics tools for
 website visitors vs. API tenants, unless there's a specific reason to split them.
 
 **Scope — usage metadata only, never trade content:** events here are `tenant_id` + event
 name + timestamp (`tenant_registered`, `first_api_call`, per-endpoint usage). Never request
-bodies, never which Pokemon or trades were involved — that's Phase 14's domain, with its own
+bodies, never which Pokemon or trades were involved — that's Phase 18's domain, with its own
 separate consent story (`analytics_opt_in`). This is closer to ordinary product telemetry
-(understanding your own customers' engagement) than the tenant-data-privacy question Phase 14
+(understanding your own customers' engagement) than the tenant-data-privacy question Phase 18
 had to solve, but it's worth staying deliberate about that boundary rather than letting it
 blur — it's the same "state your scope explicitly" discipline as everywhere else in this doc.
 
 **Design:**
 
 - Instrument events server-side (tenants interact via API, not a browser — no client-side JS
-  tracking makes sense here): `tenant_registered` on successful registration (Phase 10),
+  tracking makes sense here): `tenant_registered` on successful registration (Phase 15),
   `first_api_call` on a new tenant's first successful request, and per-request usage events
   tagged by `tenant_id` and endpoint.
 - **Activation funnel**: signup → first real API call — what fraction of tenants ever use
@@ -816,10 +635,10 @@ blur — it's the same "state your scope explicitly" discipline as everywhere el
 
 **Tasks:**
 
-- Choose Mixpanel or PostHog (reuse Phase 16/18's choice if one was already made)
+- Choose Mixpanel or PostHog (reuse Phase 20/11's choice if one was already made)
 - Add a small `src/analytics/engagement.py` wrapping event-tracking calls
-- Emit `tenant_registered` from Phase 10's registration flow
-- Emit `first_api_call` / per-request usage events from Phase 6's request-logging middleware
+- Emit `tenant_registered` from Phase 15's registration flow
+- Emit `first_api_call` / per-request usage events from Phase 4's request-logging middleware
   (or a dedicated hook, if piggybacking on that middleware gets awkward)
 - Build the activation funnel and retention cohort views in the chosen tool's dashboard
 
@@ -832,4 +651,3 @@ uv run python scripts/provision_tenant.py "engagement-test" "postgresql://user:p
 curl -H "X-API-Key: <generated-key>" "http://localhost:8080/trade/suggestions?user_id=user_001"
 # → tenant_registered and first_api_call both visible in Mixpanel/PostHog's live view
 ```
-
