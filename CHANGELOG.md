@@ -1,3 +1,9 @@
+## v0.16.0 (2026-09-12)
+
+### ✨ Features
+
+- **api**: add managed Postgres provisioning + envelope encryption (Roadmap Phase 17) - Add api.managed_db: provisions a dedicated Aiven database + role per   tenant, runs the schema contract, returns a tenant-scoped connection   string - Add api.kms: Vault Transit-backed envelope encryption, a fresh   per-tenant DEK instead of the single static TENANT_DB_ENCRYPTION_KEY - create_tenant() takes use_managed_db/analytics_opt_in; POST   /v1/accounts/register defaults use_managed_db to true and requires   terms_accepted for that path - Existing tenant rows keep working on the old static key   (wrapped_dek IS NULL) until scripts/migrate_to_vault_encryption.py   runs them through the new scheme - Add AIVEN_ADMIN_DB_URL/VAULT_ADDR/VAULT_TOKEN config and docs
+
 ## v0.15.0 (2026-09-11)
 
 ### ✨ Features
