@@ -24,6 +24,7 @@ from agents import query_pokedex
 from agents.trade_advisor_api import evaluate_trade, get_pending_offers, get_trade_suggestions, send_trade_offer
 from agents.trade_market_analyst import query_market
 from api.auth import require_api_key
+from api.managed_db import ManagedDBNotConfiguredError
 from api.models import (
     ApiKeyResponse,
     ApiResponse,
@@ -31,6 +32,7 @@ from api.models import (
     EvaluateTradeRequest,
     QueryRequest,
     RegisterRequest,
+    RegisterResponse,
     SendOfferRequest,
 )
 from api.paths import (
@@ -161,21 +163,47 @@ async def health() -> dict[str, object]:
 
 @app.post(ACCOUNTS_REGISTER)
 @limiter.limit("5/minute")  # pyright: ignore[reportUntypedFunctionDecorator]
-async def accounts_register(request: Request, body: RegisterRequest) -> ApiKeyResponse:
+async def accounts_register(request: Request, body: RegisterRequest) -> RegisterResponse:
     """Self-serve tenant signup — mounted on `app`, not protected_router, since
     this is how a caller gets a key in the first place. Rate-limited well
     below the app-wide default: it's the one surface an anonymous caller can
     hit with no key at all, making it the obvious abuse target.
+
+    use_managed_db defaults True (ROADMAP_PLATFORM.md Phase 17) — a database
+    is provisioned automatically unless the caller opts out with their own
+    platform_db_url.
     """
+    if body.use_managed_db:
+        if not body.terms_accepted:
+            raise HTTPException(
+                status_code=422,
+                detail=f"terms_accepted must be true to provision a managed database. See {config.terms_url}.",
+            )
+    else:
+        if not body.platform_db_url:
+            raise HTTPException(status_code=422, detail="platform_db_url is required when use_managed_db is false")
+        try:
+            validate_platform_db_url(body.platform_db_url)
+        except PlatformDBValidationError as e:
+            raise HTTPException(status_code=422, detail=str(e)) from e
+        except RuntimeError as e:
+            raise HTTPException(status_code=503, detail=str(e)) from e
+
     try:
-        validate_platform_db_url(body.platform_db_url)
-    except PlatformDBValidationError as e:
-        raise HTTPException(status_code=422, detail=str(e)) from e
-    except RuntimeError as e:
+        tenant_id, api_key = create_tenant(
+            body.name,
+            body.platform_db_url,
+            use_managed_db=body.use_managed_db,
+            analytics_opt_in=body.analytics_opt_in,
+        )
+    except ManagedDBNotConfiguredError as e:
         raise HTTPException(status_code=503, detail=str(e)) from e
 
-    tenant_id, api_key = create_tenant(body.name, body.platform_db_url)
-    return ApiKeyResponse(tenant_id=tenant_id, api_key=api_key)
+    return RegisterResponse(
+        tenant_id=tenant_id,
+        api_key=api_key,
+        database="managed" if body.use_managed_db else "self_hosted",
+    )
 
 
 @protected_router.post(CHAT)

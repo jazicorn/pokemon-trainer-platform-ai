@@ -38,17 +38,23 @@ def client(isolated_tenants_db: Path, encryption_key: str) -> TestClient:
 
 
 class TestAccountsRegister:
+    """use_managed_db defaults True (ROADMAP_PLATFORM.md Phase 17), so every
+    self-hosted-path test here passes use_managed_db=False explicitly —
+    that's what these tests are actually about.
+    """
+
     def test_success_creates_a_real_tenant_and_returns_a_key(self, client: TestClient) -> None:
         with patch("api.app.validate_platform_db_url") as mock_validate:
             response = client.post(
                 ACCOUNTS_REGISTER,
-                json={"name": "acme", "platform_db_url": "postgresql://u:p@h/db"},
+                json={"name": "acme", "platform_db_url": "postgresql://u:p@h/db", "use_managed_db": False},
             )
 
         assert response.status_code == 200
         body = response.json()
         assert body["tenant_id"]
         assert body["api_key"]
+        assert body["database"] == "self_hosted"
         mock_validate.assert_called_once_with("postgresql://u:p@h/db")
 
         # The returned key actually resolves to the tenant just created —
@@ -64,7 +70,11 @@ class TestAccountsRegister:
         ):
             response = client.post(
                 ACCOUNTS_REGISTER,
-                json={"name": "bad-tenant", "platform_db_url": "postgresql://u:p@h/empty_db"},
+                json={
+                    "name": "bad-tenant",
+                    "platform_db_url": "postgresql://u:p@h/empty_db",
+                    "use_managed_db": False,
+                },
             )
 
         assert response.status_code == 422
@@ -77,7 +87,7 @@ class TestAccountsRegister:
         ):
             response = client.post(
                 ACCOUNTS_REGISTER,
-                json={"name": "bad-tenant", "platform_db_url": "postgresql://u:p@h/nowhere"},
+                json={"name": "bad-tenant", "platform_db_url": "postgresql://u:p@h/nowhere", "use_managed_db": False},
             )
 
         assert response.status_code == 422
@@ -89,14 +99,53 @@ class TestAccountsRegister:
         ):
             response = client.post(
                 ACCOUNTS_REGISTER,
-                json={"name": "acme", "platform_db_url": "postgresql://u:p@h/db"},
+                json={"name": "acme", "platform_db_url": "postgresql://u:p@h/db", "use_managed_db": False},
             )
 
         assert response.status_code == 503
 
+    def test_self_hosted_without_platform_db_url_is_422(self, client: TestClient) -> None:
+        response = client.post(ACCOUNTS_REGISTER, json={"name": "acme", "use_managed_db": False})
+        assert response.status_code == 422
+
     def test_missing_required_field_is_422(self, client: TestClient) -> None:
+        response = client.post(ACCOUNTS_REGISTER, json={})
+        assert response.status_code == 422
+
+
+class TestAccountsRegisterManagedDb:
+    """use_managed_db=True is the default (ROADMAP_PLATFORM.md Phase 17)."""
+
+    def test_default_requires_terms_accepted(self, client: TestClient) -> None:
         response = client.post(ACCOUNTS_REGISTER, json={"name": "acme"})
         assert response.status_code == 422
+        assert "terms_accepted" in response.json()["detail"]
+
+    def test_success_provisions_a_database_and_shows_the_key_once(self, client: TestClient) -> None:
+        with patch("api.app.create_tenant", return_value=("tenant123", "fake-api-key")) as mock_create:
+            response = client.post(ACCOUNTS_REGISTER, json={"name": "acme", "terms_accepted": True})
+
+        assert response.status_code == 200
+        body = response.json()
+        assert body == {"tenant_id": "tenant123", "api_key": "fake-api-key", "database": "managed"}
+        mock_create.assert_called_once_with("acme", None, use_managed_db=True, analytics_opt_in=None)
+
+    def test_managed_db_not_configured_is_a_503(self, client: TestClient) -> None:
+        from api.managed_db import ManagedDBNotConfiguredError
+
+        with patch("api.app.create_tenant", side_effect=ManagedDBNotConfiguredError("AIVEN_ADMIN_DB_URL not set")):
+            response = client.post(ACCOUNTS_REGISTER, json={"name": "acme", "terms_accepted": True})
+
+        assert response.status_code == 503
+
+    def test_explicit_analytics_opt_in_is_passed_through(self, client: TestClient) -> None:
+        with patch("api.app.create_tenant", return_value=("tenant123", "fake-api-key")) as mock_create:
+            client.post(
+                ACCOUNTS_REGISTER,
+                json={"name": "acme", "terms_accepted": True, "analytics_opt_in": False},
+            )
+
+        mock_create.assert_called_once_with("acme", None, use_managed_db=True, analytics_opt_in=False)
 
 
 class TestAccountsRotateKey:

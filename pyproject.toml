@@ -75,6 +75,7 @@ dev = [
 ]
 platform-db = [
     "psycopg[binary]>=3.2",
+    "hvac>=2.3.0",
 ]
 
 [tool.pyright]

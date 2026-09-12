@@ -85,21 +85,33 @@ up real cloud infrastructure for managed Postgres anyway, so adopting that same 
 
 **Tasks:**
 
-- Choose and provision a managed Postgres provider/account (outside this repo's scope to pick
-  for you — cost and existing cloud relationships matter here)
-- Write the tenant-database provisioning function: create database, run schema migration,
-  return the connection string
-- Extend `create_tenant()` (Phase 3) and `POST /accounts/register` (Phase 15) with the
-  `use_managed_db` and `analytics_opt_in` fields
-- Link the registration flow to Phase 20's Privacy Policy / Terms pages — the actual disclosure
-  tenants see and accept, not duplicated here
-- Add a database-per-tenant quota/cleanup story for deactivated tenants (Phase 16's
-  deactivate action) — decide whether a deactivated tenant's managed database is dropped,
-  retained, or archived
-- Migrate `TENANT_DB_ENCRYPTION_KEY` to KMS-backed envelope encryption: set up the KMS master
-  key, implement per-tenant DEK generation/wrapping, migrate existing `tenants.db` rows from
-  the Phase 3 static-key scheme, and write down the actual rotation procedure (not just that
-  one should exist)
+- ~~Choose a managed Postgres provider~~ **done** — [Aiven](https://aiven.io/), which supports
+  creating multiple databases within one PostgreSQL *service* (including via a plain Postgres
+  client connection) — the "one server, one database per tenant" design this phase needs.
+  **You still need to provision the real Aiven service yourself** and set `AIVEN_ADMIN_DB_URL`
+  (see `docs/1PASSWORD.md`) — this repo can't create the account for you.
+- ~~Write the tenant-database provisioning function~~ **done** — `src/api/managed_db.py`:
+  `CREATE DATABASE`/`CREATE ROLE` per tenant, runs the exact schema from `PLATFORM_DB.md`,
+  grants matching that doc's "Database Role (Recommended)" section, returns a connection string
+  scoped to that tenant's own role — never the admin/superuser's credentials.
+- ~~Extend `create_tenant()` and `POST /accounts/register` with `use_managed_db` and
+  `analytics_opt_in`~~ **done** — `use_managed_db` defaults `true` on the endpoint.
+- ~~Link the registration flow to Phase 20's Privacy Policy / Terms pages~~ **done, as a
+  placeholder** — `use_managed_db=true` requires `terms_accepted=true` (422 otherwise),
+  pointing at `config.terms_url`. That URL is a placeholder until Phase 20 actually builds the
+  page; the technical gate (can't register a managed tenant without accepting) is real now.
+- ~~Decide the deactivated-tenant managed-database policy~~ **done** — retain. Deactivating a
+  managed tenant leaves their database running untouched: simplest, reversible, but costs
+  continue accruing until cleaned up manually. A scheduled cleanup job is a natural future
+  addition, not built here.
+- ~~Migrate `TENANT_DB_ENCRYPTION_KEY` to KMS-backed envelope encryption~~ **done** —
+  [HashiCorp Vault](https://www.vaultproject.io/)'s Transit secrets engine
+  (`src/api/kms.py`: `generate_data_key`/`decrypt_data`), a fresh DEK per tenant. `wrapped_dek`
+  is nullable in `tenants.db`: `NULL` means a row is still on the Phase 3 static key (decrypted
+  via the old path, unaffected), set means the new per-tenant path — migration is operator-paced,
+  not a hard cutover. `scripts/migrate_to_vault_encryption.py` migrates existing rows; **you
+  still need a real Vault instance and `VAULT_ADDR`/`VAULT_TOKEN`** for any of this to actually
+  encrypt anything (see `docs/1PASSWORD.md`).
 
 **Verification:**
 

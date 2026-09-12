@@ -22,13 +22,16 @@ When `PLATFORM_DB_URL` is unset, all data sources automatically fall back to
 local mock data — no code changes required.
 
 **This same schema contract also applies to the HTTP API's tenants** (see ROADMAP.md Phase 3)
-— each tenant supplies their own `platform_db_url`, either via self-serve
-`POST /v1/accounts/register` (Phase 15, which validates it against this exact contract before
-storing it) or an admin-issued `scripts/provision_tenant.py`. Either way it's encrypted and
-stored in `data/tenants.db`, rather than setting the global `PLATFORM_DB_URL` env var above.
-That env var and the CLI's single-tenant behavior described in this document are unaffected;
-the API never reads it, only ever using the per-request tenant database resolved by
-`api.auth.require_api_key`.
+— each tenant gets a `platform_db_url` one of three ways: self-serve
+`POST /v1/accounts/register` with `use_managed_db=true` (the default, ROADMAP_PLATFORM.md
+Phase 17 — a dedicated database is provisioned automatically on a shared Aiven PostgreSQL
+service, this exact schema applied to it directly, `api.managed_db`), self-serve with
+`use_managed_db=false` and a caller-supplied URL (Phase 15, validated against this exact
+contract before storing it), or an admin-issued `scripts/provision_tenant.py`. All three store
+the resulting URL encrypted in `data/tenants.db` — via a per-tenant Vault-wrapped key (Phase 17,
+`api.kms`), not the global `PLATFORM_DB_URL` env var above. That env var and the CLI's
+single-tenant behavior described in this document are unaffected; the API never reads it, only
+ever using the per-request tenant database resolved by `api.auth.require_api_key`.
 
 ---
 

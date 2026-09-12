@@ -9,6 +9,7 @@ import pytest
 from cryptography.fernet import Fernet
 
 import config as config_module
+from api.kms import VaultNotConfiguredError
 from api.tenants import (
     create_tenant,
     deactivate_tenant,
@@ -17,6 +18,8 @@ from api.tenants import (
     hash_api_key,
     init_tenants_db,
     list_tenants,
+    list_unmigrated_tenant_ids,
+    migrate_tenant_to_vault_encryption,
     rotate_api_key,
 )
 
@@ -78,6 +81,72 @@ class TestCreateTenant:
         row = conn.execute("SELECT api_key_last4 FROM tenants").fetchone()
         conn.close()
         assert row[0] == raw_key[-4:]
+
+    def test_self_hosted_is_the_default_hosting_and_opts_out_of_analytics(
+        self, isolated_tenants_db: Path, encryption_key: str
+    ) -> None:
+        tenant_id, _ = create_tenant("acme", "postgresql://u:p@h/db")
+        tenant = get_tenant_by_id(tenant_id)
+        assert tenant is not None
+        assert tenant.hosting == "self_hosted"
+        assert tenant.analytics_opt_in is False
+
+    def test_self_hosted_without_platform_db_url_raises(self, isolated_tenants_db: Path, encryption_key: str) -> None:
+        with pytest.raises(ValueError, match="platform_db_url is required"):
+            create_tenant("acme")
+
+    def test_analytics_opt_in_is_overridable_for_self_hosted(
+        self, isolated_tenants_db: Path, encryption_key: str
+    ) -> None:
+        tenant_id, _ = create_tenant("acme", "postgresql://u:p@h/db", analytics_opt_in=True)
+        tenant = get_tenant_by_id(tenant_id)
+        assert tenant is not None
+        assert tenant.analytics_opt_in is True
+
+
+def _fake_provision_named_db(tenant_id: str) -> str:
+    return f"postgresql://tenant_{tenant_id}/db"
+
+
+def _fake_provision_fixed_db(tenant_id: str) -> str:
+    return "postgresql://h/db"
+
+
+class TestCreateTenantManagedDb:
+    def test_provisions_a_database_instead_of_using_platform_db_url(
+        self, isolated_tenants_db: Path, encryption_key: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr("api.managed_db.provision_managed_database", _fake_provision_named_db)
+
+        tenant_id, _ = create_tenant("acme", "postgresql://ignored:should-not-be-used@h/db", use_managed_db=True)
+
+        tenant = get_tenant_by_id(tenant_id)
+        assert tenant is not None
+        assert tenant.hosting == "managed"
+        assert tenant.platform_db_url == f"postgresql://tenant_{tenant_id}/db"
+        assert "ignored" not in tenant.platform_db_url
+
+    def test_analytics_opt_in_defaults_true_for_managed(
+        self, isolated_tenants_db: Path, encryption_key: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr("api.managed_db.provision_managed_database", _fake_provision_fixed_db)
+
+        tenant_id, _ = create_tenant("acme", use_managed_db=True)
+
+        tenant = get_tenant_by_id(tenant_id)
+        assert tenant is not None
+        assert tenant.analytics_opt_in is True
+
+    def test_analytics_opt_in_is_overridable_for_managed(
+        self, isolated_tenants_db: Path, encryption_key: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr("api.managed_db.provision_managed_database", _fake_provision_fixed_db)
+
+        tenant_id, _ = create_tenant("acme", use_managed_db=True, analytics_opt_in=False)
+
+        tenant = get_tenant_by_id(tenant_id)
+        assert tenant is not None
+        assert tenant.analytics_opt_in is False
 
 
 class TestRotateApiKey:
@@ -222,9 +291,125 @@ class TestGetTenantByKeyHash:
         assert get_tenant_by_key_hash(hash_api_key(raw_key)) is None
 
 
-class TestMissingEncryptionKey:
+class TestMissingVaultConfig:
+    """Phase 17 replaced the single static TENANT_DB_ENCRYPTION_KEY with a
+    per-tenant Vault-wrapped DEK for every new tenant — create_tenant() now
+    depends on Vault being configured, not that env var.
+    """
+
     def test_create_tenant_raises_clear_error(self, isolated_tenants_db: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(config_module.config, "vault_addr", None)
+        monkeypatch.setattr(config_module.config, "vault_token", None)
+
+        with pytest.raises(VaultNotConfiguredError, match="VAULT_ADDR"):
+            create_tenant("acme", "postgresql://u:p@h/db")
+
+    def test_tenant_db_encryption_key_is_no_longer_required_for_new_tenants(
+        self, isolated_tenants_db: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         monkeypatch.setattr(config_module.config, "tenant_db_encryption_key", None)
 
-        with pytest.raises(RuntimeError, match="TENANT_DB_ENCRYPTION_KEY"):
-            create_tenant("acme", "postgresql://u:p@h/db")
+        tenant_id, raw_key = create_tenant("acme", "postgresql://u:p@h/db")
+
+        assert tenant_id
+        assert raw_key
+
+
+def _insert_legacy_tenant(db_path: Path, encryption_key: str, tenant_id: str, platform_db_url: str) -> str:
+    """Insert a row exactly as Phase 3 would have — static-key Fernet
+    ciphertext, wrapped_dek left NULL — to test the pre-Phase-17 decrypt
+    path and the migration script's own starting state.
+
+    Returns the raw API key (for looking the tenant back up).
+    """
+    raw_key = "legacy-raw-key-" + tenant_id
+    encrypted_url = Fernet(encryption_key.encode()).encrypt(platform_db_url.encode()).decode()
+
+    conn = sqlite3.connect(db_path)
+    conn.execute(
+        """
+        INSERT INTO tenants (id, name, api_key_hash, platform_db_url_encrypted, is_active, wrapped_dek)
+        VALUES (?, ?, ?, ?, 1, NULL)
+        """,
+        (tenant_id, "legacy-tenant", hash_api_key(raw_key), encrypted_url),
+    )
+    conn.commit()
+    conn.close()
+    return raw_key
+
+
+class TestLegacyDecryption:
+    """A tenant row created before Phase 17 (wrapped_dek NULL) must keep
+    resolving correctly on the old static-key scheme, without requiring
+    Vault at all — migration is operator-paced, not a hard cutover.
+    """
+
+    def test_get_tenant_by_key_hash_decrypts_a_legacy_row(self, isolated_tenants_db: Path, encryption_key: str) -> None:
+        init_tenants_db()
+        raw_key = _insert_legacy_tenant(isolated_tenants_db, encryption_key, "legacy1", "postgresql://u:p@h/legacydb")
+
+        result = get_tenant_by_key_hash(hash_api_key(raw_key))
+
+        assert result is not None
+        assert result.platform_db_url == "postgresql://u:p@h/legacydb"
+
+    def test_get_tenant_by_id_decrypts_a_legacy_row(self, isolated_tenants_db: Path, encryption_key: str) -> None:
+        init_tenants_db()
+        _insert_legacy_tenant(isolated_tenants_db, encryption_key, "legacy2", "postgresql://u:p@h/legacydb2")
+
+        tenant = get_tenant_by_id("legacy2")
+
+        assert tenant is not None
+        assert tenant.platform_db_url == "postgresql://u:p@h/legacydb2"
+
+    def test_legacy_row_never_needs_vault(
+        self, isolated_tenants_db: Path, encryption_key: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(config_module.config, "vault_addr", None)
+        monkeypatch.setattr(config_module.config, "vault_token", None)
+        init_tenants_db()
+        raw_key = _insert_legacy_tenant(isolated_tenants_db, encryption_key, "legacy3", "postgresql://u:p@h/legacydb3")
+
+        result = get_tenant_by_key_hash(hash_api_key(raw_key))
+
+        assert result is not None
+        assert result.platform_db_url == "postgresql://u:p@h/legacydb3"
+
+
+class TestMigrateToVaultEncryption:
+    def test_list_unmigrated_tenant_ids_includes_legacy_rows_only(
+        self, isolated_tenants_db: Path, encryption_key: str
+    ) -> None:
+        init_tenants_db()
+        _insert_legacy_tenant(isolated_tenants_db, encryption_key, "legacy1", "postgresql://u:p@h/db1")
+        migrated_id, _ = create_tenant("acme", "postgresql://u:p@h/db2")
+
+        unmigrated = list_unmigrated_tenant_ids()
+
+        assert "legacy1" in unmigrated
+        assert migrated_id not in unmigrated
+
+    def test_migrates_a_legacy_row_and_it_still_decrypts_correctly(
+        self, isolated_tenants_db: Path, encryption_key: str
+    ) -> None:
+        init_tenants_db()
+        raw_key = _insert_legacy_tenant(isolated_tenants_db, encryption_key, "legacy1", "postgresql://u:p@h/legacydb")
+
+        migrated = migrate_tenant_to_vault_encryption("legacy1")
+
+        assert migrated is True
+        assert "legacy1" not in list_unmigrated_tenant_ids()
+        result = get_tenant_by_key_hash(hash_api_key(raw_key))
+        assert result is not None
+        assert result.platform_db_url == "postgresql://u:p@h/legacydb"
+
+    def test_is_idempotent(self, isolated_tenants_db: Path, encryption_key: str) -> None:
+        init_tenants_db()
+        _insert_legacy_tenant(isolated_tenants_db, encryption_key, "legacy1", "postgresql://u:p@h/legacydb")
+
+        assert migrate_tenant_to_vault_encryption("legacy1") is True
+        assert migrate_tenant_to_vault_encryption("legacy1") is False
+
+    def test_unknown_tenant_returns_false(self, isolated_tenants_db: Path, encryption_key: str) -> None:
+        init_tenants_db()
+        assert migrate_tenant_to_vault_encryption("does-not-exist") is False

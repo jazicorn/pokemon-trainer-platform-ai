@@ -1,8 +1,12 @@
 """Pytest configuration for Pokemon Trainer Platform - AI tests."""
 
+import base64
 import os
+import secrets
 import sys
 from pathlib import Path
+from typing import Any
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -79,3 +83,49 @@ def _isolate_chroma_api_key(  # pyright: ignore[reportUnusedFunction]  # autouse
 
     for module in (config_module, vector_store_module, utils_module):
         monkeypatch.setattr(module.config, "chroma_api_key", None)
+
+
+_VAULT_TEST_WRAPPED_PREFIX = "test-wrapped-dek:"
+
+
+class _FakeTransit:
+    """A real (if fake) wrap/unwrap round-trip, not fixed dummy values —
+    tests that decrypt a tenant's platform_db_url assert its exact value,
+    so the fake has to actually recover what it "wrapped".
+    """
+
+    def generate_data_key(self, name: str, key_type: str, mount_point: str = "transit") -> dict[str, Any]:
+        raw_dek = secrets.token_bytes(32)
+        wrapped = _VAULT_TEST_WRAPPED_PREFIX + base64.b64encode(raw_dek).decode()
+        return {"data": {"plaintext": base64.b64encode(raw_dek).decode(), "ciphertext": wrapped}}
+
+    def decrypt_data(self, name: str, ciphertext: str, mount_point: str = "transit") -> dict[str, Any]:
+        raw_dek = base64.b64decode(ciphertext.removeprefix(_VAULT_TEST_WRAPPED_PREFIX))
+        return {"data": {"plaintext": base64.b64encode(raw_dek).decode()}}
+
+
+@pytest.fixture(autouse=True)
+def _fake_vault(monkeypatch: pytest.MonkeyPatch):  # pyright: ignore[reportUnusedFunction]  # autouse fixture, never referenced by name
+    """api.tenants.create_tenant() unconditionally encrypts a new tenant's
+    platform_db_url via a Vault-wrapped DEK (ROADMAP_PLATFORM.md Phase 17) —
+    self-hosted tenants too, not just managed ones. Project-wide, not just
+    tests/api/: tests/admin/ also calls create_tenant() directly.
+
+    Also protects against a real VAULT_ADDR/VAULT_TOKEN present in a
+    developer's own .env (the same class of hazard _isolate_chroma_api_key
+    above guards against for CHROMA_API_KEY) — without this, a real Vault
+    call could fire from any test that happens to create a tenant.
+    """
+    import api.kms as kms_module
+    import config as config_module
+
+    monkeypatch.setattr(config_module.config, "vault_addr", "https://vault.test")
+    monkeypatch.setattr(config_module.config, "vault_token", "test-token")
+
+    fake_hvac = MagicMock()
+    fake_client = MagicMock()
+    fake_client.secrets.transit = _FakeTransit()
+    fake_hvac.Client.return_value = fake_client
+    monkeypatch.setitem(sys.modules, "hvac", fake_hvac)
+
+    kms_module.unwrap_dek.cache_clear()

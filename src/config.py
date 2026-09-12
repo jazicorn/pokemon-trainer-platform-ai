@@ -130,6 +130,30 @@ class Config:
     #   uv run python -c "import secrets; print(secrets.token_urlsafe(32))"
     admin_token: str | None = None
 
+    # Managed Postgres provisioning (Phase 17) — an admin/service connection
+    # string to one Aiven PostgreSQL service, used only server-side to
+    # CREATE DATABASE/CREATE ROLE per tenant (api.managed_db). Never handed
+    # to a tenant directly; each tenant gets their own role's connection
+    # string instead. Required only when POST /v1/accounts/register is
+    # called with use_managed_db=true.
+    aiven_admin_db_url: str | None = None
+
+    # Envelope encryption for platform_db_url (Phase 17) — HashiCorp Vault's
+    # Transit secrets engine wraps a fresh per-tenant data-encryption-key
+    # instead of Phase 3's single static tenant_db_encryption_key, so one
+    # leaked ciphertext can't decrypt every tenant at once. See
+    # api.kms/api.tenants for the encrypt/decrypt path this backs; an
+    # existing tenant row keeps working on the old static key until
+    # scripts/migrate_to_vault_encryption.py migrates it.
+    vault_addr: str | None = None
+    vault_token: str | None = None
+    vault_transit_key_name: str = "tenant-db-encryption"
+
+    # Placeholder until Phase 20 builds the real page — self-serve
+    # registration with use_managed_db=true requires terms_accepted=true,
+    # and this is what that disclosure points at in the meantime.
+    terms_url: str = "https://example.com/terms"
+
     # HTTP API observability (Phase 4). Both optional — the API runs fine
     # with neither set, just without tracing/error-reporting wired up.
     #
@@ -212,6 +236,11 @@ config = Config(
     platform_db_url=os.getenv("PLATFORM_DB_URL") or None,
     tenant_db_encryption_key=os.getenv("TENANT_DB_ENCRYPTION_KEY") or None,
     admin_token=os.getenv("ADMIN_TOKEN") or None,
+    aiven_admin_db_url=os.getenv("AIVEN_ADMIN_DB_URL") or None,
+    vault_addr=os.getenv("VAULT_ADDR") or None,
+    vault_token=os.getenv("VAULT_TOKEN") or None,
+    vault_transit_key_name=os.getenv("VAULT_TRANSIT_KEY_NAME", "tenant-db-encryption"),
+    terms_url=os.getenv("TERMS_URL", "https://example.com/terms"),
     enable_phoenix=os.getenv("ENABLE_PHOENIX", "").lower() == "true",
     sentry_dsn=os.getenv("SENTRY_DSN") or None,
     rate_limit_storage_uri=os.getenv("RATE_LIMIT_STORAGE_URI") or None,

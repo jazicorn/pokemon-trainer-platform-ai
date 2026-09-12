@@ -184,6 +184,26 @@ Like `SENTRY_DSN`, losing this isn't a disaster — nothing is encrypted with
 it, it just gates a login page. Generate a new one and update `.env.op` if it
 ever leaks; nothing else needs to change.
 
+`AIVEN_ADMIN_DB_URL`/`VAULT_ADDR`/`VAULT_TOKEN` (managed Postgres provisioning
+and envelope encryption, see ROADMAP_PLATFORM.md Phase 17) follow the
+vendor-issued pattern:
+
+1. `AIVEN_ADMIN_DB_URL` — from your Aiven PostgreSQL service's own connection
+   details page (aiven.io)
+2. `VAULT_ADDR`/`VAULT_TOKEN` — from your HashiCorp Vault instance (self-hosted
+   or Vault Cloud); `VAULT_TOKEN` needs permission to use the `transit`
+   secrets engine's `generate_data_key`/`decrypt` endpoints for whichever key
+   name `VAULT_TRANSIT_KEY_NAME` points at
+3. Create an item in your Private vault for each, with its value as the
+   "credential" field
+4. Uncomment their lines in `.env.op`
+
+Unlike `TENANT_DB_ENCRYPTION_KEY`, losing `VAULT_TOKEN` isn't a single point
+of catastrophic failure by itself — rotate it in Vault and issue a new one;
+the actual encryption keys live in Vault's own Transit engine, not in this
+token. Losing `AIVEN_ADMIN_DB_URL` just means re-fetching it from Aiven's
+console; it doesn't decrypt anything on its own.
+
 ## Troubleshooting
 
 See [TROUBLESHOOTING/1password.md](TROUBLESHOOTING/1password.md).

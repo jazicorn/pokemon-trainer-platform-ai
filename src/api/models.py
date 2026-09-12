@@ -57,10 +57,22 @@ class ApiResponse(BaseModel):
 
 
 class RegisterRequest(BaseModel):
-    """Body for `POST /accounts/register` — self-serve tenant signup."""
+    """Body for `POST /accounts/register` — self-serve tenant signup.
+
+    `use_managed_db` defaults `True` (ROADMAP_PLATFORM.md Phase 17) —
+    bringing your own database is the opt-out, provisioning one
+    automatically is the default. `platform_db_url` is required only when
+    `use_managed_db=False`; ignored otherwise. `terms_accepted` must be
+    `true` for a managed-DB signup — explicit disclosure that the tenant's
+    data will live on infrastructure you control, not just a technical
+    default (see `config.terms_url`).
+    """
 
     name: str
-    platform_db_url: str
+    platform_db_url: str | None = None
+    use_managed_db: bool = True
+    analytics_opt_in: bool | None = None
+    terms_accepted: bool = False
 
 
 class ApiKeyResponse(BaseModel):
@@ -68,3 +80,11 @@ class ApiKeyResponse(BaseModel):
 
     tenant_id: str
     api_key: str
+
+
+class RegisterResponse(ApiKeyResponse):
+    """`POST /accounts/register`'s response — an ApiKeyResponse plus which
+    hosting path this tenant ended up on.
+    """
+
+    database: str  # "managed" | "self_hosted"
