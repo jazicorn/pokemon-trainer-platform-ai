@@ -1,0 +1,859 @@
+<!DOCTYPE html><html lang="en" dir="ltr" data-theme="dark" data-has-toc data-has-sidebar class="astro-g5ptsecz"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>Web API (Phases 1-16) | Pokemon Trainer Platform - AI</title><link rel="canonical" href="https://jazicorn.github.io/pokemon-trainer-platform-ai/roadmap/web-api/"/><link rel="sitemap" href="/pokemon-trainer-platform-ai/sitemap-index.xml"/><link rel="shortcut icon" href="/pokemon-trainer-platform-ai/favicon.svg" type="image/svg+xml"/><meta name="generator" content="Astro v7.3.2"/><meta name="generator" content="Starlight v0.42.0"/><meta property="og:title" content="Web API (Phases 1-16)"/><meta property="og:type" content="article"/><meta property="og:url" content="https://jazicorn.github.io/pokemon-trainer-platform-ai/roadmap/web-api/"/><meta property="og:locale" content="en"/><meta property="og:description" content="Multi-agent Pokemon trade advisor — CLI, MCP server, and public HTTP API."/><meta property="og:site_name" content="Pokemon Trainer Platform - AI"/><meta name="twitter:card" content="summary_large_image"/><meta name="description" content="Multi-agent Pokemon trade advisor — CLI, MCP server, and public HTTP API."/><script>
+	window.StarlightThemeProvider = (() => {
+		const storedTheme =
+			typeof localStorage !== 'undefined' && localStorage.getItem('starlight-theme');
+		const theme =
+			storedTheme ||
+			(window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+		document.documentElement.dataset.theme = theme === 'light' ? 'light' : 'dark';
+		return {
+			updatePickers(theme = storedTheme || 'auto') {
+				document.querySelectorAll('starlight-theme-select').forEach((picker) => {
+					const select = picker.querySelector('select');
+					if (select) select.value = theme;
+					/** @type {HTMLTemplateElement | null} */
+					const tmpl = document.querySelector(`#theme-icons`);
+					const newIcon = tmpl && tmpl.content.querySelector('.' + theme);
+					if (newIcon) {
+						const oldIcon = picker.querySelector('svg.label-icon');
+						if (oldIcon) {
+							oldIcon.replaceChildren(...newIcon.cloneNode(true).childNodes);
+						}
+					}
+				});
+			},
+		};
+	})();
+</script><template id="theme-icons"><svg aria-hidden="true" class="light astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M5 12a1 1 0 0 0-1-1H3a1 1 0 0 0 0 2h1a1 1 0 0 0 1-1Zm.64 5-.71.71a1 1 0 0 0 0 1.41 1 1 0 0 0 1.41 0l.71-.71A1 1 0 0 0 5.64 17ZM12 5a1 1 0 0 0 1-1V3a1 1 0 0 0-2 0v1a1 1 0 0 0 1 1Zm5.66 2.34a1 1 0 0 0 .7-.29l.71-.71a1 1 0 1 0-1.41-1.41l-.66.71a1 1 0 0 0 0 1.41 1 1 0 0 0 .66.29Zm-12-.29a1 1 0 0 0 1.41 0 1 1 0 0 0 0-1.41l-.71-.71a1.004 1.004 0 1 0-1.43 1.41l.73.71ZM21 11h-1a1 1 0 0 0 0 2h1a1 1 0 0 0 0-2Zm-2.64 6A1 1 0 0 0 17 18.36l.71.71a1 1 0 0 0 1.41 0 1 1 0 0 0 0-1.41l-.76-.66ZM12 6.5a5.5 5.5 0 1 0 5.5 5.5A5.51 5.51 0 0 0 12 6.5Zm0 9a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Zm0 3.5a1 1 0 0 0-1 1v1a1 1 0 0 0 2 0v-1a1 1 0 0 0-1-1Z"/></svg><svg aria-hidden="true" class="dark astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M21.64 13a1 1 0 0 0-1.05-.14 8.049 8.049 0 0 1-3.37.73 8.15 8.15 0 0 1-8.14-8.1 8.59 8.59 0 0 1 .25-2A1 1 0 0 0 8 2.36a10.14 10.14 0 1 0 14 11.69 1 1 0 0 0-.36-1.05Zm-9.5 6.69A8.14 8.14 0 0 1 7.08 5.22v.27a10.15 10.15 0 0 0 10.14 10.14 9.784 9.784 0 0 0 2.1-.22 8.11 8.11 0 0 1-7.18 4.32v-.04Z"/></svg><svg aria-hidden="true" class="auto astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M21 14h-1V7a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3v7H3a1 1 0 0 0-1 1v2a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-2a1 1 0 0 0-1-1ZM6 7a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7H6V7Zm14 10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-1h16v1Z"/></svg></template><link rel="stylesheet" href="/pokemon-trainer-platform-ai/_astro/print.ehPL0gv-.css" media="print"><link rel="stylesheet" href="/pokemon-trainer-platform-ai/_astro/common.BIuSB6id.css"><style>@layer starlight.components{.card:where(.astro-oag6qnet){--sl-card-border:var(--sl-color-purple);--sl-card-bg:var(--sl-color-purple-low);border:1px solid var(--sl-color-gray-5);background-color:var(--sl-color-black);flex-direction:column;gap:clamp(.5rem,.125rem + 1vw,1rem);padding:clamp(1rem,.125rem + 3vw,2.5rem)}.card:where(.astro-oag6qnet):nth-child(4n+1){--sl-card-border:var(--sl-color-orange);--sl-card-bg:var(--sl-color-orange-low)}.card:where(.astro-oag6qnet):nth-child(4n+3){--sl-card-border:var(--sl-color-green);--sl-card-bg:var(--sl-color-green-low)}.card:where(.astro-oag6qnet):nth-child(4n+4){--sl-card-border:var(--sl-color-red);--sl-card-bg:var(--sl-color-red-low)}.card:where(.astro-oag6qnet):nth-child(4n+5){--sl-card-border:var(--sl-color-blue);--sl-card-bg:var(--sl-color-blue-low)}.title:where(.astro-oag6qnet){font-weight:600;font-size:var(--sl-text-h4);color:var(--sl-color-white);line-height:var(--sl-line-height-headings);align-items:center;gap:1rem}.card:where(.astro-oag6qnet) .icon:where(.astro-oag6qnet){border:1px solid var(--sl-card-border);background-color:var(--sl-card-bg);border-radius:.25rem;flex-shrink:0;padding:.2em}.card:where(.astro-oag6qnet) .body:where(.astro-oag6qnet){font-size:clamp(var(--sl-text-sm), calc(.5rem + 1vw), var(--sl-text-body));margin:0}.card-grid:where(.astro-7qmvx3iy){grid-template-columns:100%;gap:1rem;display:grid}.card-grid:where(.astro-7qmvx3iy)>*{margin-top:0!important}@media (width>=50rem){.card-grid:where(.astro-7qmvx3iy){grid-template-columns:1fr 1fr;gap:1.5rem}.stagger:where(.astro-7qmvx3iy){--stagger-height:5rem;padding-bottom:var(--stagger-height)}.stagger:where(.astro-7qmvx3iy)>:nth-child(2n){transform:translateY(var(--stagger-height))}}}.agent-card:where(.astro-3jfwwssi){border:1px solid var(--sl-color-hairline);background:var(--sl-color-bg-nav);border-inline-start:3px solid var(--card-accent);border-radius:.5rem;align-items:center;gap:.9rem;padding:1rem 1.1rem;display:flex}.agent-card:where(.astro-3jfwwssi)[data-type=dragon]{--card-accent:var(--type-dragon-bright)}.agent-card:where(.astro-3jfwwssi)[data-type=psychic]{--card-accent:var(--type-psychic-bright)}.agent-card:where(.astro-3jfwwssi)[data-type=electric]{--card-accent:var(--type-electric-bright)}.agent-card:where(.astro-3jfwwssi)[data-type=dark]{--card-accent:var(--type-dark-bright)}.agent-card:where(.astro-3jfwwssi)[data-type=fighting]{--card-accent:var(--type-fighting-bright)}.agent-card__avatar:where(.astro-3jfwwssi){background:var(--card-accent);color:#fff;border-radius:50%;flex-shrink:0;justify-content:center;align-items:center;width:2.25rem;height:2.25rem;font-size:.85rem;font-weight:700;display:inline-flex}.agent-card:where(.astro-3jfwwssi)[data-type=electric] .agent-card__avatar:where(.astro-3jfwwssi){color:#2b2200}.agent-card__name:where(.astro-3jfwwssi){margin:0;font-weight:600}.agent-card__role:where(.astro-3jfwwssi){font-size:var(--sl-text-xs);color:var(--sl-color-gray-3);text-transform:uppercase;letter-spacing:.04em;margin:.15rem 0 0}
+@layer starlight.components{svg:where(.astro-hkc32dio){color:var(--sl-icon-color);font-size:var(--sl-icon-size,1em);width:1em;height:1em}}
+</style><script type="module" src="/pokemon-trainer-platform-ai/_astro/page.Dwipeu-R.js"></script></head><body class="astro-g5ptsecz"><a class="sl-skip-link astro-qb7clj6f" href="#_top">Skip to content</a><div class="page sl-flex astro-yntsjkba"><header class="header astro-yntsjkba"><div class="header astro-by6fddyj"><div class="title-wrapper sl-flex astro-by6fddyj"><a href="/pokemon-trainer-platform-ai/" class="site-title sl-flex astro-6rvad3va"><span class="astro-6rvad3va" translate="no">Pokemon Trainer Platform - AI</span></a><div class="party-chrome astro-rhqsypp5" aria-label="Agent party"><span class="party-chrome__member astro-rhqsypp5" data-type="dragon" tabindex="0" title="Ad — Trade Advisor (orchestrator)">Ad</span><span class="party-chrome__member astro-rhqsypp5" data-type="psychic" tabindex="0" title="Px — Pokedex Expert (RAG knowledge)">Px</span><span class="party-chrome__member astro-rhqsypp5" data-type="electric" tabindex="0" title="Mk — Market Analyst (forecasting)">Mk</span><span class="party-chrome__member astro-rhqsypp5" data-type="dark" tabindex="0" title="Lg — Legitimacy Guard (fraud / PII)">Lg</span><span class="party-chrome__member astro-rhqsypp5" data-type="fighting" tabindex="0" title="Bt — Battle Strategy Advisor (viability evals)">Bt</span></div></div><div class="sl-flex print:hidden astro-by6fddyj"><site-search class="astro-by6fddyj astro-b5kgnn7o" data-translations="{&quot;placeholder&quot;:&quot;Search&quot;}"><button data-open-modal disabled aria-label="Search" aria-keyshortcuts="Control+K" class="astro-b5kgnn7o"><svg aria-hidden="true" class="astro-b5kgnn7o astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M21.71 20.29 18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a.999.999 0 0 0 1.42 0 1 1 0 0 0 0-1.39ZM11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14Z"/></svg><span class="sl-hidden md:sl-block astro-b5kgnn7o" aria-hidden="true">Search</span><kbd class="sl-hidden md:sl-flex astro-b5kgnn7o" style="display: none;"><kbd class="astro-b5kgnn7o">Ctrl</kbd><kbd class="astro-b5kgnn7o">K</kbd></kbd></button><dialog style="padding:0" aria-label="Search" class="astro-b5kgnn7o"><div class="dialog-frame sl-flex astro-b5kgnn7o"><button data-close-modal class="sl-flex md:sl-hidden astro-b5kgnn7o">Cancel</button><div class="search-container astro-b5kgnn7o"><div id="starlight__search" class="astro-b5kgnn7o"></div></div></div></dialog></site-search><script>
+	(() => {
+		const openBtn = document.querySelector('button[data-open-modal]');
+		const shortcut = openBtn?.querySelector('kbd');
+		if (!openBtn || !(shortcut instanceof HTMLElement)) return;
+		const platformKey = shortcut.querySelector('kbd');
+		if (platformKey && /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform)) {
+			platformKey.textContent = '⌘';
+			openBtn.setAttribute('aria-keyshortcuts', 'Meta+K');
+		}
+		shortcut.style.display = '';
+	})();
+</script><script type="module" src="/pokemon-trainer-platform-ai/_astro/Search.astro_astro_type_script_index_0_lang.CtjUnVLu.js"></script></div><div class="sl-hidden md:sl-flex print:hidden right-group astro-by6fddyj"><div class="sl-flex social-icons astro-by6fddyj"><a href="https://github.com/jazicorn/pokemon-trainer-platform-ai" rel="me" class="sl-flex astro-n2mnl6yq"><span class="sr-only astro-n2mnl6yq">GitHub</span><svg aria-hidden="true" class="astro-n2mnl6yq astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.08 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3Z"/></svg></a></div><starlight-theme-select><label style="--sl-select-width: 6.25em" class="astro-2z5xp7gb"><span class="sr-only astro-2z5xp7gb">Select theme</span><svg aria-hidden="true" class="icon label-icon astro-2z5xp7gb astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M21 14h-1V7a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3v7H3a1 1 0 0 0-1 1v2a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-2a1 1 0 0 0-1-1ZM6 7a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7H6V7Zm14 10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-1h16v1Z"/></svg><select autocomplete="off" class="astro-2z5xp7gb"><option value="dark" class="astro-2z5xp7gb">Dark</option><option value="light" class="astro-2z5xp7gb">Light</option><option value="auto" selected class="astro-2z5xp7gb">Auto</option></select><svg aria-hidden="true" class="icon caret astro-2z5xp7gb astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M17 9.17a1 1 0 0 0-1.41 0L12 12.71 8.46 9.17a1 1 0 1 0-1.41 1.42l4.24 4.24a1.002 1.002 0 0 0 1.42 0L17 10.59a1.002 1.002 0 0 0 0-1.42Z"/></svg></label></starlight-theme-select><script>
+	StarlightThemeProvider.updatePickers();
+</script><script type="module">var e=`starlight-theme`,t=e=>e===`auto`||e===`dark`||e===`light`?e:`auto`,n=()=>t(typeof localStorage<`u`&&localStorage.getItem(e));function r(t){typeof localStorage<`u`&&localStorage.setItem(e,t===`light`||t===`dark`?t:``)}var i=()=>matchMedia(`(prefers-color-scheme: light)`).matches?`light`:`dark`;function a(e){StarlightThemeProvider.updatePickers(e),document.documentElement.dataset.theme=e===`auto`?i():e,r(e)}matchMedia(`(prefers-color-scheme: light)`).addEventListener(`change`,()=>{n()===`auto`&&a(`auto`)});var o=class extends HTMLElement{constructor(){super(),a(n()),this.querySelector(`select`)?.addEventListener(`change`,e=>{e.currentTarget instanceof HTMLSelectElement&&a(t(e.currentTarget.value))})}};customElements.define(`starlight-theme-select`,o);</script><script type="module">var e=class extends HTMLElement{constructor(){super();let e=this.querySelector(`select`);e&&(e.addEventListener(`change`,e=>{e.currentTarget instanceof HTMLSelectElement&&(window.location.pathname=e.currentTarget.value)}),window.addEventListener(`pageshow`,t=>{if(!t.persisted)return;let n=e.querySelector(`option[selected]`)?.index;n!==e.selectedIndex&&(e.selectedIndex=n??0)}))}};customElements.define(`starlight-lang-select`,e);</script></div></div></header><nav class="sidebar print:hidden astro-yntsjkba" aria-label="Main"><button popovertarget="starlight__sidebar" class="sl-menu-button sl-flex md:sl-hidden print:hidden astro-r2osgdlg"><svg aria-hidden="true" class="open-menu astro-r2osgdlg astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M3 8h18a1 1 0 1 0 0-2H3a1 1 0 0 0 0 2Zm18 8H3a1 1 0 0 0 0 2h18a1 1 0 0 0 0-2Zm0-5H3a1 1 0 0 0 0 2h18a1 1 0 0 0 0-2Z"/></svg><svg aria-hidden="true" class="close-menu astro-r2osgdlg astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="m13.41 12 6.3-6.29a1.004 1.004 0 1 0-1.42-1.42L12 10.59l-6.29-6.3a1.004 1.004 0 0 0-1.42 1.42l6.3 6.29-6.3 6.29a1 1 0 0 0 0 1.42.998.998 0 0 0 1.42 0l6.29-6.3 6.29 6.3a.999.999 0 0 0 1.42 0 1 1 0 0 0 0-1.42L13.41 12Z"/></svg><span class="sr-only astro-r2osgdlg">Menu</span></button><script type="module">var e=class extends HTMLElement{constructor(){super(),matchMedia(`(min-width: 50em)`).addEventListener(`change`,()=>this.hidePopover()),this.addEventListener(`toggle`,({newState:e})=>this.trapFocus(e===`open`))}trapFocus(e){document.querySelectorAll(`.main-frame, .sl-skip-link`).forEach(t=>{t.toggleAttribute(`inert`,e)})}};customElements.define(`sl-sidebar-pane`,e);</script><sl-sidebar-pane popover id="starlight__sidebar" class="sidebar-pane astro-yntsjkba"><div class="sidebar-content sl-flex astro-yntsjkba"><sl-sidebar-state-persist data-hash="1uaj61f" class="astro-ipdry5cl"><script aria-hidden="true">
+		(() => {
+			try {
+				if (!matchMedia('(min-width: 50em)').matches) return;
+				/** @type {HTMLElement | null} */
+				const target = document.querySelector('sl-sidebar-state-persist');
+				const state = JSON.parse(sessionStorage.getItem('sl-sidebar-state') || '0');
+				if (!target || !state || target.dataset.hash !== state.hash) return;
+				window._starlightScrollRestore = state.scroll;
+				customElements.define(
+					'sl-sidebar-restore',
+					class SidebarRestore extends HTMLElement {
+						connectedCallback() {
+							try {
+								const idx = parseInt(this.dataset.index || '');
+								const details = this.closest('details');
+								if (details && typeof state.open[idx] === 'boolean') details.open = state.open[idx];
+							} catch {}
+						}
+					}
+				);
+			} catch {}
+		})();
+	</script><ul class="top-level astro-rmhv4bp6"><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/overview/" class="large astro-rmhv4bp6"><span class="astro-rmhv4bp6">Overview</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/getting-started/" class="large astro-rmhv4bp6"><span class="astro-rmhv4bp6">Getting Started</span></a></li><li class="astro-rmhv4bp6"><details open class="astro-rmhv4bp6"><summary class="astro-rmhv4bp6"><span class="group-label astro-rmhv4bp6"><span class="large astro-rmhv4bp6">Onboarding</span></span><svg aria-hidden="true" class="caret astro-rmhv4bp6 astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1.25rem;"><path d="m14.83 11.29-4.24-4.24a1 1 0 1 0-1.42 1.41L12.71 12l-3.54 3.54a1 1 0 0 0 0 1.41 1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.24-4.24a1.002 1.002 0 0 0 0-1.42Z"/></svg></summary><sl-sidebar-restore data-index="0"></sl-sidebar-restore><ul class="astro-rmhv4bp6"><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/onboarding/00-read-me-first/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Welcome to the Pokemon Trainer&#39;s Second Brain</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/onboarding/01-what-is-this-project/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">What Is This Project?</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/onboarding/02-ai-concepts-explained/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">AI Concepts Explained</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/onboarding/03-system-architecture/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">System Architecture</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/onboarding/04-setup-and-first-run/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Setup and First Run</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/onboarding/05-codebase-tour/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Codebase Tour</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/onboarding/06-how-to-contribute/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">How to Contribute</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/onboarding/glossary/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Glossary</span></a></li></ul></details></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/architecture/" class="large astro-rmhv4bp6"><span class="astro-rmhv4bp6">Architecture</span></a></li><li class="astro-rmhv4bp6"><details open class="astro-rmhv4bp6"><summary class="astro-rmhv4bp6"><span class="group-label astro-rmhv4bp6"><span class="large astro-rmhv4bp6">Reference</span></span><svg aria-hidden="true" class="caret astro-rmhv4bp6 astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1.25rem;"><path d="m14.83 11.29-4.24-4.24a1 1 0 1 0-1.42 1.41L12.71 12l-3.54 3.54a1 1 0 0 0 0 1.41 1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.24-4.24a1.002 1.002 0 0 0 0-1.42Z"/></svg></summary><sl-sidebar-restore data-index="1"></sl-sidebar-restore><ul class="astro-rmhv4bp6"><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/reference/api_versioning/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">API Versioning</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/reference/eval_results/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Evaluation Results</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/reference/market_trends/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">📈 Pokémon Market Trends &amp; Forecasting</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/reference/ollama_cloud_models/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Ollama Cloud Models</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/reference/platform_db/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Platform Database Integration</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/reference/pyright/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Linting &amp; Type Checking Setup</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/reference/testing/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Testing Guide</span></a></li></ul></details></li><li class="astro-rmhv4bp6"><details open class="astro-rmhv4bp6"><summary class="astro-rmhv4bp6"><span class="group-label astro-rmhv4bp6"><span class="large astro-rmhv4bp6">Guides</span></span><svg aria-hidden="true" class="caret astro-rmhv4bp6 astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1.25rem;"><path d="m14.83 11.29-4.24-4.24a1 1 0 1 0-1.42 1.41L12.71 12l-3.54 3.54a1 1 0 0 0 0 1.41 1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.24-4.24a1.002 1.002 0 0 0 0-1.42Z"/></svg></summary><sl-sidebar-restore data-index="2"></sl-sidebar-restore><ul class="astro-rmhv4bp6"><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/guides/1password-setup/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">1Password Setup</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/guides/arize-phoenix-setup/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Adding Arize Phoenix to a PydanticAI Project</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/guides/deployment/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Deployment (Fly.io)</span></a></li></ul></details></li><li class="astro-rmhv4bp6"><details open class="astro-rmhv4bp6"><summary class="astro-rmhv4bp6"><span class="group-label astro-rmhv4bp6"><span class="large astro-rmhv4bp6">Troubleshooting</span></span><svg aria-hidden="true" class="caret astro-rmhv4bp6 astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1.25rem;"><path d="m14.83 11.29-4.24-4.24a1 1 0 1 0-1.42 1.41L12.71 12l-3.54 3.54a1 1 0 0 0 0 1.41 1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.24-4.24a1.002 1.002 0 0 0 0-1.42Z"/></svg></summary><sl-sidebar-restore data-index="3"></sl-sidebar-restore><ul class="astro-rmhv4bp6"><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/troubleshooting/1password/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">1Password Troubleshooting</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/troubleshooting/colima/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Colima Troubleshooting</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/troubleshooting/docker/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Docker Troubleshooting</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/troubleshooting/runtime-errors/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Runtime Errors</span></a></li></ul></details></li><li class="astro-rmhv4bp6"><details open class="astro-rmhv4bp6"><summary class="astro-rmhv4bp6"><span class="group-label astro-rmhv4bp6"><span class="large astro-rmhv4bp6">CLI Build Walkthrough</span></span><svg aria-hidden="true" class="caret astro-rmhv4bp6 astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1.25rem;"><path d="m14.83 11.29-4.24-4.24a1 1 0 1 0-1.42 1.41L12.71 12l-3.54 3.54a1 1 0 0 0 0 1.41 1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.24-4.24a1.002 1.002 0 0 0 0-1.42Z"/></svg></summary><sl-sidebar-restore data-index="4"></sl-sidebar-restore><ul class="astro-rmhv4bp6"><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/walkthrough-cli/00-phases-overview/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Pokemon Trainer Platform - AI: Stages Overview</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/walkthrough-cli/phase-01-project-setup/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Stage 1: Project Setup &amp; Infrastructure</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/walkthrough-cli/phase-02-mock-data/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Stage 2: Mock Data &amp; Models</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/walkthrough-cli/phase-03-memory-system/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Stage 3: Memory System</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/walkthrough-cli/phase-04-pii-guardrails/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Stage 4: PII Guardrails</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/walkthrough-cli/phase-05-pokedex-expert/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Stage 5: Pokedex Expert</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/walkthrough-cli/phase-06-market-analyst/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Stage 6: Market Analyst</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/walkthrough-cli/phase-07-market-forecasting/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Stage 7: Market Forecasting</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/walkthrough-cli/phase-08-legitimacy-guard/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Stage 8: Legitimacy Guard</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/walkthrough-cli/phase-09-trade-advisor/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Stage 9: Trade Advisor</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/walkthrough-cli/phase-10-multi-agent-orchestration/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Stage 10: Multi-Agent Orchestration</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/walkthrough-cli/phase-11-cli-interface/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Stage 11: CLI Interface</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/walkthrough-cli/phase-12-trade-offers/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Stage 12: Trade Offers</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/walkthrough-cli/phase-13-evaluations/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Stage 13: Evaluations</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/walkthrough-cli/phase-14-mcp-server/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Stage 14: MCP Server (Optional)</span></a></li></ul></details></li><li class="astro-rmhv4bp6"><details open class="astro-rmhv4bp6"><summary class="astro-rmhv4bp6"><span class="group-label astro-rmhv4bp6"><span class="large astro-rmhv4bp6">Roadmap</span></span><svg aria-hidden="true" class="caret astro-rmhv4bp6 astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1.25rem;"><path d="m14.83 11.29-4.24-4.24a1 1 0 1 0-1.42 1.41L12.71 12l-3.54 3.54a1 1 0 0 0 0 1.41 1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.24-4.24a1.002 1.002 0 0 0 0-1.42Z"/></svg></summary><sl-sidebar-restore data-index="5"></sl-sidebar-restore><ul class="astro-rmhv4bp6"><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/roadmap/web-api/" aria-current="page" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Web API (Phases 1-16)</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/roadmap/platform/" class="astro-rmhv4bp6"><span class="astro-rmhv4bp6">Platform, Launch &amp; Growth (Phases 17-29)</span></a></li></ul></details></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/history/" class="large astro-rmhv4bp6"><span class="astro-rmhv4bp6">History</span></a></li><li class="astro-rmhv4bp6"><a href="/pokemon-trainer-platform-ai/changelog/" class="large astro-rmhv4bp6"><span class="astro-rmhv4bp6">Changelog</span></a></li></ul><script aria-hidden="true">
+		(() => {
+			const scroller = document.getElementById('starlight__sidebar');
+			if (!window._starlightScrollRestore || !scroller) return;
+			scroller.scrollTop = window._starlightScrollRestore;
+			delete window._starlightScrollRestore;
+		})();
+	</script></sl-sidebar-state-persist><div class="md:sl-hidden"><div class="mobile-preferences sl-flex astro-p4azlveh"><div class="social-icons astro-p4azlveh"><a href="https://github.com/jazicorn/pokemon-trainer-platform-ai" rel="me" class="sl-flex astro-n2mnl6yq"><span class="sr-only astro-n2mnl6yq">GitHub</span><svg aria-hidden="true" class="astro-n2mnl6yq astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.08 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3Z"/></svg></a></div><starlight-theme-select><label style="--sl-select-width: 6.25em" class="astro-2z5xp7gb"><span class="sr-only astro-2z5xp7gb">Select theme</span><svg aria-hidden="true" class="icon label-icon astro-2z5xp7gb astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M21 14h-1V7a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3v7H3a1 1 0 0 0-1 1v2a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-2a1 1 0 0 0-1-1ZM6 7a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7H6V7Zm14 10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-1h16v1Z"/></svg><select autocomplete="off" class="astro-2z5xp7gb"><option value="dark" class="astro-2z5xp7gb">Dark</option><option value="light" class="astro-2z5xp7gb">Light</option><option value="auto" selected class="astro-2z5xp7gb">Auto</option></select><svg aria-hidden="true" class="icon caret astro-2z5xp7gb astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M17 9.17a1 1 0 0 0-1.41 0L12 12.71 8.46 9.17a1 1 0 1 0-1.41 1.42l4.24 4.24a1.002 1.002 0 0 0 1.42 0L17 10.59a1.002 1.002 0 0 0 0-1.42Z"/></svg></label></starlight-theme-select><script>
+	StarlightThemeProvider.updatePickers();
+</script></div></div></div></sl-sidebar-pane></nav><div class="main-frame astro-yntsjkba"><script type="module">var e=document.getElementById(`starlight__sidebar`),t=e?.querySelector(`sl-sidebar-state-persist`),n=`sl-sidebar-state`,r=()=>{let r=[],i=t?.dataset.hash||``;try{let e=sessionStorage.getItem(n),t=JSON.parse(e||`{}`);Array.isArray(t.open)&&t.hash===i&&(r=t.open)}catch{}return{hash:i,open:r,scroll:e?.scrollTop||0}},i=e=>{try{sessionStorage.setItem(n,JSON.stringify(e))}catch{}},a=()=>i(r()),o=(e,t)=>{let n=r();n.open[t]=e,i(n)};t?.addEventListener(`click`,e=>{if(!(e.target instanceof Element))return;let t=e.target.closest(`summary`)?.closest(`details`);if(!t)return;let n=t.querySelector(`sl-sidebar-restore`),r=parseInt(n?.dataset.index||``);isNaN(r)||o(!t.open,r)}),addEventListener(`visibilitychange`,()=>{document.visibilityState===`hidden`&&a()});</script><div class="lg:sl-flex astro-lrzkfocr"><aside class="right-sidebar-container print:hidden astro-lrzkfocr"><div class="right-sidebar astro-lrzkfocr"><div class="lg:sl-hidden astro-qok35upx"><mobile-starlight-toc data-min-h="2" data-max-h="3" class="astro-66cqc7ze"><nav aria-labelledby="starlight__on-this-page--mobile" class="astro-66cqc7ze"><details id="starlight__mobile-toc" class="astro-66cqc7ze"><summary id="starlight__on-this-page--mobile" class="sl-flex astro-66cqc7ze"><span class="toggle sl-flex astro-66cqc7ze">On this page<svg aria-hidden="true" class="caret astro-66cqc7ze astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1rem;"><path d="m14.83 11.29-4.24-4.24a1 1 0 1 0-1.42 1.41L12.71 12l-3.54 3.54a1 1 0 0 0 0 1.41 1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.24-4.24a1.002 1.002 0 0 0 0-1.42Z"/></svg></span><span class="display-current astro-66cqc7ze"></span></summary><div class="dropdown astro-66cqc7ze"><ul class="isMobile astro-jugkfwgx" style="--depth: 0;"><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#_top" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Overview</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-1--dependencies--entry-point" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 1 — Dependencies &amp; Entry Point</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-2--request--response-models" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 2 — Request &amp; Response Models</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-3--tenant-accounts--api-key-authentication" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 3 — Tenant Accounts &amp; API Key Authentication</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-4--observability--request-logging" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 4 — Observability &amp; Request Logging</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-5--core-trade-endpoints" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 5 — Core Trade Endpoints</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-6--offers--query-endpoints" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 6 — Offers &amp; Query Endpoints</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-7--api-versioning-strategy" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 7 — API Versioning Strategy</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-8--api-test-gaps--integration-coverage" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 8 — API Test Gaps &amp; Integration Coverage</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-9--polish--documentation" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 9 — Polish &amp; Documentation</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-10--project-documentation-site-github-pages" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 10 — Project Documentation Site (GitHub Pages)</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-11--interim-landing-page-roadmap--newsletter-signup" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 11 — Interim Landing Page (Roadmap + Newsletter Signup)</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-12--dependency--vulnerability-scanning" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 12 — Dependency &amp; Vulnerability Scanning</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-13--support-tooling" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 13 — Support Tooling</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-14--deployment" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 14 — Deployment</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-15--self-serve-tenant-registration" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 15 — Self-Serve Tenant Registration</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-16--local-admin-web-ui-tenant-management-dashboard" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 16 — Local Admin Web UI (Tenant Management Dashboard)</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#source-mapping" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Source Mapping</span></a></li></ul></div></details></nav></mobile-starlight-toc><script type="module" src="/pokemon-trainer-platform-ai/_astro/MobileTableOfContents.astro_astro_type_script_index_0_lang.BcSo_yiZ.js"></script></div><div class="right-sidebar-panel sl-hidden lg:sl-block astro-qok35upx"><div class="sl-container astro-qok35upx"><starlight-toc data-min-h="2" data-max-h="3"><nav aria-labelledby="starlight__on-this-page"><h2 id="starlight__on-this-page">On this page</h2><ul class="astro-jugkfwgx" style="--depth: 0;"><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#_top" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Overview</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-1--dependencies--entry-point" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 1 — Dependencies &amp; Entry Point</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-2--request--response-models" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 2 — Request &amp; Response Models</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-3--tenant-accounts--api-key-authentication" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 3 — Tenant Accounts &amp; API Key Authentication</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-4--observability--request-logging" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 4 — Observability &amp; Request Logging</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-5--core-trade-endpoints" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 5 — Core Trade Endpoints</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-6--offers--query-endpoints" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 6 — Offers &amp; Query Endpoints</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-7--api-versioning-strategy" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 7 — API Versioning Strategy</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-8--api-test-gaps--integration-coverage" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 8 — API Test Gaps &amp; Integration Coverage</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-9--polish--documentation" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 9 — Polish &amp; Documentation</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-10--project-documentation-site-github-pages" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 10 — Project Documentation Site (GitHub Pages)</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-11--interim-landing-page-roadmap--newsletter-signup" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 11 — Interim Landing Page (Roadmap + Newsletter Signup)</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-12--dependency--vulnerability-scanning" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 12 — Dependency &amp; Vulnerability Scanning</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-13--support-tooling" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 13 — Support Tooling</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-14--deployment" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 14 — Deployment</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-15--self-serve-tenant-registration" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 15 — Self-Serve Tenant Registration</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#phase-16--local-admin-web-ui-tenant-management-dashboard" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Phase 16 — Local Admin Web UI (Tenant Management Dashboard)</span></a></li><li style="--depth: 0;" class="astro-jugkfwgx"><a href="#source-mapping" style="--depth: 0;" class="astro-jugkfwgx"><span style="--depth: 0;" class="astro-jugkfwgx">Source Mapping</span></a></li></ul></nav></starlight-toc><script type="module" src="/pokemon-trainer-platform-ai/_astro/TableOfContents.astro_astro_type_script_index_0_lang.Csloo1VZ.js"></script></div></div></div></aside><div class="main-pane astro-lrzkfocr"><main data-pagefind-body class="astro-g5ptsecz" lang="en" dir="ltr"><div class="content-panel astro-a7po4psb"><div class="sl-container astro-a7po4psb"><p class="type-kicker"><span class="type-badge type-electric">Electric</span></p><h1 id="_top" class="astro-bebwqqxs">Web API (Phases 1-16)</h1></div></div><div class="content-panel astro-a7po4psb"><div class="sl-container astro-a7po4psb"><div class="sl-markdown-content"><p>Convert the Pokemon Trainer Platform from a CLI + MCP server into a full HTTP web API using
+FastAPI, while keeping the existing CLI and MCP interfaces intact.</p>
+<p>Covers Phases 1-16 — the API itself: dependencies through admin tooling. What happens once
+it’s real (hosting, billing, the public website, security, ops maturity, growth) continues in
+<a href="/pokemon-trainer-platform-ai/roadmap/platform/">ROADMAP_PLATFORM.md</a>, Phases 17 onward. Phase numbers are shared and
+continuous across both files, not reset.</p>
+<p><strong>Testing policy — applies to every phase below:</strong> a phase isn’t done until its own
+automated tests exist in <code dir="auto">tests/</code> and pass, written as part of implementing that phase, not
+after it. There is no “manually verify with curl or a throwaway script” step in this
+project’s workflow — if code needs verifying, write the real <code dir="auto">pytest</code>/<code dir="auto">TestClient</code> test for
+it; that test <em>is</em> how it gets verified, and it’s what stays behind to catch the next
+regression. This replaced an earlier, weaker version of this policy — see HISTORY.md /
+git log for the Phase 3 auth work that prompted the change.</p>
+<hr>
+<div class="sl-heading-wrapper level-h2"><h2 id="phase-1--dependencies--entry-point">Phase 1 — Dependencies &amp; Entry Point</h2><a class="sl-anchor-link" href="#phase-1--dependencies--entry-point"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “Phase 1 — Dependencies &amp; Entry Point”</span></a></div>
+<p><strong>Goal:</strong> Get a runnable FastAPI server that starts up cleanly and responds to a health check.</p>
+<p><strong>Tasks:</strong></p>
+<ul>
+<li>Add <code dir="auto">fastapi&gt;=0.115.0</code> and <code dir="auto">uvicorn[standard]&gt;=0.34.0</code> to <code dir="auto">pyproject.toml</code> dependencies</li>
+<li>Run <code dir="auto">uv sync</code> to install</li>
+<li>Create <code dir="auto">src/api/__init__.py</code> (empty package init)</li>
+<li>Create <code dir="auto">api_server.py</code> at project root — mirrors <code dir="auto">app.py</code> but launches uvicorn</li>
+<li>Create <code dir="auto">src/api/app.py</code> with:
+<ul>
+<li>FastAPI <code dir="auto">app</code> instance</li>
+<li><code dir="auto">lifespan</code> context manager calling
+<code dir="auto">startup(phoenix=False, chromadb=True, telemetry=True, database=True)</code></li>
+<li><code dir="auto">GET /health</code> endpoint returning service status (no auth required)</li>
+</ul>
+</li>
+<li>Add <code dir="auto">run-api</code> target to <code dir="auto">Makefile</code></li>
+</ul>
+<p><strong>Verification:</strong></p>
+<div class="expressive-code"><link rel="stylesheet" href="/pokemon-trainer-platform-ai/_astro/ec.w36nc.css"><script type="module" src="/pokemon-trainer-platform-ai/_astro/ec.0vx5m.js"></script><figure class="frame is-terminal not-content"><figcaption class="header"><span class="title"></span><span class="sr-only">Terminal window</span></figcaption><pre data-language="bash"><code><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">make</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">run-api</span></div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">curl</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">http://localhost:8080/health</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># → {"status": "ok", "chromadb": true}</span></div></div></code></pre><div class="copy"><div aria-live="polite"></div><button title="Copy to clipboard" data-copied="Copied!" data-code="make run-apicurl http://localhost:8080/health"><div></div></button></div></figure></div>
+<hr>
+<div class="sl-heading-wrapper level-h2"><h2 id="phase-2--request--response-models">Phase 2 — Request &amp; Response Models</h2><a class="sl-anchor-link" href="#phase-2--request--response-models"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “Phase 2 — Request &amp; Response Models”</span></a></div>
+<p><strong>Goal:</strong> Define all typed API contracts before any routes are wired.</p>
+<p><strong>Tasks:</strong></p>
+<ul>
+<li>Create <code dir="auto">src/api/models.py</code> with Pydantic models:
+<ul>
+<li><code dir="auto">ChatRequest</code> — <code dir="auto">message</code>, <code dir="auto">user_id</code>, <code dir="auto">conversation_context</code></li>
+<li><code dir="auto">EvaluateTradeRequest</code> — <code dir="auto">offered_pokemon</code>, <code dir="auto">requested_pokemon</code>, <code dir="auto">user_id</code>,
+<code dir="auto">conversation_context</code></li>
+<li><code dir="auto">SendOfferRequest</code> — <code dir="auto">sender_id</code>, <code dir="auto">recipient_id</code>, <code dir="auto">offered_pokemon</code>, <code dir="auto">requested_pokemon</code></li>
+<li><code dir="auto">QueryRequest</code> — <code dir="auto">question</code>, <code dir="auto">user_id</code></li>
+<li><code dir="auto">ApiResponse</code> — <code dir="auto">result</code>, <code dir="auto">status</code></li>
+</ul>
+</li>
+<li>Run <code dir="auto">uv run pyright src/api/models.py</code> to confirm no type errors</li>
+</ul>
+<p><strong>Verification:</strong></p>
+<div class="expressive-code"><figure class="frame is-terminal not-content"><figcaption class="header"><span class="title"></span><span class="sr-only">Terminal window</span></figcaption><pre data-language="bash"><code><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">uv</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">run</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">pyright</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">src/api/models.py</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># → 0 errors, 0 warnings</span></div></div></code></pre><div class="copy"><div aria-live="polite"></div><button title="Copy to clipboard" data-copied="Copied!" data-code="uv run pyright src/api/models.py"><div></div></button></div></figure></div>
+<hr>
+<div class="sl-heading-wrapper level-h2"><h2 id="phase-3--tenant-accounts--api-key-authentication">Phase 3 — Tenant Accounts &amp; API Key Authentication</h2><a class="sl-anchor-link" href="#phase-3--tenant-accounts--api-key-authentication"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “Phase 3 — Tenant Accounts &amp; API Key Authentication”</span></a></div>
+<p><strong>Goal:</strong> Protect all routes (except <code dir="auto">/health</code>) with a per-tenant API key, where each key
+maps server-side to that tenant’s own <code dir="auto">PLATFORM_DB_URL</code> — not a single shared secret.</p>
+<p><strong>Why not a static key:</strong> this API is meant to be public, with different callers each bringing
+their own Postgres database (per <code dir="auto">docs/REFERENCE/PLATFORM_DB.md</code>’s schema contract). A single
+<code dir="auto">API_KEY</code> env var can’t express “which database does <em>this</em> caller’s data live in” — so
+authentication and tenant DB routing have to be the same lookup, not two separate concerns.</p>
+<p><strong>Provisioning for this phase: admin-only.</strong> No public signup endpoint yet — you provision each
+tenant yourself via a console script. Self-serve registration is its own later phase (see
+Phase 15) once this foundation exists and is trusted.</p>
+<p><strong>Design:</strong></p>
+<ul>
+<li>New local store, <code dir="auto">data/tenants.db</code> (SQLite — separate from <code dir="auto">data/memory.db</code>, which is the
+CLI’s own single-user local data, a different concept from operator-owned tenant accounts):
+<ul>
+<li><code dir="auto">tenants</code> table: <code dir="auto">id</code>, <code dir="auto">name</code> (a label — e.g. the tenant’s contact email), <code dir="auto">api_key_hash</code>
+(SHA-256 of the raw key; the raw key itself is never stored, logged, or retrievable again
+after issuance — same convention as GitHub/Stripe tokens), <code dir="auto">platform_db_url_encrypted</code>,
+<code dir="auto">created_at</code>, <code dir="auto">is_active</code></li>
+</ul>
+</li>
+<li>New required env var: <code dir="auto">TENANT_DB_ENCRYPTION_KEY</code> — a <code dir="auto">cryptography.fernet.Fernet</code> key,
+generated once (<code dir="auto">Fernet.generate_key()</code>) and held only in the server’s own secret store.
+Encrypts every tenant’s <code dir="auto">platform_db_url</code> at rest. <strong>Back this up outside the deployment
+itself</strong> — losing it makes every stored <code dir="auto">PLATFORM_DB_URL</code> permanently unrecoverable, not just
+hard to find.</li>
+<li><code dir="auto">scripts/provision_tenant.py &lt;name&gt; &lt;platform_db_url&gt;</code> — admin console script (same
+“review before you run it” spirit as <code dir="auto">scripts/release.sh</code>). Generates a new random key via
+<code dir="auto">secrets.token_urlsafe(32)</code>, hashes it for storage, encrypts the DB URL, inserts the row,
+and prints the <strong>raw key once</strong> for you to hand to that tenant.</li>
+<li><code dir="auto">src/api/auth.py</code>:
+<ul>
+<li><code dir="auto">APIKeyHeader(name="X-API-Key", auto_error=False)</code></li>
+<li><code dir="auto">require_api_key</code> dependency: hashes the incoming header, looks up <code dir="auto">tenants</code> by
+<code dir="auto">api_key_hash</code> + <code dir="auto">is_active</code>; raises <code dir="auto">HTTPException(401)</code> if the header is absent,
+<code dir="auto">HTTPException(403)</code> if no active tenant matches. On success, decrypts that tenant’s
+<code dir="auto">platform_db_url</code> and returns a <code dir="auto">TenantContext(tenant_id, platform_db_url)</code> via FastAPI’s
+dependency injection — every protected route receives it as a parameter, not a global.</li>
+</ul>
+</li>
+<li>The existing global <code dir="auto">PLATFORM_DB_URL</code> env var / <code dir="auto">config.platform_db_url</code> is <strong>unchanged and
+keeps working exactly as it does today</strong> — but only for the CLI (<code dir="auto">app.py</code>), which stays
+genuinely single-user/local. The HTTP API never reads that global; it only ever uses the
+per-request <code dir="auto">TenantContext</code> resolved above.</li>
+<li><code dir="auto">src/data/platform_db.py</code> needs a DSN-parameterized sibling to today’s singleton
+<code dir="auto">get_platform_db()</code> (which reads <code dir="auto">os.environ</code> once for the CLI’s one connection) — e.g.
+<code dir="auto">get_platform_db_for(dsn: str)</code>, backed by a small LRU cache keyed by DSN so repeated calls
+from the same tenant reuse a connection instead of reconnecting every request.</li>
+</ul>
+<p><strong>Tasks:</strong></p>
+<ul>
+<li>Add <code dir="auto">cryptography</code> dependency (Fernet)</li>
+<li>Create <code dir="auto">src/api/tenants.py</code>: <code dir="auto">data/tenants.db</code> schema, <code dir="auto">create_tenant()</code>,
+<code dir="auto">get_tenant_by_key_hash()</code></li>
+<li>Create <code dir="auto">scripts/provision_tenant.py</code></li>
+<li>Create <code dir="auto">src/api/auth.py</code> with <code dir="auto">require_api_key</code> as described above</li>
+<li>Add <code dir="auto">TENANT_DB_ENCRYPTION_KEY</code> to <code dir="auto">src/config.py</code>’s accepted env vars</li>
+<li>Add <code dir="auto">get_platform_db_for(dsn)</code> to <code dir="auto">src/data/platform_db.py</code>, alongside (not replacing) the
+existing singleton the CLI uses</li>
+<li>Apply <code dir="auto">Depends(require_api_key)</code> as a router-level or app-level dependency, excluding
+<code dir="auto">/health</code></li>
+<li>Write <code dir="auto">tests/api/test_tenants.py</code> and <code dir="auto">tests/api/test_auth.py</code> as part of <em>this</em> phase, not
+deferred to Phase 8 — every other module in this project (agents, cli, memory, …) has tests
+written alongside its own code, and API auth logic shouldn’t be the one exception. Phase 8 is
+gap-filling and integration coverage across phases, not the sole place tests get written.</li>
+</ul>
+<p><strong>Verification:</strong></p>
+<p>No route protected by <code dir="auto">require_api_key</code> exists yet — that’s Phase 5. A <code dir="auto">curl</code> against
+<code dir="auto">/v1/trade/suggestions</code> here would 404 before ever reaching auth, which isn’t a
+meaningful check of anything and would look like a bug when it isn’t one. What’s
+actually verifiable at the end of <em>this</em> phase:</p>
+<div class="expressive-code"><figure class="frame is-terminal not-content"><figcaption class="header"><span class="title"></span><span class="sr-only">Terminal window</span></figcaption><pre data-language="bash"><code><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># Provision a real tenant, capture the printed key once</span></div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">uv</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">run</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">python</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">scripts/provision_tenant.py</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">test-tenant</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">postgresql://user:pass@host/db</span><span style="--0:#D9F5DD;--1:#111111">"</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># → API key (shown once): &lt;generated-key&gt;</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># The real, permanent test suite — not a forward-reference to an endpoint that</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># doesn't exist yet — proves the 401/403/200 behavior against an isolated test</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># app (see tests/api/test_auth.py):</span></div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">uv</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">run</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">pytest</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">tests/api/</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-v</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># → 16 passed</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># Health, the one route that exists so far, still works without a key:</span></div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">curl</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">http://localhost:8080/health</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># → {"status": "ok", "chromadb": true}</span></div></div></code></pre><div class="copy"><div aria-live="polite"></div><button title="Copy to clipboard" data-copied="Copied!" data-code="uv run python scripts/provision_tenant.py &quot;test-tenant&quot; &quot;postgresql://user:pass@host/db&quot;uv run pytest tests/api/ -vcurl http://localhost:8080/health"><div></div></button></div></figure></div>
+<p>Once Phase 5 adds real routes, this same 401/403/200 behavior becomes directly
+<code dir="auto">curl</code>-able against them too — see Phase 5’s own verification section.</p>
+<hr>
+<div class="sl-heading-wrapper level-h2"><h2 id="phase-4--observability--request-logging">Phase 4 — Observability &amp; Request Logging</h2><a class="sl-anchor-link" href="#phase-4--observability--request-logging"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “Phase 4 — Observability &amp; Request Logging”</span></a></div>
+<p><strong>Goal:</strong> Wire HTTP request tracing into the existing Logfire + OpenTelemetry stack so every
+API call appears in the Phoenix dashboard alongside agent spans — plus dedicated error
+tracking, which tracing alone doesn’t give you.</p>
+<p><strong>Why:</strong> The project already instruments agent calls via <code dir="auto">openinference-instrumentation-pydantic-ai</code>
+and exports traces to Phoenix (<code dir="auto">src/observability/</code>). Without this phase, HTTP-level context
+(method, path, status, latency) is invisible in those traces. Separately, Phoenix/Logfire show
+you trace <em>spans</em> — what a request did — not a dedicated, alertable view of <em>new</em> unhandled
+exceptions, which is a different job.</p>
+<p><strong>Tooling, chosen for free/low-cost tiers, not just defaults:</strong></p>
+<ul>
+<li><strong>Logfire</strong> — already free-tier-friendly for this project’s volume, and ships FastAPI
+instrumentation out of the box (no new dependency).</li>
+<li><strong>Phoenix</strong> — self-hosted, fully open-source, genuinely free regardless of volume (already
+running via <code dir="auto">docker-compose.yml</code>’s <code dir="auto">observability</code> profile).</li>
+<li><strong>Sentry</strong> (new to this phase) — dedicated error tracking and alerting on <em>new</em> exception
+types, which trace viewers don’t really do. Checked its current pricing directly rather than
+assuming: the free “Developer” tier gives 5,000 errors/month, 5M trace spans, and even <strong>1
+free uptime monitor</strong> — small enough overlap with Phase 27 that it’s worth checking whether
+Sentry’s free monitor covers that need before also paying for a separate uptime tool.</li>
+</ul>
+<p><strong>Tasks:</strong></p>
+<ul>
+<li>Add <code dir="auto">logfire.instrument_fastapi(app)</code> in <code dir="auto">src/api/app.py</code> after the app is created</li>
+<li>Add a lightweight logging middleware to <code dir="auto">src/api/app.py</code> that writes one structured
+line per request: method, path, status code, and duration in ms
+<ul>
+<li>Use Python’s stdlib <code dir="auto">logging</code> (already used throughout the project)</li>
+<li>Format: <code dir="auto">POST /v1/chat 200 342ms</code></li>
+</ul>
+</li>
+<li>Add Sentry’s Python SDK, initialized in <code dir="auto">src/api/app.py</code>’s lifespan, scoped to the free tier’s
+limits (single project, no need for its paid integrations yet)</li>
+<li>Verify traces appear in Phoenix at <code dir="auto">http://localhost:6006</code> when <code dir="auto">ENABLE_PHOENIX=true</code>, and a
+deliberately-raised test exception appears in Sentry</li>
+<li>Write a small <code dir="auto">tests/api/test_logging_middleware.py</code> for the request-logging middleware
+itself (method/path/status/duration line gets written) as part of this phase</li>
+</ul>
+<p><strong>Verification:</strong></p>
+<div class="expressive-code"><figure class="frame is-terminal not-content"><figcaption class="header"><span class="title"></span><span class="sr-only">Terminal window</span></figcaption><pre data-language="bash"><code><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># Start with Phoenix enabled</span></div></div><div class="ec-line"><div class="code"><span style="--0:#C5E478;--1:#3B61B0">ENABLE_PHOENIX</span><span style="--0:#C792EA;--1:#8844AE">=</span><span style="--0:#ECC48D;--1:#3B61B0">true</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">make</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">run-api</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># Make a request</span></div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">curl</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-H</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">X-API-Key: </span><span style="--0:#C5E478;--1:#3B61B0">$API_KEY</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#F78C6C;--1:#AA0982">\</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">http://localhost:8080/v1/trade/suggestions?user_id=user_001</span><span style="--0:#D9F5DD;--1:#111111">"</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># Check server logs show the request line</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># Check Phoenix at http://localhost:6006 shows the trace with agent sub-spans</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># Trigger a deliberate error and confirm it appears in the Sentry dashboard</span></div></div></code></pre><div class="copy"><div aria-live="polite"></div><button title="Copy to clipboard" data-copied="Copied!" data-code="ENABLE_PHOENIX=true make run-apicurl -H &quot;X-API-Key: $API_KEY&quot; \  &quot;http://localhost:8080/v1/trade/suggestions?user_id=user_001&quot;"><div></div></button></div></figure></div>
+<hr>
+<div class="sl-heading-wrapper level-h2"><h2 id="phase-5--core-trade-endpoints">Phase 5 — Core Trade Endpoints</h2><a class="sl-anchor-link" href="#phase-5--core-trade-endpoints"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “Phase 5 — Core Trade Endpoints”</span></a></div>
+<p><strong>Goal:</strong> Expose the primary agent functionality over HTTP.</p>
+<p><strong>Tasks:</strong></p>
+<ul>
+<li>Add to <code dir="auto">src/api/app.py</code>, importing from <code dir="auto">agents.trade_advisor_api</code>:
+<ul>
+<li><code dir="auto">POST /v1/chat</code> → <code dir="auto">evaluate_trade(raw_query=request.message, user_id=..., conversation_context=...)</code></li>
+<li><code dir="auto">POST /v1/trade/evaluate</code> → <code dir="auto">evaluate_trade(offered_pokemon, requested_pokemon, user_id, ...)</code></li>
+<li><code dir="auto">GET /v1/trade/suggestions</code> (query param: <code dir="auto">user_id</code>) → <code dir="auto">get_trade_suggestions(user_id)</code></li>
+</ul>
+</li>
+<li>All handlers are <code dir="auto">async def</code> and wrapped in <code dir="auto">try/except Exception</code> → HTTP 500 on failure</li>
+<li>All routes protected by <code dir="auto">require_api_key</code> dependency from Phase 3</li>
+<li>Write <code dir="auto">tests/api/test_trade_endpoints.py</code> for these three routes as part of this phase
+(<code dir="auto">TestClient</code>, mocked <code dir="auto">evaluate_trade</code>/<code dir="auto">get_trade_suggestions</code> — same mocking pattern already
+used throughout <code dir="auto">tests/agents/</code>), not deferred to Phase 8</li>
+</ul>
+<p><strong>Endpoints added this phase:</strong> 3 (total: 4 with <code dir="auto">/health</code>)</p>
+<p><strong>Verification:</strong></p>
+<p>This is the first phase where Phase 3’s <code dir="auto">require_api_key</code> actually guards a real route —
+confirm the full 401/403/200 behavior against one of them (all three share the identical
+dependency, so once is representative, not three repetitions of the same check):</p>
+<div class="expressive-code"><figure class="frame is-terminal not-content"><figcaption class="header"><span class="title"></span><span class="sr-only">Terminal window</span></figcaption><pre data-language="bash"><code><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># Missing key → 401</span></div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">curl</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-i</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">http://localhost:8080/v1/trade/suggestions</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># → HTTP/1.1 401</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># Wrong/unknown key → 403</span></div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">curl</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-i</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-H</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">X-API-Key: wrong</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">http://localhost:8080/v1/trade/suggestions</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># → HTTP/1.1 403</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># Correct key → 200, reasoning over THAT tenant's own platform_db_url</span></div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">curl</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-H</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">X-API-Key: </span><span style="--0:#C5E478;--1:#3B61B0">$API_KEY</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#F78C6C;--1:#AA0982">\</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">http://localhost:8080/v1/trade/suggestions?user_id=user_001</span><span style="--0:#D9F5DD;--1:#111111">"</span></div></div></code></pre><div class="copy"><div aria-live="polite"></div><button title="Copy to clipboard" data-copied="Copied!" data-code="curl -i http://localhost:8080/v1/trade/suggestionscurl -i -H &quot;X-API-Key: wrong&quot; http://localhost:8080/v1/trade/suggestionscurl -H &quot;X-API-Key: $API_KEY&quot; \  &quot;http://localhost:8080/v1/trade/suggestions?user_id=user_001&quot;"><div></div></button></div></figure></div>
+<p>And the actual functionality across all three new routes:</p>
+<div class="expressive-code"><figure class="frame is-terminal not-content"><figcaption class="header"><span class="title"></span><span class="sr-only">Terminal window</span></figcaption><pre data-language="bash"><code><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">curl</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-X</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">POST</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">http://localhost:8080/v1/chat</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#F78C6C;--1:#AA0982">\</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#82AAFF;--1:#3B61B0">-H</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">X-API-Key: </span><span style="--0:#C5E478;--1:#3B61B0">$API_KEY</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#F78C6C;--1:#AA0982">\</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#82AAFF;--1:#3B61B0">-H</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">Content-Type: application/json</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#F78C6C;--1:#AA0982">\</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#82AAFF;--1:#3B61B0">-d</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">'</span><span style="--0:#ECC48D;--1:#984E4D">{"message": "Should I trade my Pikachu for their Charizard?"}</span><span style="--0:#D9F5DD;--1:#111111">'</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">curl</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-X</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">POST</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">http://localhost:8080/v1/trade/evaluate</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#F78C6C;--1:#AA0982">\</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#82AAFF;--1:#3B61B0">-H</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">X-API-Key: </span><span style="--0:#C5E478;--1:#3B61B0">$API_KEY</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#F78C6C;--1:#AA0982">\</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#82AAFF;--1:#3B61B0">-H</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">Content-Type: application/json</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#F78C6C;--1:#AA0982">\</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#82AAFF;--1:#3B61B0">-d</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">'</span><span style="--0:#ECC48D;--1:#984E4D">{"offered_pokemon": "Pikachu", "requested_pokemon": "Charizard"}</span><span style="--0:#D9F5DD;--1:#111111">'</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">curl</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-H</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">X-API-Key: </span><span style="--0:#C5E478;--1:#3B61B0">$API_KEY</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#F78C6C;--1:#AA0982">\</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">http://localhost:8080/v1/trade/suggestions?user_id=user_001</span><span style="--0:#D9F5DD;--1:#111111">"</span></div></div></code></pre><div class="copy"><div aria-live="polite"></div><button title="Copy to clipboard" data-copied="Copied!" data-code="curl -X POST http://localhost:8080/v1/chat \  -H &quot;X-API-Key: $API_KEY&quot; \  -H &quot;Content-Type: application/json&quot; \  -d &#x27;{&quot;message&quot;: &quot;Should I trade my Pikachu for their Charizard?&quot;}&#x27;curl -X POST http://localhost:8080/v1/trade/evaluate \  -H &quot;X-API-Key: $API_KEY&quot; \  -H &quot;Content-Type: application/json&quot; \  -d &#x27;{&quot;offered_pokemon&quot;: &quot;Pikachu&quot;, &quot;requested_pokemon&quot;: &quot;Charizard&quot;}&#x27;curl -H &quot;X-API-Key: $API_KEY&quot; \  &quot;http://localhost:8080/v1/trade/suggestions?user_id=user_001&quot;"><div></div></button></div></figure></div>
+<hr>
+<div class="sl-heading-wrapper level-h2"><h2 id="phase-6--offers--query-endpoints">Phase 6 — Offers &amp; Query Endpoints</h2><a class="sl-anchor-link" href="#phase-6--offers--query-endpoints"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “Phase 6 — Offers &amp; Query Endpoints”</span></a></div>
+<p><strong>Goal:</strong> Complete the full API surface — inbox management and knowledge queries.</p>
+<p><strong>Tasks:</strong></p>
+<ul>
+<li>Add to <code dir="auto">src/api/app.py</code>, all protected by <code dir="auto">require_api_key</code>:
+<ul>
+<li><code dir="auto">GET /v1/offers</code> (query param: <code dir="auto">user_id</code>) → <code dir="auto">get_pending_offers(user_id)</code>
+from <code dir="auto">agents.trade_advisor_api</code></li>
+<li><code dir="auto">POST /v1/offers/send</code> →
+<code dir="auto">send_trade_offer(sender_id, recipient_id, offered_pokemon, requested_pokemon)</code></li>
+<li><code dir="auto">POST /v1/pokedex/query</code> → <code dir="auto">query_pokedex(question, user_id)</code> from <code dir="auto">agents</code></li>
+<li><code dir="auto">POST /v1/market/query</code> → <code dir="auto">query_market(question)</code> from <code dir="auto">agents.trade_market_analyst</code></li>
+</ul>
+</li>
+<li>Write <code dir="auto">tests/api/test_offers_endpoints.py</code> and <code dir="auto">tests/api/test_query_endpoints.py</code> for these
+four routes as part of this phase, same reasoning as Phase 5</li>
+</ul>
+<p><strong>Endpoints added this phase:</strong> 4 (total: 8)</p>
+<p><strong>Verification:</strong></p>
+<div class="expressive-code"><figure class="frame is-terminal not-content"><figcaption class="header"><span class="title"></span><span class="sr-only">Terminal window</span></figcaption><pre data-language="bash"><code><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">curl</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-H</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">X-API-Key: </span><span style="--0:#C5E478;--1:#3B61B0">$API_KEY</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">http://localhost:8080/v1/offers?user_id=user_001</span><span style="--0:#D9F5DD;--1:#111111">"</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">curl</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-X</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">POST</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">http://localhost:8080/v1/offers/send</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#F78C6C;--1:#AA0982">\</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#82AAFF;--1:#3B61B0">-H</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">X-API-Key: </span><span style="--0:#C5E478;--1:#3B61B0">$API_KEY</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#F78C6C;--1:#AA0982">\</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#82AAFF;--1:#3B61B0">-H</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">Content-Type: application/json</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#F78C6C;--1:#AA0982">\</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#82AAFF;--1:#3B61B0">-d</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">'</span><span style="--0:#ECC48D;--1:#984E4D">{"sender_id":"user_001","recipient_id":"user_002",</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#ECC48D;--1:#984E4D">       </span></span><span style="--0:#ECC48D;--1:#984E4D">"offered_pokemon":"Eevee","requested_pokemon":"Vaporeon"}</span><span style="--0:#D9F5DD;--1:#111111">'</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">curl</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-X</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">POST</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">http://localhost:8080/v1/pokedex/query</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#F78C6C;--1:#AA0982">\</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#82AAFF;--1:#3B61B0">-H</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">X-API-Key: </span><span style="--0:#C5E478;--1:#3B61B0">$API_KEY</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#F78C6C;--1:#AA0982">\</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#82AAFF;--1:#3B61B0">-H</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">Content-Type: application/json</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#F78C6C;--1:#AA0982">\</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#82AAFF;--1:#3B61B0">-d</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">'</span><span style="--0:#ECC48D;--1:#984E4D">{"question": "What are Charizards weaknesses?"}</span><span style="--0:#D9F5DD;--1:#111111">'</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">curl</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-X</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">POST</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">http://localhost:8080/v1/market/query</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#F78C6C;--1:#AA0982">\</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#82AAFF;--1:#3B61B0">-H</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">X-API-Key: </span><span style="--0:#C5E478;--1:#3B61B0">$API_KEY</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#F78C6C;--1:#AA0982">\</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#82AAFF;--1:#3B61B0">-H</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">Content-Type: application/json</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#F78C6C;--1:#AA0982">\</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#82AAFF;--1:#3B61B0">-d</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">'</span><span style="--0:#ECC48D;--1:#984E4D">{"question": "Which Pokemon are trending bullish right now?"}</span><span style="--0:#D9F5DD;--1:#111111">'</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># Swagger UI (key can be set via the Authorize button)</span></div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">open</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">http://localhost:8080/docs</span></div></div></code></pre><div class="copy"><div aria-live="polite"></div><button title="Copy to clipboard" data-copied="Copied!" data-code="curl -H &quot;X-API-Key: $API_KEY&quot; &quot;http://localhost:8080/v1/offers?user_id=user_001&quot;curl -X POST http://localhost:8080/v1/offers/send \  -H &quot;X-API-Key: $API_KEY&quot; \  -H &quot;Content-Type: application/json&quot; \  -d &#x27;{&quot;sender_id&quot;:&quot;user_001&quot;,&quot;recipient_id&quot;:&quot;user_002&quot;,       &quot;offered_pokemon&quot;:&quot;Eevee&quot;,&quot;requested_pokemon&quot;:&quot;Vaporeon&quot;}&#x27;curl -X POST http://localhost:8080/v1/pokedex/query \  -H &quot;X-API-Key: $API_KEY&quot; \  -H &quot;Content-Type: application/json&quot; \  -d &#x27;{&quot;question&quot;: &quot;What are Charizards weaknesses?&quot;}&#x27;curl -X POST http://localhost:8080/v1/market/query \  -H &quot;X-API-Key: $API_KEY&quot; \  -H &quot;Content-Type: application/json&quot; \  -d &#x27;{&quot;question&quot;: &quot;Which Pokemon are trending bullish right now?&quot;}&#x27;open http://localhost:8080/docs"><div></div></button></div></figure></div>
+<hr>
+<div class="sl-heading-wrapper level-h2"><h2 id="phase-7--api-versioning-strategy">Phase 7 — API Versioning Strategy</h2><a class="sl-anchor-link" href="#phase-7--api-versioning-strategy"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “Phase 7 — API Versioning Strategy”</span></a></div>
+<p><strong>Goal:</strong> Introduce versioning <em>before</em> any external tenant integrates (Phase 14 deployment,
+Phase 15 self-serve registration), so a future breaking change doesn’t silently break existing
+integrations — retrofitting versioning onto a live API with real callers is far more painful
+than deciding this now. Doing this before Phase 8/9 also means their integration tests and
+docs are written against the final <code dir="auto">/v1/...</code> paths directly, with no rework later.</p>
+<p><strong>Design:</strong></p>
+<ul>
+<li>URL-path versioning (<code dir="auto">/v1/chat</code>, <code dir="auto">/v1/trade/evaluate</code>, …) — simplest and most discoverable
+for API consumers, versus a header-based scheme.</li>
+<li><code dir="auto">/health</code> stays unversioned — it’s infrastructure-level, not business logic, matching its
+existing exemption from API-key auth (Phase 3).</li>
+<li>Decide (not necessarily exercise yet) a deprecation policy: how long <code dir="auto">/v1</code> stays supported
+once a <code dir="auto">/v2</code> exists.</li>
+</ul>
+<p><strong>Tasks:</strong></p>
+<ul>
+<li><del>Mount Phase 5/6’s routes under an <code dir="auto">APIRouter(prefix="/v1")</code> in <code dir="auto">src/api/app.py</code></del> <strong>done</strong></li>
+<li><del>Write a short versioning/deprecation policy doc</del> <strong>done</strong> — <code dir="auto">docs/REFERENCE/API_VERSIONING.md</code></li>
+</ul>
+<p><strong>Verification:</strong></p>
+<div class="expressive-code"><figure class="frame is-terminal not-content"><figcaption class="header"><span class="title"></span><span class="sr-only">Terminal window</span></figcaption><pre data-language="bash"><code><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">curl</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-H</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">X-API-Key: </span><span style="--0:#C5E478;--1:#3B61B0">$KEY</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">https://&lt;domain&gt;/v1/trade/suggestions</span><span style="--0:#D6DEEB;--1:#403F53">   </span><span style="--0:#919F9F;--1:#5F636F"># → 200</span></div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">curl</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">https://&lt;domain&gt;/trade/suggestions</span><span style="--0:#D6DEEB;--1:#403F53">                            </span><span style="--0:#919F9F;--1:#5F636F"># → 404, forcing explicitness</span></div></div></code></pre><div class="copy"><div aria-live="polite"></div><button title="Copy to clipboard" data-copied="Copied!" data-code="curl -H &quot;X-API-Key: $KEY&quot; https://<domain>/v1/trade/suggestions   # → 200curl https://<domain>/trade/suggestions                            # → 404, forcing explicitness"><div></div></button></div></figure></div>
+<hr>
+<div class="sl-heading-wrapper level-h2"><h2 id="phase-8--api-test-gaps--integration-coverage">Phase 8 — API Test Gaps &amp; Integration Coverage</h2><a class="sl-anchor-link" href="#phase-8--api-test-gaps--integration-coverage"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “Phase 8 — API Test Gaps &amp; Integration Coverage”</span></a></div>
+<p><strong>Originally scoped as “write all the API tests here” — that was the wrong design, not
+just a Phase 3 oversight.</strong> Every other module in this project (agents, cli, memory, …) has
+tests written alongside its own code, not batched into one dedicated testing phase at the end.
+Phases 3–6 now each write their own tests as part of that phase (<code dir="auto">tests/api/test_tenants.py</code>,
+<code dir="auto">test_auth.py</code>, <code dir="auto">test_trade_endpoints.py</code>, <code dir="auto">test_offers_endpoints.py</code>, <code dir="auto">test_query_endpoints.py</code>,
+<code dir="auto">test_logging_middleware.py</code>). This phase is what’s left <em>after</em> that: gaps and
+integration-level coverage that don’t naturally belong to any single phase.</p>
+<p><strong>Goal:</strong> Full-stack integration tests exercising multiple phases together, plus anything the
+per-phase tests reasonably left out.</p>
+<p><strong>Tasks:</strong></p>
+<ul>
+<li>An end-to-end test hitting a realistic sequence across routes — e.g. provision a tenant,
+send an offer, fetch it back via <code dir="auto">GET /v1/offers</code>, confirm the AI analysis is present —
+something no single phase’s own tests would naturally cover in isolation</li>
+<li>Audit <code dir="auto">tests/api/</code> against the endpoint table in Phase 9 — confirm every route has at least
+one test, and file gaps here rather than assuming</li>
+<li>Any cross-cutting auth edge cases not covered by Phase 3’s own tests (e.g. a tenant’s key
+working correctly across <em>every</em> route type, not just the one Phase 3 tested it against)</li>
+</ul>
+<p><strong>Verification:</strong></p>
+<div class="expressive-code"><figure class="frame is-terminal not-content"><figcaption class="header"><span class="title"></span><span class="sr-only">Terminal window</span></figcaption><pre data-language="bash"><code><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">make</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">test</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># → tests/api/ tests all pass, full suite still green</span></div></div></code></pre><div class="copy"><div aria-live="polite"></div><button title="Copy to clipboard" data-copied="Copied!" data-code="make test"><div></div></button></div></figure></div>
+<hr>
+<div class="sl-heading-wrapper level-h2"><h2 id="phase-9--polish--documentation">Phase 9 — Polish &amp; Documentation</h2><a class="sl-anchor-link" href="#phase-9--polish--documentation"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “Phase 9 — Polish &amp; Documentation”</span></a></div>
+<p><strong>Goal:</strong> Make the API discoverable and easy to run.</p>
+<p><strong>Tasks:</strong></p>
+<ul>
+<li>Update <code dir="auto">README.md</code> with a <strong>Web API</strong> section covering:
+<ul>
+<li>Quick start (<code dir="auto">make run-api</code>, setting <code dir="auto">API_KEY</code>)</li>
+<li>Full endpoint table (method, path, auth required, description)</li>
+<li>Example curl commands with <code dir="auto">X-API-Key</code> header</li>
+</ul>
+</li>
+<li>Confirm <code dir="auto">make test</code> still passes (CLI unaffected)</li>
+</ul>
+<p><strong>Final endpoint summary:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code dir="auto">/health</code></td>
+<td>No</td>
+<td>Service health check</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code dir="auto">/v1/accounts/register</code></td>
+<td>No</td>
+<td>Self-serve tenant signup (Phase 15)</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code dir="auto">/v1/chat</code></td>
+<td>Yes</td>
+<td>Free-text natural language agent query</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code dir="auto">/v1/trade/evaluate</code></td>
+<td>Yes</td>
+<td>Structured trade evaluation</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code dir="auto">/v1/trade/suggestions</code></td>
+<td>Yes</td>
+<td>Proactive trade suggestions</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code dir="auto">/v1/offers</code></td>
+<td>Yes</td>
+<td>Pending trade offer inbox</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code dir="auto">/v1/offers/send</code></td>
+<td>Yes</td>
+<td>Send a trade offer</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code dir="auto">/v1/pokedex/query</code></td>
+<td>Yes</td>
+<td>Pokedex knowledge question</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code dir="auto">/v1/market/query</code></td>
+<td>Yes</td>
+<td>Market demand &amp; trend query</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code dir="auto">/v1/accounts/rotate-key</code></td>
+<td>Yes</td>
+<td>Rotate the caller’s own API key (Phase 15)</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code dir="auto">/v1/accounts</code></td>
+<td>Yes</td>
+<td>Deactivate the caller’s own account (Phase 15)</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<div class="sl-heading-wrapper level-h2"><h2 id="phase-10--project-documentation-site-github-pages">Phase 10 — Project Documentation Site (GitHub Pages)</h2><a class="sl-anchor-link" href="#phase-10--project-documentation-site-github-pages"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “Phase 10 — Project Documentation Site (GitHub Pages)”</span></a></div>
+<p><strong>Goal:</strong> A browsable docs/landing site at <code dir="auto">https://jazicorn.github.io/pokemon-trainer-platform-ai/</code>,
+built from the project’s existing <code dir="auto">README.md</code> and <code dir="auto">docs/</code> markdown — no new content authored
+just for this, just a better way to browse what’s already written.</p>
+<p><strong>Independent of the other phases:</strong> unlike the sequential build-up in the phases before it,
+this one has no dependency on the API work at all — it’s just documentation tooling. It can be
+done any time, including before Phase 2, without blocking or being blocked by anything else
+here.</p>
+<p><strong>Design (v2 — Astro + Starlight):</strong> this phase originally shipped on MkDocs + Material
+(a <code dir="auto">uv</code>-installable Python tool, deliberately not Docusaurus/React — see git history for that
+version’s reasoning), then briefly grew a small React “hub” island bolted onto the Material
+Home page. Both were replaced outright — not layered further — once the priority became “looks
+creative and polished,” which a themed MkDocs site couldn’t get to on its own:</p>
+<ul>
+<li><strong><a href="https://astro.build">Astro</a> + <a href="https://starlight.astro.build">Starlight</a></strong>, in
+<code dir="auto">web/docs-site/</code>. Same self-hosted GitHub Pages model as the MkDocs version (still a <code dir="auto">gh-pages</code>
+branch, still no third-party platform dependency — this is <em>not</em> a move to something like
+Mintlify, which would mean hosting docs on their infrastructure instead of ours) and, like
+Astro’s islands architecture generally, ships close to zero JS by default — the opposite
+direction from the React hub it replaces, even though the framework itself is JS-based. Content
+is still plain markdown; only navigation and theming moved into Astro/Starlight’s own config
+and component model.</li>
+<li>Content is unchanged at the source: <code dir="auto">README.md</code>, both roadmap files, <code dir="auto">ARCHITECTURE.md</code>,
+<code dir="auto">HISTORY.md</code>, <code dir="auto">CHANGELOG.md</code>, and everything under <code dir="auto">docs/</code> are still the one source of truth.
+<code dir="auto">scripts/docs_prepare.py</code> (the direct successor to the old Makefile <code dir="auto">cp</code> lines) mirrors them
+into <code dir="auto">web/docs-site/src/content/docs/</code> — adding the frontmatter (<code dir="auto">title</code>, and a <code dir="auto">pokemonType</code>
+badge for pages that map to one of the eight type tokens below) that plain markdown doesn’t
+carry, and rewriting cross-references between docs to the new route paths. Generated, gitignored,
+same “one source of truth” reasoning as before. The one hand-authored exception is
+<code dir="auto">src/content/docs/index.mdx</code> (the home page), which the script never touches.</li>
+<li><strong>Home</strong> (<code dir="auto">index.mdx</code>) is a from-scratch Starlight “splash” page, not a mirror of <code dir="auto">README.md</code>:
+a hero, a “Meet the party” grid of the five real agents (<code dir="auto">src/components/AgentCard.astro</code> +
+<code dir="auto">party.ts</code>), a “Talk to it” <code dir="auto">CardGrid</code> with real CLI/<code dir="auto">/v1</code>/MCP entry points, and a <code dir="auto">curl</code>
+example against a real endpoint. <code dir="auto">README.md</code> itself now renders as its own <strong>Overview</strong> page
+(first item in the sidebar) instead of doubling as Home.</li>
+<li><strong>Party chrome</strong> (the five-agent strip in the header, every page) and the <strong>type-badge kicker</strong>
+(above a page’s H1, on pages whose section maps to one of the eight type tokens) are Starlight
+component overrides — <code dir="auto">SiteTitle.astro</code> and <code dir="auto">PageTitle.astro</code> in <code dir="auto">web/docs-site/src/components/</code>,
+following <a href="https://starlight.astro.build/guides/overriding-components/">Starlight’s documented override pattern</a>
+of wrapping the default component rather than reimplementing it. <code dir="auto">pokemonType</code> is a frontmatter
+field added to Starlight’s schema (<code dir="auto">src/content.config.ts</code>’s <code dir="auto">docsSchema({ extend: ... })</code>),
+computed once at prepare-time by <code dir="auto">docs_prepare.py</code> rather than sniffed from the URL at runtime
+in the browser (the MkDocs version’s approach) — same eight-color system, no client-side
+path-matching needed anymore.</li>
+<li>Starlight’s own accent color (used for links, the active sidebar item, focus rings) is retuned
+from its stock blue to this project’s Dragon hue (<code dir="auto">web/docs-site/src/styles/theme.css</code>) so the
+whole site reads as one coordinated palette instead of theme-default blue fighting the
+Pokemon-type colors used everywhere else — the MkDocs version never did this, which is most of
+why its color scheme read as “off.”</li>
+<li><code dir="auto">.github/workflows/docs-publish.yml</code> builds with <code dir="auto">astro build</code> (Node, via <code dir="auto">actions/setup-node</code>)
+and still deploys to the <code dir="auto">gh-pages</code> branch, now via <code dir="auto">peaceiris/actions-gh-pages</code> since there’s
+no <code dir="auto">mkdocs gh-deploy</code> equivalent in this stack.</li>
+<li>GitHub Pages itself (repo Settings → Pages, serving from the <code dir="auto">gh-pages</code> branch) is a
+one-time manual step in the GitHub UI — no workflow file can do that part. <strong>Still pending.</strong></li>
+</ul>
+<p><strong>Tasks:</strong></p>
+<ul>
+<li><del>Scaffold <code dir="auto">web/docs-site/</code> (Astro + Starlight)</del> <strong>done</strong></li>
+<li><del>Write <code dir="auto">scripts/docs_prepare.py</code></del> <strong>done</strong> — mirrors root/<code dir="auto">docs/</code> markdown into
+<code dir="auto">src/content/docs/</code>, adds frontmatter, rewrites internal links</li>
+<li><del>Build the Home page (<code dir="auto">index.mdx</code>) as a real splash page, not a README mirror</del> <strong>done</strong></li>
+<li><del>Party chrome + type-badge kicker as Starlight component overrides</del> <strong>done</strong></li>
+<li><del>Retune Starlight’s accent color to match the type-token palette</del> <strong>done</strong></li>
+<li><del>Rewrite <code dir="auto">.github/workflows/docs-publish.yml</code> for the Astro build + <code dir="auto">gh-pages</code> deploy</del> <strong>done</strong></li>
+<li><del>Remove the MkDocs + React-hub setup (<code dir="auto">mkdocs.yml</code>, <code dir="auto">web/hub/</code>, the <code dir="auto">docs</code> dependency
+group)</del> <strong>done</strong></li>
+<li>One-time: enable GitHub Pages in repo settings, pointed at the <code dir="auto">gh-pages</code> branch — <strong>not done
+yet</strong>, needs a human in the GitHub UI</li>
+<li>Still open, deliberately deferred rather than done blind alongside the framework swap:
+reorganizing the docs corpus itself (nav grouping, page-level splitting/merging) now that it’s
+easy to see the whole site rendered — content is currently mirrored over with its existing
+structure intact, not redesigned</li>
+</ul>
+<p><strong>Verification:</strong></p>
+<div class="expressive-code"><figure class="frame is-terminal not-content"><figcaption class="header"><span class="title"></span><span class="sr-only">Terminal window</span></figcaption><pre data-language="bash"><code><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">make</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">docs-serve</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># → runs scripts/docs_prepare.py, then `astro dev` — confirm the sidebar renders every docs/</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F">#   page and README/ROADMAP/HISTORY, Home renders the hub (agent cards + Talk to it), the</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F">#   five-agent party strip shows in the header on every page, and type badges appear on pages</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F">#   that map to one, light and dark</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">git</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">push</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">origin</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">main</span><span style="--0:#D6DEEB;--1:#403F53">   </span><span style="--0:#919F9F;--1:#5F636F"># touching docs/, web/docs-site/, scripts/docs_prepare.py, README.md,</span></div></div><div class="ec-line"><div class="code"><span class="indent">                        </span><span style="--0:#919F9F;--1:#5F636F"># ROADMAP.md, ROADMAP_PLATFORM.md, ARCHITECTURE.md, HISTORY.md,</span></div></div><div class="ec-line"><div class="code"><span class="indent">                        </span><span style="--0:#919F9F;--1:#5F636F"># CHANGELOG.md, or Makefile</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># → docs-publish.yml runs, gh-pages branch updates</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># → https://jazicorn.github.io/pokemon-trainer-platform-ai/ reflects the change, once GitHub</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F">#   Pages is enabled (see the still-pending task above)</span></div></div></code></pre><div class="copy"><div aria-live="polite"></div><button title="Copy to clipboard" data-copied="Copied!" data-code="make docs-servegit push origin main   # touching docs/, web/docs-site/, scripts/docs_prepare.py, README.md,"><div></div></button></div></figure></div>
+<hr>
+<div class="sl-heading-wrapper level-h2"><h2 id="phase-11--interim-landing-page-roadmap--newsletter-signup">Phase 11 — Interim Landing Page (Roadmap + Newsletter Signup)</h2><a class="sl-anchor-link" href="#phase-11--interim-landing-page-roadmap--newsletter-signup"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “Phase 11 — Interim Landing Page (Roadmap + Newsletter Signup)”</span></a></div>
+<p><strong>Depends only on Phase 10’s GitHub Pages setup</strong> — nothing else. The full marketing/signup
+site (Phase 20) is a long way off, since it needs most of the API actually built first; this
+closes that gap in the meantime.</p>
+<p><strong>Goal:</strong> A minimal public page — the roadmap, in readable form, plus an email signup for
+updates — so there’s <em>something</em> to point people at and start building an audience during the
+gap before Phase 20 exists, rather than nothing at all until then.</p>
+<p><strong>Design:</strong></p>
+<ul>
+<li>Reuse Phase 10’s MkDocs/GitHub Pages site rather than standing up separate hosting — this
+can be that site’s homepage, with <code dir="auto">ROADMAP.md</code> rendered below the fold (Phase 10 already
+renders it as its own page; surface it prominently here too).</li>
+<li>Email capture needs <em>some</em> backend, and GitHub Pages is static-only. For a stopgap like this,
+don’t build custom infrastructure for it — use an existing newsletter provider (Buttondown,
+ConvertKit, ListMonk, etc.) with a simple embeddable form. The tradeoff is real (your
+subscriber data lives on their platform, not yours) but building a custom signup backend for
+something explicitly meant to be temporary is over-engineering the wrong thing. Revisit if
+Phase 20 wants to own this list directly later — exporting from any mainstream provider is
+standard.</li>
+<li>Needs a one-line privacy note next to the signup form (what the email is used for, how to
+unsubscribe) — a lightweight preview of Phase 20’s real Privacy Policy, not a substitute for
+it once that exists.</li>
+</ul>
+<p><strong>Tasks:</strong></p>
+<ul>
+<li>Pick a newsletter provider and create the list</li>
+<li>Add the landing content + embedded signup form to Phase 10’s MkDocs site</li>
+<li>Add the one-line privacy note near the form</li>
+<li>Link it from the main README</li>
+</ul>
+<p><strong>Verification:</strong></p>
+<div class="expressive-code"><figure class="frame is-terminal not-content"><figcaption class="header"><span class="title"></span><span class="sr-only">Terminal window</span></figcaption><pre data-language="bash"><code><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">make</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">docs-serve</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># → homepage shows roadmap summary + signup form, both render correctly</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># Submit a test signup, confirm it actually lands in the provider's list</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># (manual check — this is a third-party integration, not something to script here)</span></div></div></code></pre><div class="copy"><div aria-live="polite"></div><button title="Copy to clipboard" data-copied="Copied!" data-code="make docs-serve"><div></div></button></div></figure></div>
+<hr>
+<div class="sl-heading-wrapper level-h2"><h2 id="phase-12--dependency--vulnerability-scanning">Phase 12 — Dependency &amp; Vulnerability Scanning</h2><a class="sl-anchor-link" href="#phase-12--dependency--vulnerability-scanning"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “Phase 12 — Dependency &amp; Vulnerability Scanning”</span></a></div>
+<p><strong>No dependency on any other phase</strong> — applies to whatever the repo looks like at any point.</p>
+<p><strong>Goal:</strong> Automated detection of vulnerable dependencies, using tooling that’s free on GitHub.</p>
+<p><strong>Tasks:</strong></p>
+<ul>
+<li><del>Add <code dir="auto">.github/dependabot.yml</code> for the <code dir="auto">uv</code> and <code dir="auto">github-actions</code> ecosystems</del> <strong>done</strong></li>
+<li><del>Add a <code dir="auto">pip-audit</code> step to <code dir="auto">ci-quality.yml</code></del> <strong>done</strong> — report-only (<code dir="auto">continue-on-error</code>),
+since pip-audit reports no severity data to gate a block/warn split on. Findings show in the
+CI log; Dependabot’s PRs are expected to work them down over time. Revisit blocking once the
+current findings are clear.</li>
+</ul>
+<p><strong>Verification:</strong></p>
+<div class="expressive-code"><figure class="frame is-terminal not-content"><figcaption class="header"><span class="title"></span><span class="sr-only">Terminal window</span></figcaption><pre data-language="bash"><code><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">uv</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">run</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">pip-audit</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># → 0 known vulnerabilities, or a clear actionable list</span></div></div></code></pre><div class="copy"><div aria-live="polite"></div><button title="Copy to clipboard" data-copied="Copied!" data-code="uv run pip-audit"><div></div></button></div></figure></div>
+<p>Also confirm Dependabot opens its first PR automatically once the config is merged.</p>
+<hr>
+<div class="sl-heading-wrapper level-h2"><h2 id="phase-13--support-tooling">Phase 13 — Support Tooling</h2><a class="sl-anchor-link" href="#phase-13--support-tooling"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “Phase 13 — Support Tooling”</span></a></div>
+<p><strong>Set this up before Phase 15 ships, not after.</strong> Self-serve registration means strangers can
+become tenants without you ever touching the process — the first one who hits a problem
+shouldn’t be the reason you’re scrambling to set up a support inbox that day.</p>
+<p><strong>Goal:</strong> A working support channel ready before self-serve signup goes live, sized to actual
+early-stage volume rather than to what a support team would eventually need.</p>
+<p><strong>Tool: Plain (joinplain.com).</strong> Built specifically for B2B/API companies talking to technical
+users — Slack-based triage, issue-linking — which fits this audience (developers integrating
+against an API) better than a general-purpose shared inbox. Help Scout remains the fallback if
+Plain’s workflow ends up being more than needed day one: simpler, more generic, also cheap.</p>
+<p><strong>Tasks:</strong></p>
+<ul>
+<li>Set up a Plain account and connect the support address (e.g. <code dir="auto">support@&lt;your-domain&gt;</code>)</li>
+<li>Link it from Phase 20’s marketing site and Phase 11’s interim landing page</li>
+<li>Revisit around Phase 19 (paid tiers) — billing questions (refunds, disputes, “why was I
+charged”) raise support expectations; re-evaluate whether Plain still fits or whether it’s
+time to consider a heavier tool, rather than assuming the day-one choice holds forever</li>
+</ul>
+<p><strong>Verification:</strong></p>
+<div class="expressive-code"><figure class="frame is-terminal not-content"><figcaption class="header"><span class="title"></span><span class="sr-only">Terminal window</span></figcaption><pre data-language="bash"><code><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># Send a real test email to the support address and confirm it lands in the shared inbox</span></div></div></code></pre><div class="copy"><div aria-live="polite"></div><button title="Copy to clipboard" data-copied="Copied!" data-code=""><div></div></button></div></figure></div>
+<hr>
+<div class="sl-heading-wrapper level-h2"><h2 id="phase-14--deployment">Phase 14 — Deployment</h2><a class="sl-anchor-link" href="#phase-14--deployment"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “Phase 14 — Deployment”</span></a></div>
+<p><strong>Goal:</strong> Run the API as a persistent, publicly-reachable service — this is a genuinely public
+API (per Phase 3’s design decision), not a private backend-to-backend link, so real TLS and
+public-network hardening are required here, not optional.</p>
+<p><strong>Host: <a href="https://fly.io">Fly.io</a>.</strong> Docker-native (deploys this repo’s own <code dir="auto">Dockerfile</code>
+directly), free built-in TLS at its edge, persistent volumes, no reverse-proxy layer to run or
+maintain ourselves. Full runbook: <code dir="auto">docs/DEPLOYMENT.md</code>.</p>
+<p><strong>This phase isn’t done until its security checklist passes too, not just deployment
+mechanics.</strong></p>
+<p><strong>Architecture.</strong> One Fly app:</p>
+<ul>
+<li><strong><code dir="auto">&lt;name&gt;-api</code></strong> — public. This repo’s <code dir="auto">Dockerfile</code>, deployed via <code dir="auto">fly.toml</code>. <code dir="auto">force_https</code>
+at Fly’s edge handles TLS (no Caddy/nginx). A persistent Fly volume holds <code dir="auto">/app/data</code>, so
+<code dir="auto">data/tenants.db</code> survives redeploys.</li>
+</ul>
+<p>RAG’s vector storage is <strong>Chroma Cloud</strong> (managed) — see “Vector storage: Chroma Cloud” below.</p>
+<p><strong>Tasks:</strong></p>
+<ul>
+<li><del>Fix <code dir="auto">api/app.py</code>’s <code dir="auto">lifespan()</code></del> <strong>done</strong> — it called <code dir="auto">startup(chromadb=True, ...)</code>, which
+shells out to <code dir="auto">docker run</code> when ChromaDB isn’t reachable; a Fly Machine has no Docker daemon,
+so that failed and killed the API on boot. Fixed to <code dir="auto">chromadb=False</code>, mirroring Phase 4’s
+existing guard for Phoenix. <code dir="auto">/health</code>’s <code dir="auto">is_vector_store_running()</code> (<code dir="auto">src/utils.py</code>) reports
+reachability for whichever RAG backend is actually active.</li>
+<li><del>Add a long-running <code dir="auto">api</code> service to <code dir="auto">docker-compose.yml</code></del> <strong>done</strong> — local dev/testing
+parity only; <code dir="auto">fly.toml</code> is the production deploy path.</li>
+<li><del>Resolve the non-root-user/volume-permission conflict</del> <strong>done</strong> — a Fly volume is created
+empty and root-owned; <code dir="auto">docker-entrypoint.sh</code> runs as root, <code dir="auto">chown</code>s <code dir="auto">/app/data</code>, then
+<code dir="auto">exec gosu appuser "$@"</code> (a real exec, not a wrapping shell, so container signals still reach
+the app directly).</li>
+<li><del>Write <code dir="auto">fly.toml</code></del> <strong>done</strong> — <code dir="auto">force_https = true</code>, health check against <code dir="auto">/health</code>, a
+<code dir="auto">[mounts]</code> entry for the data volume, and a <code dir="auto">[processes]</code> block overriding the Dockerfile’s
+own <code dir="auto">CMD</code> (which launches the CLI, <code dir="auto">app.py</code>, since the same image also serves that role
+locally) to run <code dir="auto">api_server.py</code> instead — <code dir="auto">[http_service]</code> targets that group explicitly via
+<code dir="auto">processes = ["app"]</code>.</li>
+<li><del>Write <code dir="auto">docs/DEPLOYMENT.md</code></del> <strong>done</strong> — the Fly runbook, including secrets setup and the
+<code dir="auto">TENANT_DB_ENCRYPTION_KEY</code> backup reminder Phase 3 established.</li>
+</ul>
+<p><strong>Vector storage: Chroma Cloud.</strong> Replaces self-hosted ChromaDB (<code dir="auto">src/rag/vector_store.py</code>) —
+managed, no self-hosted infra to run or back up.</p>
+<p>Dense-only, not the originally-planned hybrid search (dense + sparse via Chroma Cloud’s hosted
+Qwen/Splade embedding functions) — both depend on a JSON schema file missing from every
+published <code dir="auto">chromadb-client</code> wheel (1.5.6-1.5.9) and from Chroma’s own GitHub source, an
+upstream bug. Embeddings are computed client-side instead (the same
+<code dir="auto">get_simple_embedding</code>/<code dir="auto">get_ollama_embedding</code> self-hosted mode already used); Chroma Cloud is
+used purely for storage/search. Revisit hybrid search once the upstream bug is fixed.</p>
+<p>Design:</p>
+<ul>
+<li><code dir="auto">PokemonVectorStore</code> picks its backend by whether <code dir="auto">config.chroma_api_key</code> is set — same
+“presence of the value is the switch” idiom as <code dir="auto">platform_db_url</code>/<code dir="auto">sentry_dsn</code>.</li>
+<li>Documents over Chroma’s 16 KiB per-document limit are chunked (<code dir="auto">src/rag/chunking.py</code>,
+line-span splitting) and tagged with <code dir="auto">source_document_id</code>/<code dir="auto">chunk_index</code>, deduped to one
+result per source document via <code dir="auto">GroupBy</code> at query time. Not exercised today — nothing
+currently exceeds the limit.</li>
+<li>No per-tenant sharding: the <code dir="auto">pokemon</code>/<code dir="auto">smogon_strategy</code> collections are shared reference
+data, not tenant-owned.</li>
+<li>No data migration needed: <code dir="auto">scripts/migrate_to_chroma_cloud.py</code> re-runs the existing
+PokeAPI/Smogon ingestion (<code dir="auto">rag/ingest.py</code>) against whichever backend is configured.</li>
+</ul>
+<p>Tasks:</p>
+<ul>
+<li><del>Bump <code dir="auto">chromadb-client</code> to <code dir="auto">&gt;=1.5.9</code></del> <strong>done</strong> — <code dir="auto">1.5.1</code> doesn’t import on Python 3.14.</li>
+<li><del>Add <code dir="auto">chroma_api_key</code>/<code dir="auto">chroma_tenant</code>/<code dir="auto">chroma_database</code>/<code dir="auto">chroma_host</code> to <code dir="auto">src/config.py</code></del>
+<strong>done</strong> — <code dir="auto">chroma_host</code> is optional, only for a non-default deployment.</li>
+<li><del>Rewrite <code dir="auto">PokemonVectorStore</code> for the two-backend design above</del> <strong>done</strong>.</li>
+<li><del>Write <code dir="auto">src/rag/chunking.py</code></del> <strong>done</strong>.</li>
+<li><del>Write <code dir="auto">scripts/migrate_to_chroma_cloud.py</code></del> <strong>done</strong>.</li>
+<li><del>Update <code dir="auto">.env.example</code> / <code dir="auto">.env.op</code> / <code dir="auto">docs/1PASSWORD.md</code></del> <strong>done</strong>.</li>
+<li><del>Update <code dir="auto">docker-compose.yml</code>’s <code dir="auto">api</code> service</del> <strong>done</strong>.</li>
+</ul>
+<p>Tests (mocked by default — no live external service required for <code dir="auto">make test</code>):</p>
+<ul>
+<li><code dir="auto">tests/rag/test_chunking.py</code>, <code dir="auto">tests/rag/test_vector_store_cloud.py</code>.</li>
+<li><code dir="auto">tests/memory/test_memory.py</code>’s <code dir="auto">TestIsVectorStoreRunning</code>.</li>
+<li><code dir="auto">requires_chroma_cloud</code> pytest marker (mirroring <code dir="auto">requires_chromadb</code>) for live-service
+coverage (<code dir="auto">tests/rag/test_chroma_cloud_live.py</code>), deselected by default —
+<code dir="auto">make test-chroma-cloud</code> runs it against a real account.</li>
+</ul>
+<p><strong>Security checklist (required, not optional — this phase isn’t done without these):</strong></p>
+<ul>
+<li><del><strong>TLS/HTTPS sitewide</strong></del> <strong>done</strong> — Fly’s edge (<code dir="auto">force_https = true</code> in <code dir="auto">fly.toml</code>); no
+reverse proxy of our own. (OWASP: <a href="https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Protection_Cheat_Sheet.html">Transport Layer Protection Cheat
+Sheet</a>)</li>
+<li><del><strong>Rate limiting / DoS protection</strong></del> <strong>done, app-level, Redis-backed</strong> — Fly’s edge is a
+load balancer, not a WAF, so this has to live in the app: <code dir="auto">slowapi</code>, keyed by client IP,
+<code dir="auto">default_limits</code> applied globally so it also covers <code dir="auto">/health</code> and Phase 15’s future no-key
+registration endpoint. <code dir="auto">RATE_LIMIT_STORAGE_URI</code> (Upstash Redis) backs the counter across
+however many instances are running and across redeploys.
+<code dir="auto">in_memory_fallback_enabled=True</code> so a Redis outage degrades to per-instance counting instead
+of 500ing every request. Tests: <code dir="auto">tests/api/test_rate_limiting.py</code>. (OWASP: <a href="https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html">Denial of Service
+Cheat Sheet</a>)</li>
+<li><strong>Input validation at every boundary</strong> — re-confirmed true: every route still validates
+through a typed Pydantic model or a typed <code dir="auto">Query(...)</code> param, never a raw dict. (OWASP:
+<a href="https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html">Input Validation Cheat
+Sheet</a>)</li>
+<li><strong>SQL injection prevention</strong> — re-confirmed true: every <code dir="auto">platform_db.py</code> query still uses
+psycopg’s <code dir="auto">%s</code> parameterization, no f-strings/<code dir="auto">.format()</code> building SQL. (OWASP: <a href="https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html">SQL
+Injection Prevention Cheat
+Sheet</a>)</li>
+<li><strong>Secrets management</strong> — re-confirmed true: Phase 3’s Fernet-encrypted <code dir="auto">platform_db_url</code>,
+env-var/<code dir="auto">fly secrets</code>-only secrets, nothing committed in plaintext. (OWASP: <a href="https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html">Secrets
+Management Cheat
+Sheet</a>)</li>
+<li><del><strong>HTTP security response headers</strong></del> <strong>done, app-level</strong> — HSTS, <code dir="auto">X-Content-Type-Options: nosniff</code>, <code dir="auto">X-Frame-Options: DENY</code> via a FastAPI middleware (<code dir="auto">api/app.py</code>’s
+<code dir="auto">security_headers</code>), not reverse-proxy config — Fly gives no such layer to configure. The
+<code dir="auto">Server: uvicorn</code> header is dropped separately via <code dir="auto">uvicorn.run(..., server_header=False)</code>
+(<code dir="auto">api_server.py</code>). Tests: <code dir="auto">tests/api/test_security_headers.py</code>. (OWASP: <a href="https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Headers_Cheat_Sheet.html">HTTP Security
+Response Headers Cheat
+Sheet</a>)</li>
+</ul>
+<p><strong>Explicitly out of scope here</strong> (not forgotten — just not this phase): CI auto-deploy to Fly
+on release.</p>
+<p><strong>Verification:</strong> live curl checks against the real deployment — see <code dir="auto">docs/DEPLOYMENT.md</code>’s own
+Verification section for the exact commands (health, TLS-redirect, 429-under-load, security
+headers, persistent-volume-survives-restart). Chroma Cloud specifically:</p>
+<div class="expressive-code"><figure class="frame is-terminal not-content"><figcaption class="header"><span class="title"></span><span class="sr-only">Terminal window</span></figcaption><pre data-language="bash"><code><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">uv</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">run</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">python</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">scripts/migrate_to_chroma_cloud.py</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># → "Done — N Pokemon (+ their Smogon strategy documents) ingested into Chroma Cloud."</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">uv</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">run</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">python</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-c</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span></div></div><div class="ec-line"><div class="code"><span style="--0:#ECC48D;--1:#984E4D">from rag.vector_store import PokemonVectorStore</span></div></div><div class="ec-line"><div class="code"><span style="--0:#ECC48D;--1:#984E4D">store = PokemonVectorStore()</span></div></div><div class="ec-line"><div class="code"><span style="--0:#ECC48D;--1:#984E4D">for r in store.query('electric mouse pokemon', n_results=3):</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#ECC48D;--1:#984E4D">    </span></span><span style="--0:#ECC48D;--1:#984E4D">print(r['document'][:80], r['distance'])</span></div></div><div class="ec-line"><div class="code"><span style="--0:#D9F5DD;--1:#111111">"</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># → real results back from Chroma Cloud, not local ChromaDB</span></div></div></code></pre><div class="copy"><div aria-live="polite"></div><button title="Copy to clipboard" data-copied="Copied!" data-code="uv run python scripts/migrate_to_chroma_cloud.pyuv run python -c &quot;from rag.vector_store import PokemonVectorStorestore = PokemonVectorStore()for r in store.query(&#x27;electric mouse pokemon&#x27;, n_results=3):    print(r[&#x27;document&#x27;][:80], r[&#x27;distance&#x27;])&quot;"><div></div></button></div></figure></div>
+<hr>
+<div class="sl-heading-wrapper level-h2"><h2 id="phase-15--self-serve-tenant-registration">Phase 15 — Self-Serve Tenant Registration</h2><a class="sl-anchor-link" href="#phase-15--self-serve-tenant-registration"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “Phase 15 — Self-Serve Tenant Registration”</span></a></div>
+<p><strong>Goal:</strong> Let a new tenant register and get an API key without you provisioning them by hand —
+extends Phase 3’s tenant store rather than replacing it.</p>
+<p><strong>Tasks:</strong></p>
+<ul>
+<li><del><code dir="auto">POST /v1/accounts/register</code> (unauthenticated by definition — it’s how a caller <em>gets</em> a
+key): accepts <code dir="auto">{name, platform_db_url}</code>, returns a newly generated API key <strong>once</strong>, and
+inserts the same <code dir="auto">tenants</code> row shape <code dir="auto">scripts/provision_tenant.py</code> creates today</del> <strong>done</strong></li>
+<li><del>Before storing, validate the submitted <code dir="auto">platform_db_url</code> actually connects and matches
+<code dir="auto">docs/REFERENCE/PLATFORM_DB.md</code>’s schema contract</del> <strong>done</strong> — <code dir="auto">src/api/registration.py</code>
+connects and checks <code dir="auto">information_schema.tables</code> for all five required tables, rejecting with
+a 422 naming exactly which are missing (or a 503 if the server itself is missing the
+<code dir="auto">platform-db</code> dependency group)</li>
+<li><del>Rate-limit this endpoint specifically</del> <strong>done</strong> — <code dir="auto">5/minute</code>, well under the <code dir="auto">100/minute</code>
+app-wide default</li>
+<li><del><code dir="auto">POST /v1/accounts/rotate-key</code> and <code dir="auto">DELETE /v1/accounts</code> (both behind the tenant’s own
+current key)</del> <strong>done</strong></li>
+<li><del>Update <code dir="auto">scripts/provision_tenant.py</code>’s docstring to note it’s now the <em>admin override</em>
+path</del> <strong>done</strong></li>
+</ul>
+<p>The Dockerfile’s <code dir="auto">uv sync</code> now includes the <code dir="auto">platform-db</code> group — this validation, and every
+tenant’s own real database routing (Phase 3+), need <code dir="auto">psycopg</code> installed in the deployed image,
+not just as a locally optional extra.</p>
+<p><strong>Verification:</strong></p>
+<div class="expressive-code"><figure class="frame is-terminal not-content"><figcaption class="header"><span class="title"></span><span class="sr-only">Terminal window</span></figcaption><pre data-language="bash"><code><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">curl</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-X</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">POST</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">https://&lt;your-public-domain&gt;/v1/accounts/register</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#F78C6C;--1:#AA0982">\</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#82AAFF;--1:#3B61B0">-H</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">Content-Type: application/json</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#F78C6C;--1:#AA0982">\</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#82AAFF;--1:#3B61B0">-d</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">'</span><span style="--0:#ECC48D;--1:#984E4D">{"name": "new-tenant", "platform_db_url": "postgresql://user:pass@host/db"}</span><span style="--0:#D9F5DD;--1:#111111">'</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># → {"tenant_id": "...", "api_key": "&lt;shown once&gt;"}</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># A platform_db_url that doesn't match the schema contract is rejected up front:</span></div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">curl</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-X</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">POST</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">https://&lt;your-public-domain&gt;/v1/accounts/register</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#F78C6C;--1:#AA0982">\</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#82AAFF;--1:#3B61B0">-H</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">Content-Type: application/json</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#F78C6C;--1:#AA0982">\</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#82AAFF;--1:#3B61B0">-d</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">'</span><span style="--0:#ECC48D;--1:#984E4D">{"name": "bad-tenant", "platform_db_url": "postgresql://user:pass@host/empty_db"}</span><span style="--0:#D9F5DD;--1:#111111">'</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># → HTTP 422, naming the missing table</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">uv</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">run</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">pytest</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">tests/api/test_registration.py</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">tests/api/test_accounts_endpoints.py</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-v</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># → all passing</span></div></div></code></pre><div class="copy"><div aria-live="polite"></div><button title="Copy to clipboard" data-copied="Copied!" data-code="curl -X POST https://<your-public-domain>/v1/accounts/register \  -H &quot;Content-Type: application/json&quot; \  -d &#x27;{&quot;name&quot;: &quot;new-tenant&quot;, &quot;platform_db_url&quot;: &quot;postgresql://user:pass@host/db&quot;}&#x27;curl -X POST https://<your-public-domain>/v1/accounts/register \  -H &quot;Content-Type: application/json&quot; \  -d &#x27;{&quot;name&quot;: &quot;bad-tenant&quot;, &quot;platform_db_url&quot;: &quot;postgresql://user:pass@host/empty_db&quot;}&#x27;uv run pytest tests/api/test_registration.py tests/api/test_accounts_endpoints.py -v"><div></div></button></div></figure></div>
+<hr>
+<div class="sl-heading-wrapper level-h2"><h2 id="phase-16--local-admin-web-ui-tenant-management-dashboard">Phase 16 — Local Admin Web UI (Tenant Management Dashboard)</h2><a class="sl-anchor-link" href="#phase-16--local-admin-web-ui-tenant-management-dashboard"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “Phase 16 — Local Admin Web UI (Tenant Management Dashboard)”</span></a></div>
+<p><strong>Goal:</strong> A local, operator-only web UI for viewing and managing tenants (Phase 3’s
+<code dir="auto">data/tenants.db</code>) — list, create, deactivate, and rotate keys — without hand-running
+<code dir="auto">scripts/provision_tenant.py</code> or raw SQL for every change.</p>
+<p><strong>Why local, not part of the public API:</strong> this surface can see and act on every tenant’s
+account — activating/deactivating access, rotating keys, and (if ever revealed) their
+<code dir="auto">platform_db_url</code>. That’s a different trust level than the public trade-advisor endpoints
+entirely, so it deliberately stays out of <code dir="auto">api_server.py</code>’s public surface:</p>
+<ul>
+<li>Ships as its own entry point, <code dir="auto">admin_server.py</code>, bound to <code dir="auto">127.0.0.1</code> by default — not
+started by <code dir="auto">docker-compose.yml</code>’s public <code dir="auto">api</code> service, and never given a public route
+through Phase 14’s reverse proxy.</li>
+<li>To manage a remote/production deployment, run it on that host directly, or reach it over an
+SSH tunnel to <code dir="auto">127.0.0.1</code> — the same operational pattern as a database admin tool, not
+something exposed alongside the public API.</li>
+<li>Gated by its own <code dir="auto">ADMIN_TOKEN</code> env var — a separate secret from any tenant’s API key and
+from <code dir="auto">TENANT_DB_ENCRYPTION_KEY</code> — since “local” isn’t a substitute for authentication if the
+host is ever shared or a tunnel ever left open.</li>
+<li><strong>Cookie-based session, not a header</strong> — resolved here rather than left open: this is a
+browser UI with a login form, not a machine client like the public API (which is genuinely
+header-based, <code dir="auto">X-API-Key</code>). A plain HTML form can’t easily attach a custom header, so a
+login page that checks <code dir="auto">ADMIN_TOKEN</code> once and sets a session cookie is the realistic
+design, not a hypothetical alternative. That decision is what makes <strong>Secure + HttpOnly
+cookie flags and CSRF protection real requirements for this phase</strong>, not a deferred “once
+some future cookie-based feature ships” item. (OWASP: <a href="https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html">Session Management Cheat
+Sheet</a>,
+<a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html">Cross-Site Request Forgery Prevention Cheat
+Sheet</a>)</li>
+</ul>
+<p><strong>Design:</strong></p>
+<ul>
+<li><code dir="auto">src/admin/app.py</code> — a second, small FastAPI app with Jinja2-templated server-rendered pages
+(no SPA/build step needed for an internal tool this size), reusing Phase 3’s
+<code dir="auto">src/api/tenants.py</code> functions rather than duplicating tenant logic</li>
+<li>Pages:
+<ul>
+<li><code dir="auto">GET /</code> — table of tenants: name, created_at, active/inactive, masked key (last 4 chars
+only) — never the decrypted <code dir="auto">platform_db_url</code> on this listing page</li>
+<li><code dir="auto">GET /tenants/{id}</code> — detail view; <code dir="auto">platform_db_url</code> shown as host/database only
+(credentials redacted) by default, with a “reveal” action that re-checks <code dir="auto">ADMIN_TOKEN</code>
+before showing the full DSN, for the rare case you need it to debug a tenant’s connection</li>
+<li><code dir="auto">POST /tenants/new</code> — same two inputs as <code dir="auto">scripts/provision_tenant.py</code>, shows the new key
+once on success</li>
+<li><code dir="auto">POST /tenants/{id}/deactivate</code>, <code dir="auto">POST /tenants/{id}/rotate-key</code></li>
+</ul>
+</li>
+<li><code dir="auto">admin_server.py</code> at project root, mirroring <code dir="auto">api_server.py</code>’s structure, except <code dir="auto">API_HOST</code>
+defaults to <code dir="auto">127.0.0.1</code> here (not <code dir="auto">0.0.0.0</code> like the public API) and it uses its own
+<code dir="auto">ADMIN_PORT</code>, distinct from <code dir="auto">API_PORT</code></li>
+</ul>
+<p><strong>Tasks:</strong></p>
+<ul>
+<li><del>Add <code dir="auto">jinja2</code> dependency</del> <strong>done</strong></li>
+<li><del>Extend <code dir="auto">src/api/tenants.py</code> with <code dir="auto">list_tenants()</code>, <code dir="auto">deactivate_tenant(id)</code>,
+<code dir="auto">rotate_tenant_key(id)</code></del> <strong>done</strong> — <code dir="auto">deactivate_tenant</code>/<code dir="auto">rotate_api_key</code> already existed
+(Phase 15); added <code dir="auto">list_tenants()</code> and <code dir="auto">get_tenant_by_id()</code>, plus an <code dir="auto">api_key_last4</code> column
+(migrated onto an existing <code dir="auto">tenants.db</code> via <code dir="auto">PRAGMA table_info</code>, not a schema replacement) so
+the list/detail pages have something to show without ever storing the raw key</li>
+<li><del>Create <code dir="auto">src/admin/app.py</code>, <code dir="auto">src/admin/templates/*.html</code>, and a <code dir="auto">GET/POST /login</code> page</del>
+<strong>done</strong></li>
+<li><del>Create <code dir="auto">admin_server.py</code></del> <strong>done</strong></li>
+<li><del>Add <code dir="auto">ADMIN_TOKEN</code> to <code dir="auto">src/config.py</code>’s accepted env vars; <code dir="auto">POST /login</code> checks it and sets
+a <code dir="auto">Secure</code>, <code dir="auto">HttpOnly</code>, <code dir="auto">SameSite=Strict</code> session cookie</del> <strong>done</strong> — sessions are in-memory
+(<code dir="auto">src/admin/sessions.py</code>), matching this app’s local/single-operator scope; a restart just
+means logging back in</li>
+<li><del>Add CSRF protection on every state-changing route</del> <strong>done</strong> — a per-session token
+(<code dir="auto">src/admin/sessions.py</code>), embedded as a hidden field in every form, checked server-side</li>
+<li><del>Add a <code dir="auto">run-admin</code> Makefile target</del> <strong>done</strong></li>
+</ul>
+<p><strong>Verification:</strong></p>
+<div class="expressive-code"><figure class="frame is-terminal not-content"><figcaption class="header"><span class="title"></span><span class="sr-only">Terminal window</span></figcaption><pre data-language="bash"><code><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">make</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">run-admin</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># → serving on http://127.0.0.1:8090 — confirm it's NOT reachable from another machine</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F">#   (unlike make run-api, which binds 0.0.0.0)</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">open</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">http://127.0.0.1:8090</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># → tenant list page, prompts for ADMIN_TOKEN</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># Confirm the session cookie is actually flagged correctly, not just set:</span></div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">curl</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-i</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-X</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">POST</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">http://127.0.0.1:8090/login</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-d</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">token=</span><span style="--0:#C5E478;--1:#3B61B0">$ADMIN_TOKEN</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#7FDBCA;--1:#096E72">|</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">grep</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-i</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">set-cookie</span><span style="--0:#D9F5DD;--1:#111111">"</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># → Secure; HttpOnly; SameSite=Strict all present</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># Confirm a state-changing request without the CSRF token is rejected:</span></div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">curl</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-i</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-X</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">POST</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">http://127.0.0.1:8090/tenants/new</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-b</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">&lt;session cookie from above&gt;</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#F78C6C;--1:#AA0982">\</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#82AAFF;--1:#3B61B0">-d</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">name=test&amp;platform_db_url=postgresql://u:p@h/db</span><span style="--0:#D9F5DD;--1:#111111">"</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># → 403, missing/invalid CSRF token — not a silently-accepted request</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># Create a tenant through the UI, then confirm the key it shows actually works</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># against the real public API:</span></div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">curl</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-H</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">X-API-Key: &lt;key shown in the admin UI&gt;</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">http://localhost:8080/health</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># → {"status": "ok", "chromadb": true}</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># Deactivate that tenant through the UI, then confirm the API rejects it on a</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># protected route (not /health, which needs no key at all):</span></div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">curl</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-i</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#82AAFF;--1:#3B61B0">-H</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">X-API-Key: &lt;same key&gt;</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#ECC48D;--1:#3B61B0">http://localhost:8080/v1/trade/suggestions</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5F636F"># → HTTP/1.1 403</span></div></div></code></pre><div class="copy"><div aria-live="polite"></div><button title="Copy to clipboard" data-copied="Copied!" data-code="make run-adminopen http://127.0.0.1:8090curl -i -X POST http://127.0.0.1:8090/login -d &quot;token=$ADMIN_TOKEN&quot; | grep -i &quot;set-cookie&quot;curl -i -X POST http://127.0.0.1:8090/tenants/new -b &quot;<session cookie from above>&quot; \  -d &quot;name=test&amp;platform_db_url=postgresql://u:p@h/db&quot;curl -H &quot;X-API-Key: <key shown in the admin UI>&quot; http://localhost:8080/healthcurl -i -H &quot;X-API-Key: <same key>&quot; http://localhost:8080/v1/trade/suggestions"><div></div></button></div></figure></div>
+<hr>
+<div class="sl-heading-wrapper level-h2"><h2 id="source-mapping">Source Mapping</h2><a class="sl-anchor-link" href="#source-mapping"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore>Section titled “Source Mapping”</span></a></div>
+<table>
+<thead>
+<tr>
+<th>API Function</th>
+<th>Source File</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code dir="auto">evaluate_trade</code>, <code dir="auto">get_trade_suggestions</code></td>
+<td><code dir="auto">src/agents/trade_advisor_api.py</code></td>
+</tr>
+<tr>
+<td><code dir="auto">get_pending_offers</code>, <code dir="auto">send_trade_offer</code></td>
+<td><code dir="auto">src/agents/trade_advisor_api.py</code></td>
+</tr>
+<tr>
+<td><code dir="auto">query_pokedex</code></td>
+<td><code dir="auto">src/agents/__init__.py</code></td>
+</tr>
+<tr>
+<td><code dir="auto">query_market</code></td>
+<td><code dir="auto">src/agents/trade_market_analyst.py</code></td>
+</tr>
+<tr>
+<td><code dir="auto">startup()</code></td>
+<td><code dir="auto">src/startup.py</code></td>
+</tr>
+<tr>
+<td><code dir="auto">is_chromadb_running()</code>, <code dir="auto">is_vector_store_running()</code></td>
+<td><code dir="auto">src/utils.py</code></td>
+</tr>
+<tr>
+<td><code dir="auto">require_api_key</code></td>
+<td><code dir="auto">src/api/auth.py</code> (new)</td>
+</tr>
+<tr>
+<td>request logging middleware</td>
+<td><code dir="auto">src/api/app.py</code> (new)</td>
+</tr>
+<tr>
+<td>API route tests</td>
+<td><code dir="auto">tests/api/test_api.py</code> (new)</td>
+</tr>
+</tbody>
+</table>
+</div><footer class="sl-flex astro-ddtxxk7k"><div class="meta sl-flex astro-ddtxxk7k"></div><div class="pagination-links print:hidden astro-b5raizh3" dir="ltr"><a href="/pokemon-trainer-platform-ai/walkthrough-cli/phase-14-mcp-server/" rel="prev" class="astro-b5raizh3"><svg aria-hidden="true" class="astro-b5raizh3 astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1.5rem;"><path d="M17 11H9.41l3.3-3.29a1.004 1.004 0 1 0-1.42-1.42l-5 5a1 1 0 0 0-.21.33 1 1 0 0 0 0 .76 1 1 0 0 0 .21.33l5 5a1.002 1.002 0 0 0 1.639-.325 1 1 0 0 0-.219-1.095L9.41 13H17a1 1 0 0 0 0-2Z"/></svg><span class="astro-b5raizh3">Previous<br class="astro-b5raizh3"><span class="link-title astro-b5raizh3">Stage 14: MCP Server (Optional)</span></span></a><a href="/pokemon-trainer-platform-ai/roadmap/platform/" rel="next" class="astro-b5raizh3"><svg aria-hidden="true" class="astro-b5raizh3 astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1.5rem;"><path d="M17.92 11.62a1.001 1.001 0 0 0-.21-.33l-5-5a1.003 1.003 0 1 0-1.42 1.42l3.3 3.29H7a1 1 0 0 0 0 2h7.59l-3.3 3.29a1.002 1.002 0 0 0 .325 1.639 1 1 0 0 0 1.095-.219l5-5a1 1 0 0 0 .21-.33 1 1 0 0 0 0-.76Z"/></svg><span class="astro-b5raizh3">Next<br class="astro-b5raizh3"><span class="link-title astro-b5raizh3">Platform, Launch &amp; Growth (Phases 17-29)</span></span></a></div></footer></div></div></main></div></div></div></div></body></html>
